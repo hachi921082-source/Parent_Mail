@@ -32,7 +32,7 @@
 - Maximum 2 accounts.
 - Each account has a renamable display name.
 - Switched by the account switch button at the left end of the top bar. It is an obvious, labeled button showing the current account name.
-- Account-add screen states that a Gmail app password is required. No detailed in-app setup guide (a knowledgeable person sets up the accounts).
+- Account-add screen states that a Gmail app password is required. Adding an account first tests IMAP and SMTP login with the entered address and app password; a duplicate address is rejected. No detailed in-app setup guide (a knowledgeable person sets up the accounts).
 - If the app password is wrong or no longer valid: show a plain-language notice asking a knowledgeable person to re-enter it, and open the password re-entry screen; cached mail stays viewable.
 
 ## 4. UI Layout
@@ -41,7 +41,8 @@ Main window has 3 areas (see sketch: `docs/images/layout-sketch.png`).
 
 - Top bar (full window width), left to right: account switch button, Inbox, Outbox, Sent, Trash, Drafts, Spam. Folders are not in a left pane.
 - Mail list: narrow pane at the left below the top bar.
-  - Action buttons at the bottom of the mail list pane: compose, search, settings, address book, block list, filter rules.
+  - Action buttons at the bottom of the mail list pane (Japanese labels): 新しいメール (compose), search, settings, address book, 受信拒否リスト (block list), 振り分けルール (filter rules).
+  - Dates in rows: today `HH:mm`; this year `M月d日 H:mm`; older `yyyy年M月d日 H:mm` (local time).
 - Mail preview (text): very wide pane at the right, taking most of the window.
   - Large buttons always shown at the top of the preview pane: Reply, Reply all, Forward, Delete (the context menu remains available as well).
   - Preview zoom ("mail enlarged display") controls near these buttons (see section 5).
@@ -56,21 +57,21 @@ Main window has 3 areas (see sketch: `docs/images/layout-sketch.png`).
 All features below are in the first release (no phasing), including the local mail cache (section 8).
 
 - Standard folders: Inbox, Outbox, Sent, Trash, Drafts, Spam, each with the context (right-click) menu items needed for it.
-- Address book (separate per account).
-- Filter/sorting rules (per account).
-- Block list (per account).
+- Address book (separate per account). Fields: 名前, ふりがな, メールアドレス, メモ. A sender not in it gets the preview-header notice 「アドレス帳に登録されていません」.
+- Filter/sorting rules (per account). Window and button name: 「振り分けルール」. Condition "sender contains" matches the address and the display name, case-insensitive.
+- Block list (per account). A domain entry also covers its subdomains. Window and button name: 「受信拒否リスト」.
 - Attachment by drag and drop.
 - HTML mail display plus plain-text mode.
 - Mail content preview, including images.
-- Search.
-- Compose with To, CC, BCC.
+- Search: local cache `LIKE` substring match, normalizing case and full/half width only (no hiragana/katakana folding).
+- Compose with To, CC, BCC. Compose body is plain text only (text/plain, UTF-8). The From header carries the address only (the account display name is never sent). Only one app instance runs; a second launch brings the existing window to front.
 - Reply / reply all / forward (open in a separate window, same as compose).
 - Attachment save / open.
 - Text-size setting (large by default, changeable by free numeric input or slider).
-- Mail enlarged display (preview zoom): the preview can be enlarged temporarily; the zoom is not saved and returns to the default when the app exits.
+- Mail enlarged display (preview zoom): the preview can be enlarged temporarily; the zoom is never saved. It resets to 100% whenever the displayed mail, folder or account changes (and therefore on every launch). Buttons: 拡大 / 縮小 / 100%に戻す.
 - Read/unread display (unread shown in bold in the mail list).
-- Safety warnings for suspicious links and executable attachments. Attaching an executable file to an outgoing mail is warned about and blocked.
-- Delete (button or menu item) shows no confirmation dialog; a non-modal notice "ごみ箱に移動しました [元に戻す]" is shown for a few seconds and Undo moves the mail back to its previous folder.
+- Safety warnings for suspicious links and executable attachments. Attaching an executable file to an outgoing mail is warned about and blocked. Executable list: exe, msi, bat, cmd, scr, js, vbs, ps1, jar, lnk, macro-enabled Office files, plus hta, com, pif, reg, wsf, vbe, jse, msc, dll, cpl, iso, img and similar script/installer/disk-image types (full list in detailed-spec section 14). Only zip is inspected, one level deep; an unreadable or encrypted zip is treated as suspicious. Extension match: last extension, case-insensitive, trailing spaces/dots stripped; file names with right-to-left override characters are flagged. Link banner judges both HTML and text parts; non-suspicious links open in the default browser with no dialog; `mailto:` opens compose.
+- Delete (button or menu item) shows no confirmation dialog; a non-modal notice "ごみ箱に移動しました [元に戻す]" is shown for a few seconds and Undo moves the mail back to the folder it was viewed in (other Gmail labels are not restored). In Trash the menu item 「受信トレイに戻す」 always restores to the Inbox. While offline, moves (delete, spam, restore, undo) are refused with a plain notice; mark read/unread is queued.
 - Draft auto-save.
 
 ## 6. On-Hold Features
@@ -95,18 +96,22 @@ Out of scope:
 
 ## 8. Technical Requirements
 
-- Language/framework: C# with WPF.
-- Mail library: MailKit (IMAP/SMTP).
-- HTML display: WebView2. No app CSS font-size is injected into HTML mail; text size and preview zoom are applied through the WebView2 ZoomFactor (setting / 18pt x temporary zoom). The text-size setting applies to WPF controls and plain-text display directly.
+- Language/framework: C# with WPF, net10.0-windows. Solution = App (WPF) + Core (incl. Data) + Tests (xUnit). CommunityToolkit.Mvvm and Microsoft.Extensions.DependencyInjection.
+- Mail library: MailKit (IMAP/SMTP); connect/read/send timeout 30 s; polling only (no IDLE).
+- HTML display: WebView2. No app CSS font-size is injected into HTML mail; text size and preview zoom are applied through the WebView2 ZoomFactor = text-size setting (pt) / 12 x preview zoom, clamped to 0.25-5.0 and rounded to 2 decimals (1.5 at the default 18pt, so HTML matches plain text). WebView2 built-in zoom shortcuts are disabled. Font size is in true points (WPF size = pt x 96/72). The text-size setting applies to WPF controls and plain-text display directly.
 - App password storage: Windows Credential Manager.
 - LLM features: none.
-- Local storage: mail is also stored locally on the PC (local mail cache) in SQLite, in addition to settings (account names, filter rules, address book, block list, window/splitter state).
+- Local storage: mail is also stored locally on the PC (local mail cache) in SQLite (Microsoft.Data.Sqlite; settings.db plus one cache.db per account; HtmlAgilityPack for HTML parsing), in addition to settings (account names, filter rules, address book, block list, window/splitter state).
 - Local data protection: no app-level encryption. Data is protected only by the Windows user account; BitLocker and any other encryption setup are not needed.
 - Privacy: mail content stays on the PC; no transmission to third parties.
+- Local log file `%LOCALAPPDATA%\Parent_Mail\logs\parentmail.log`: component names, timestamps, exception type/message/stack, counts and error categories only; never mail content, addresses, subjects, attachment names, passwords or URLs. Rotated at 1 MB, 3 files.
+- Distribution: self-contained single-file exe named `Parent_Mail_YYYYMMDD-HHMMSS.exe`; no installer.
 - Outbox is a local-only concept (not a Gmail folder).
 - Delete: moves mail to Gmail Trash only (IMAP move). Permanent deletion and "Empty trash" are not provided in the app.
 - Local copy mirrors Gmail state: moves to Gmail Trash are reflected locally; a mail permanently gone from Gmail is also deleted from the local copy.
 - Sync:
+  - While the first sync runs, the banner 「メールを読み込んでいます…」 is shown and the list fills progressively without blocking the UI.
+  - If a folder's UIDVALIDITY changes, only that folder's UID mappings are rebuilt (re-resolved via X-GM-MSGID); bodies and attachments are kept and re-listed mail is not treated as new mail.
   - First sync downloads headers for all mail and bodies for the most recent 12 months.
   - Older bodies and all attachments are downloaded on demand when opened, then cached locally (SQLite).
   - Periodic sync checks only new/changed mail (IMAP UID/UIDVALIDITY), not the whole mailbox.
@@ -114,11 +119,12 @@ Out of scope:
   - Gmail "All Mail" is also synced, under the same rules as the other folders; a message appearing in several Gmail folders is stored once (keyed by X-GM-MSGID).
   - Both accounts are synced on the same timer (startup, then every 5 minutes).
 - Fetch timing: on app startup, then automatically every 5 minutes, plus a manual refresh button.
-- Send failure (online or offline): the mail stays in Outbox, is retried every sync cycle (5 minutes), and a plain-language failure notice is shown after 3 failures; Outbox menu: "Send now" / "Return to drafts".
-- Attachment limit: size is checked on the estimated encoded message size against Gmail's 25 MB (about 18 MB of raw files); over the limit, a plain-language warning is shown and the attachment is refused.
+- Send failure (online or offline): the mail stays in Outbox, is retried every sync cycle (5 minutes) with no upper limit, and a plain-language failure notice is shown once after 3 failures (the failure marker stays); Outbox menu: "Send now" / "Return to drafts".
+- Attachment limit: size is checked on the estimated encoded message size against Gmail's 25 MB (about 18 MB of raw files): sum over files of ceil(n/3) x 4 x 78/76, plus body bytes, plus 10 KB header overhead, must be <= 25,000,000 bytes; over the limit, a plain-language warning is shown and the attachment is refused.
 - Search: local cache only (sender, subject, downloaded bodies) across all folders of the displayed account; not-downloaded older bodies are excluded and the UI says so; no IMAP server search.
 - Sync exclusion: one sync at a time per account; a manual refresh during a sync is merged into it (button shown busy); timer ticks during a sync are skipped.
-- Quitting the app with unsent mail in Outbox shows a warning ("送信待ちのメールがあります。このまま閉じると送信されません") with three large buttons: send then close / close anyway / back (default). If the send-then-close attempt fails, the app stays open and shows the failure notice.
+- Quitting the app with unsent mail in Outbox shows a warning ("送信待ちのメールがあります。このまま閉じると送信されません") with three large buttons: send then close / close anyway / back (default). If the send-then-close attempt fails, the app stays open and shows the failure notice. The same dialog is shown when Windows shutdown/logoff is intercepted (SessionEnding); "close anyway" lets Windows continue.
+- Forward fetches the original's attachments and applies the same executable and size checks; violating attachments are dropped with a notice. Attachments not yet downloaded while offline: notice, forward continues without them.
 - Offline / Gmail unreachable: show cached mail with a plain-language banner; outgoing mail is held in Outbox and sent automatically after reconnect.
 - HTML display default: plain-text mode; the top-bar checkbox switches to HTML for the currently displayed mail only (reset on opening another mail). If a mail has no text part (HTML only), the plain text derived from the HTML is shown instead of an empty pane.
 - Remote images in HTML mail: not loaded by default; a "Show images" action loads them on demand. Images embedded in the mail (cid/inline) display normally.
