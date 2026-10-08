@@ -87,7 +87,7 @@ Source: S8, Q12, Q14, D4.
 - Read state: unread shown bold (S5). Opening a mail marks it read immediately (on selection, not after the body is displayed) and the state is synced to Gmail (\Seen), ONLY in Inbox and Spam; opening mail in Sent, Drafts, Trash and Outbox changes no read state (Q69; replaces A11). A mail selected automatically after a delete (section 1) is NOT marked read; only a row the user selects explicitly (click or key on the row) is marked read (A58, Q74). Context menu offers Mark read/unread (D8). While offline, Mark read/unread is queued and applied after reconnect; moves (delete, Move to Spam, Not spam, Restore, Undo) are refused with the notice 「今はインターネットにつながっていないため操作できません。つながってからもう一度お試しください。」 (Q55).
 - Drafts: synced with Gmail Drafts (Q12). Auto-saved drafts (section 7) are written to Gmail Drafts when online; when offline they are kept locally and uploaded after reconnect: Assumption A12.
 - New-mail handling order for a new message: download header and body (bodies of new mail are always fetched, Q17), apply block list and filter rules (sections 11, 12), then update counts/badge.
-- "New mail" = mail first seen after the initial sync of that account completes. Block list and filter rules are NOT applied during the initial sync or when an account is first added (Assumption A43).
+- "New mail" = mail first seen in the Inbox after the initial sync of that account completes (mail first seen in Sent, Drafts, Trash, Spam or All Mail only is not new mail). Block list and filter rules are NOT applied during the initial sync or when an account is first added (Assumption A43).
 - Offline, unfetched older body or attachment: show plain-language "not downloaded yet" message; fetch and show automatically once online; other cached mail stays readable (S8).
 
 ## 5. Offline, Outbox and send retry
@@ -341,7 +341,7 @@ Added by designer-lite because the source documents do not state them; each need
 - A40 A send failure is also shown on the Outbox top-bar button (marker or count of failed messages), extending A13.
 - A41 SUPERSEDED by Q45: ZoomFactor = pt / 12 x zoom, clamp 0.25-5.0, 2 decimals.
 - A42 SETTLED by Q50: formula in section 7.
-- A43 Block list and filter rules are not applied during the initial sync or when an account is first added; "new mail" = mail first seen after the initial sync completes.
+- A43 Block list and filter rules are not applied during the initial sync or when an account is first added; "new mail" = mail first seen in the Inbox after the initial sync completes (revised 2026-10-08 after PLAN self-review: rules must not touch the user's own sent mail or mail moved to Trash/Spam on the Gmail web).
 - A44 The other-account badge on the account switch button shows the unread count as a number.
 - A45 SUPERSEDED by Q44: today HH:mm; this year M月d日 H:mm; older yyyy年M月d日 H:mm.
 - A46 On successful send, the matching Gmail Drafts draft is deleted (also for drafts returned from Outbox and later sent); a failed send keeps the draft/Outbox item.
