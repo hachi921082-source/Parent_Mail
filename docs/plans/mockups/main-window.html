@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Parent_Mail main window mockup (APPROVED colours and layout)</title>
+<style>
+/* 1 CSS px = 1 DIP. Body text 18pt = 24px. Top bar / bottom strip text capped (here 18pt, below the proposed 20pt cap). */
+:root{
+  --text:#000000; --page:#FFFFFF; --muted:#595959;
+  --offline:#FFD54F; --offline-text:#000000;
+  --red:#A80000; --red-text:#FFFFFF;
+  --loading:#CFE8FF; --loading-text:#000000;
+  --ok:#1B5E20; --ok-text:#FFFFFF;
+  --primary:#0B4FA8; --primary-text:#FFFFFF;
+  --sel:#D6E4F7; --btn:#E8E8E8; --line:#767676;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#7a7a7a;font-family:"Yu Gothic UI","Meiryo","MS Gothic",sans-serif;font-size:24px;color:var(--text)}
+h1,h2,p.note,table.pal{font-family:"Yu Gothic UI","Meiryo",sans-serif}
+.doc{background:#fff;padding:16px 24px;margin:0 0 24px;font-size:18px;max-width:1280px}
+.doc h1{font-size:26px;margin:0 0 8px}.doc h2{font-size:22px;margin:16px 0 8px}
+table.pal{border-collapse:collapse;font-size:16px;width:100%}
+table.pal th,table.pal td{border:1px solid #999;padding:4px 8px;text-align:left}
+.sw{display:inline-block;width:28px;height:20px;border:1px solid #000;vertical-align:middle;margin-right:6px}
+.frame{width:1280px;background:#fff;border:2px solid #222;margin:0 0 8px}
+.cap{font-family:"Yu Gothic UI","Meiryo",sans-serif;color:#fff;font-size:18px;margin:16px 0 4px}
+button,.btn{font:inherit;font-size:24px;min-height:56px;padding:0 24px;border:2px solid var(--line);background:var(--btn);color:#000;border-radius:6px}
+.btn.primary{background:var(--primary);color:var(--primary-text);border-color:var(--primary)}
+.btn.active{background:var(--primary);color:#fff;border-color:#06306b}
+.btn.danger{border-color:var(--red);color:var(--red);background:#fff;font-weight:bold}
+.btn.dis{color:#595959;background:#E8E8E8;border-style:dashed}
+.badge{display:inline-block;min-width:34px;height:34px;line-height:34px;border-radius:17px;background:var(--red);color:var(--red-text);font-size:20px;font-weight:bold;text-align:center;padding:0 8px;margin-left:8px}
+.banner{display:flex;align-items:center;min-height:56px;padding:6px 16px;font-weight:bold;font-size:24px;gap:16px}
+.banner .sp{flex:1}
+.banner.offline{background:var(--offline);color:var(--offline-text)}
+.banner.red{background:var(--red);color:var(--red-text)}
+.banner.loading{background:var(--loading);color:var(--loading-text)}
+.banner button{font-size:22px;min-height:48px;padding:0 16px}
+.bar{display:flex;gap:8px;padding:8px 16px;align-items:center;background:#F3F3F3;border-bottom:2px solid #999}
+.bar .sp{flex:1}
+.cb{display:inline-block;width:32px;height:32px;border:3px solid #333;background:#fff;border-radius:4px;vertical-align:middle;text-align:center;line-height:26px;font-size:24px;font-weight:bold}
+.main{display:flex;height:620px}
+.list{width:448px;border-right:6px solid #bbb;display:flex;flex-direction:column;background:#fff}
+.list .search{display:flex;gap:8px;padding:8px}
+.list .search .box{flex:1;min-height:56px;border:2px solid var(--line);padding:10px 12px;color:var(--muted)}
+.list .head{display:flex;align-items:center;gap:12px;padding:0 8px;min-height:48px;border-bottom:1px solid #bbb;font-size:20px}
+.rows{flex:1;overflow:hidden}
+.row{display:flex;gap:8px;padding:6px 8px;border-bottom:1px solid #ccc;align-items:flex-start;min-height:76px}
+.row.sel{background:var(--sel);border-left:6px solid var(--primary);padding-left:2px}
+.row .t{flex:1;min-width:0}
+.row .l1{display:flex;gap:8px;align-items:baseline}
+.row .snd{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .dt{color:#333;font-size:20px;white-space:nowrap}
+.row .l2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.unread .snd,.row.unread .l2,.row.unread .dt{font-weight:bold}
+.row .clip{font-size:22px}
+.mark{display:inline-block;background:var(--red);color:var(--red-text);font-weight:bold;font-size:18px;padding:0 10px;border-radius:14px;margin-left:8px}
+.strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;border-top:2px solid #999;background:#F3F3F3}
+.strip .btn{min-height:56px;padding:0 8px;font-size:22px;line-height:1.1}
+.prev{flex:1;display:flex;flex-direction:column;position:relative;min-width:0}
+.hb{display:flex;gap:8px;align-items:center;padding:8px 16px;border-bottom:1px solid #bbb;flex-wrap:nowrap}
+.hb .sp{flex:1}
+.hb .btn{padding:0 14px;font-size:22px}
+.hdr{padding:8px 16px;font-size:22px;line-height:1.5;border-bottom:1px solid #ccc}
+.hdr b{display:inline-block;width:88px;color:#333}
+.notice-inline{display:inline-block;background:#fff;border:2px solid #333;padding:0 10px;font-size:20px;margin-left:8px}
+.body{padding:16px 24px;font-size:24px;line-height:1.7;flex:1}
+.guide{flex:1;display:flex;align-items:center;justify-content:center;font-size:28px;color:#333;text-align:center;padding:24px}
+.toast{position:absolute;left:24px;bottom:16px;right:24px;display:flex;align-items:center;gap:24px;min-height:64px;padding:8px 24px;background:var(--ok);color:var(--ok-text);font-size:24px;font-weight:bold}
+.toast button{min-height:48px;font-size:24px;background:#fff;color:#000}
+.legend{font-family:"Yu Gothic UI","Meiryo",sans-serif;font-size:16px;color:#fff;margin:0 0 8px}
+</style>
+</head>
+<body>
+
+<div class="doc">
+<h1>Parent_Mail main window mockup (APPROVED)</h1>
+<p>Static mockup at 18pt equivalent (1 CSS px = 1 DIP; body text 24px). Colours and layout were approved by the user on 2026-10-08; layout is proposal "window-layouts.md" section 2. Contrast = WCAG 2.x relative-luminance ratio (target 7:1 or more for text).</p>
+<table class="pal">
+<tr><th>Use</th><th>Background</th><th>Text</th><th>Contrast</th></tr>
+<tr><td>Normal page, list, preview</td><td><span class="sw" style="background:#FFFFFF"></span>#FFFFFF</td><td>#000000</td><td>21.0 : 1</td></tr>
+<tr><td>Offline banner</td><td><span class="sw" style="background:#FFD54F"></span>#FFD54F (yellow)</td><td>#000000 bold</td><td>14.9 : 1</td></tr>
+<tr><td>Error banner (wrong password, Outbox failure, generic error) and suspicious-link banner</td><td><span class="sw" style="background:#A80000"></span>#A80000 (red)</td><td>#FFFFFF bold</td><td>7.9 : 1</td></tr>
+<tr><td>Loading / initial sync banner</td><td><span class="sw" style="background:#CFE8FF"></span>#CFE8FF (light blue)</td><td>#000000 bold</td><td>16.6 : 1</td></tr>
+<tr><td>Unread-count badge, Outbox failure marker (pill)</td><td><span class="sw" style="background:#A80000"></span>#A80000</td><td>#FFFFFF bold</td><td>7.9 : 1</td></tr>
+<tr><td>Success / delete notice (transient)</td><td><span class="sw" style="background:#1B5E20"></span>#1B5E20 (dark green)</td><td>#FFFFFF bold</td><td>7.9 : 1</td></tr>
+<tr><td>Primary button, active folder button</td><td><span class="sw" style="background:#0B4FA8"></span>#0B4FA8 (blue)</td><td>#FFFFFF</td><td>7.8 : 1</td></tr>
+<tr><td>Normal button</td><td><span class="sw" style="background:#E8E8E8"></span>#E8E8E8 + 2px border #767676</td><td>#000000</td><td>17.1 : 1</td></tr>
+<tr><td>Selected list row</td><td><span class="sw" style="background:#D6E4F7"></span>#D6E4F7 + 6px bar #0B4FA8</td><td>#000000</td><td>16.3 : 1</td></tr>
+<tr><td>Date text in list</td><td>#FFFFFF</td><td>#333333</td><td>12.6 : 1</td></tr>
+<tr><td>Hint / secondary text, disabled button</td><td>#FFFFFF / #E8E8E8</td><td>#595959</td><td>7.0 : 1 / 5.7 : 1 (disabled: exempt)</td></tr>
+<tr><td>Delete button (outlined, far right)</td><td>#FFFFFF, border and text #A80000</td><td>#A80000 bold</td><td>7.9 : 1</td></tr>
+</table>
+<p>Colour is never the only signal: banners always carry text, the unread state is bold type, the Outbox failure is a labelled pill plus a number.</p>
+</div>
+
+<!-- ============ FRAME 1: two banners (max 2), normal state ============ -->
+<p class="cap">Frame 1: normal use. Two banners shown at once (maximum): offline (priority 2) and Outbox failure (priority 3, the only banner with a close button). Initial-sync banner would wait.</p>
+<div class="frame">
+  <div class="banner offline">インターネットにつながっていません。保存済みのメールは読めます。</div>
+  <div class="banner red"><span>メールを送れませんでした。送信トレイを確認してください。</span><span class="sp"></span><button aria-label="閉じる">×</button></div>
+  <div class="bar">
+    <button class="btn">母のメール<span class="badge">3</span></button>
+    <span class="sp"></span>
+    <label style="font-size:24px"><span class="cb"></span> HTMLで表示</label>
+    <button class="btn">更新</button>
+  </div>
+  <div class="bar" style="border-top:0">
+    <button class="btn active">受信トレイ<span class="badge" style="background:#fff;color:#A80000;border:2px solid #A80000">12</span></button>
+    <button class="btn">送信トレイ<span class="badge">!1</span></button>
+    <button class="btn">送信済み</button>
+    <button class="btn">ごみ箱</button>
+    <button class="btn">下書き</button>
+    <button class="btn">迷惑メール</button>
+  </div>
+  <div class="main">
+    <div class="list">
+      <div class="search"><div class="box">差出人・件名・本文から探す</div><button class="btn">クリア</button></div>
+      <div class="head"><span class="cb"></span> すべて選ぶ</div>
+      <div class="rows">
+        <div class="row unread sel"><span class="cb"></span><div class="t"><div class="l1"><span class="snd">山田 太郎</span><span class="dt">14:30</span><span class="clip">&#128206;</span></div><div class="l2">来週の予定について教えてください</div></div></div>
+        <div class="row unread"><span class="cb"></span><div class="t"><div class="l1"><span class="snd">佐藤 花子</span><span class="dt">10月8日 9:12</span></div><div class="l2">お礼とご報告</div></div></div>
+        <div class="row"><span class="cb"></span><div class="t"><div class="l1"><span class="snd">Amazon.co.jp</span><span class="dt">10月6日 18:40</span></div><div class="l2">ご注文の確認 - 商品は10月9日にお届け予定です</div></div></div>
+        <div class="row"><span class="cb"></span><div class="t"><div class="l1"><span class="snd">田中 一郎</span><span class="dt">2025年12月24日 7:55</span><span class="clip">&#128206;</span></div><div class="l2">写真を送ります</div></div></div>
+        <div class="row"><span class="cb"></span><div class="t"><div class="l1"><span class="snd">市役所 健康課</span><span class="dt">2025年11月2日 15:03</span></div><div class="l2">健診のお知らせ</div></div></div>
+        <div class="row"><span class="cb"></span><div class="t"><div class="l1"><span class="snd">山田 太郎</span><span class="dt">2025年10月30日 12:10</span></div><div class="l2">ありがとうございました</div></div></div>
+      </div>
+      <div class="strip">
+        <button class="btn primary">新しいメール</button><button class="btn">検索</button>
+        <button class="btn">設定</button><button class="btn">アドレス帳</button>
+        <button class="btn">受信拒否リスト</button><button class="btn">振り分けルール</button>
+      </div>
+    </div>
+    <div class="prev">
+      <div class="hb">
+        <button class="btn">返信</button><button class="btn">全員に返信</button><button class="btn">転送</button>
+        <span class="sp"></span>
+        <button class="btn">拡大</button><button class="btn dis">縮小</button><button class="btn dis">100%に戻す</button>
+        <span class="sp"></span>
+        <button class="btn danger">削除</button>
+      </div>
+      <div class="hdr">
+        <div><b>差出人</b>山田 太郎 &lt;taro@example.com&gt;<span class="notice-inline">アドレス帳に登録されていません</span></div>
+        <div><b>宛先</b>母のメール &lt;mother@gmail.com&gt;</div>
+        <div><b>CC</b>佐藤 花子 &lt;hanako@example.jp&gt;</div>
+        <div><b>件名</b>来週の予定について教えてください</div>
+        <div><b>日時</b>2026年10月8日 14:30</div>
+        <div><b>添付</b>予定表.pdf (1.2MB) [開く] [保存]</div>
+      </div>
+      <div class="banner red" style="font-size:22px">このメールには、あやしいリンクが含まれています。リンクを開かないでください。</div>
+      <div class="body">お母さん、こんにちは。<br>来週の日曜日は空いていますか。<br>お昼ごはんを一緒に食べましょう。</div>
+      <div class="toast"><span>ごみ箱に移動しました</span><button>元に戻す</button></div>
+    </div>
+  </div>
+</div>
+<p class="legend">The green notice is the delete undo notice (10 seconds). 迷惑メール moves show no notice. 削除 is placed apart at the far right (APPROVED).</p>
+
+<!-- ============ FRAME 2: initial sync, empty list, only loading banner ============ -->
+<p class="cap">Frame 2: first sync, list still empty. Only the loading banner is shown (no 「メールはありません」); preview shows the guide text.</p>
+<div class="frame">
+  <div class="banner loading">メールを読み込んでいます…</div>
+  <div class="bar"><button class="btn">母のメール</button><span class="sp"></span><label style="font-size:24px"><span class="cb"></span> HTMLで表示</label><button class="btn">更新中…</button></div>
+  <div class="bar" style="border-top:0"><button class="btn active">受信トレイ</button><button class="btn">送信トレイ</button><button class="btn">送信済み</button><button class="btn">ごみ箱</button><button class="btn">下書き</button><button class="btn">迷惑メール</button></div>
+  <div class="main" style="height:300px">
+    <div class="list"><div class="search"><div class="box">差出人・件名・本文から探す</div><button class="btn">クリア</button></div><div class="rows"></div>
+      <div class="strip"><button class="btn primary">新しいメール</button><button class="btn">検索</button><button class="btn">設定</button><button class="btn">アドレス帳</button><button class="btn">受信拒否リスト</button><button class="btn">振り分けルール</button></div></div>
+    <div class="prev"><div class="hb"><button class="btn dis">返信</button><button class="btn dis">全員に返信</button><button class="btn dis">転送</button><span class="sp"></span><button class="btn dis">削除</button></div><div class="guide">左の一覧からメールを選んでください</div></div>
+  </div>
+</div>
+
+<!-- ============ FRAME 3: several rows checked ============ -->
+<p class="cap">Frame 3: three rows checked (multi-select delete, approved). The preview shows a guide; only the delete button is active and says how many.</p>
+<div class="frame">
+  <div class="bar"><button class="btn">母のメール</button><span class="sp"></span><label style="font-size:24px"><span class="cb"></span> HTMLで表示</label><button class="btn">更新</button></div>
+  <div class="bar" style="border-top:0"><button class="btn active">受信トレイ<span class="badge" style="background:#fff;color:#A80000;border:2px solid #A80000">9</span></button><button class="btn">送信トレイ</button><button class="btn">送信済み</button><button class="btn">ごみ箱</button><button class="btn">下書き</button><button class="btn">迷惑メール</button></div>
+  <div class="main" style="height:420px">
+    <div class="list">
+      <div class="search"><div class="box">差出人・件名・本文から探す</div><button class="btn">クリア</button></div>
+      <div class="head"><span class="cb">-</span> 3通を選んでいます <button class="btn" style="min-height:48px;font-size:20px;padding:0 12px">選択をやめる</button></div>
+      <div class="rows">
+        <div class="row unread"><span class="cb">&#10003;</span><div class="t"><div class="l1"><span class="snd">広告配信センター</span><span class="dt">14:02</span></div><div class="l2">【限定】今だけ半額セール</div></div></div>
+        <div class="row unread"><span class="cb">&#10003;</span><div class="t"><div class="l1"><span class="snd">お得情報</span><span class="dt">10:40</span></div><div class="l2">キャンペーンのお知らせ</div></div></div>
+        <div class="row"><span class="cb">&#10003;</span><div class="t"><div class="l1"><span class="snd">ニュースレター</span><span class="dt">10月7日 8:00</span></div><div class="l2">今週のおすすめ</div></div></div>
+        <div class="row"><span class="cb"></span><div class="t"><div class="l1"><span class="snd">山田 太郎</span><span class="dt">10月6日 18:40</span></div><div class="l2">ありがとうございました</div></div></div>
+      </div>
+      <div class="strip"><button class="btn primary">新しいメール</button><button class="btn">検索</button><button class="btn">設定</button><button class="btn">アドレス帳</button><button class="btn">受信拒否リスト</button><button class="btn">振り分けルール</button></div>
+    </div>
+    <div class="prev">
+      <div class="hb"><button class="btn dis">返信</button><button class="btn dis">全員に返信</button><button class="btn dis">転送</button><span class="sp"></span><button class="btn danger">選んだ3通を削除</button></div>
+      <div class="guide">3通のメールを選んでいます。「削除」を押すと、まとめてごみ箱に移します。</div>
+      <div class="toast"><span>3通をごみ箱に移動しました</span><button>元に戻す</button></div>
+    </div>
+  </div>
+</div>
+<p class="legend">The green notice in frame 3 is shown only to illustrate the multi-delete wording; in real use it appears after pressing the delete button, when the checks have already been cleared.</p>
+
+<!-- ============ banner gallery ============ -->
+<div class="doc">
+<h2>Banner gallery (one per state, priority order top to bottom)</h2>
+</div>
+<div class="frame" style="border-width:1px">
+  <div class="banner red"><span>パスワードが使えなくなりました。詳しい方にパスワードの入れ直しを頼んでください。</span><span class="sp"></span><button>入れ直す</button></div>
+  <div style="height:8px"></div>
+  <div class="banner offline">インターネットにつながっていません。保存済みのメールは読めます。</div>
+  <div style="height:8px"></div>
+  <div class="banner red"><span>メールを送れませんでした。送信トレイを確認してください。</span><span class="sp"></span><button aria-label="閉じる">×</button></div>
+  <div style="height:8px"></div>
+  <div class="banner loading">メールを読み込んでいます…</div>
+  <div style="height:8px"></div>
+  <div class="banner red">メールの受信がうまくいきませんでした。しばらくしてから「更新」を押してください。</div>
+  <div style="height:8px"></div>
+  <div class="row" style="border:0"><span class="cb"></span><div class="t"><div class="l1"><span class="snd">宛先: 山田 太郎 ほか 1 人</span><span class="dt">10月8日 9:00</span></div><div class="l2">お願い<span class="mark">送信できませんでした</span></div></div></div>
+</div>
+</body>
+</html>
