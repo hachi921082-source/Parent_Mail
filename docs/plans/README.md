@@ -124,6 +124,7 @@ DB schemas are defined in `sync-cache/PLAN-1.md` (cache.db) and `settings/PLAN.m
 - `ICredentialStore` (Save/Get/Delete by accountId).
 - `IImapGateway` (connect/login test, list folders with special-use, fetch headers/bodies/parts by UID, search UIDs, store flags, move, append, delete, folder status incl. UIDVALIDITY/HIGHESTMODSEQ) — one instance per account; MailKit implementation plus fakes for tests.
 - `ISmtpGateway` (Send(OutboxItem)).
+- `ISettingsStore` (get/set app settings, window state), `IIncomingRule` (block list, filter rules), `IBodyFetcher` / `IAttachmentService` (on-demand fetch), `IIdleMonitor` (backfill), `IDraftService`, `IOutboxService`.
 - `ISettingsDb` / `ICacheDb` factories and repositories (`IAccountRepository`, `IMailRepository`, `IOutboxRepository`, `IDraftRepository`, `IContactRepository`, `IBlockRepository`, `IFilterRepository`).
 - `ISyncService` (per account: SyncNowAsync, state, events `SyncCompleted`, `NewMailProcessed`).
 - `IAppState` (current account, current folder, selected message; change events).
