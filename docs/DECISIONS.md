@@ -16,6 +16,10 @@
 10. Local log file adopted (spec.md section 8; 2026-10-08)
 11. Extended executable list and zip handling (spec.md section 5; 2026-10-08)
 12. Delete Undo restores only the viewed folder (spec.md section 5; 2026-10-08)
+13. Multi-select delete with an always-visible row checkbox (spec.md section 5; 2026-10-08)
+14. Chrome text cap (spec.md section 4; 2026-10-08)
+15. Modal OK for failures, transient notices for successes (spec.md section 5; 2026-10-08)
+16. Idle backfill included; mark-read only in Inbox and Spam (spec.md sections 5, 8; 2026-10-08)
 
 ## Top-bar folder layout (spec.md section 4)
 
@@ -77,3 +81,29 @@
 
 - Decision: Undo moves the mail back to the folder it was viewed in; other Gmail labels are not restored.
 - Rationale (assistant summary): user confirmed. The app shows folders, not labels; restoring the full label set would need extra label bookkeeping with no visible benefit. Narrows the Q27 planning idea of "previous folder/label set". Moves are refused offline, so Undo never needs queuing.
+
+## Multi-select delete with an always-visible row checkbox (spec.md section 5; 2026-10-08)
+
+- Decision: every list row has a checkbox at all times; the Delete button deletes all checked mails; one undo notice restores them all.
+- Rationale: user decision. Reason below is the assistant's summary: parents who get bulk advertising mail would otherwise delete one mail at a time; an always-visible checkbox needs no "selection mode" to learn. Alternatives not chosen (assistant summary): Ctrl/Shift click multi-select (invisible to users unfamiliar with PCs) and a separate "selection mode" toggle (an extra step and state to explain).
+- Details (header Delete button, preview, select-all) were approved as proposed on 2026-10-08 (detailed-spec section 22).
+
+## Chrome text cap (spec.md section 4; 2026-10-08)
+
+- Decision: the text of the top bar and of the list-pane bottom button strip is capped; list, preview and mail text still follow the 48pt maximum. User suggested 28pt.
+- Rationale (assistant measurement, not a user statement): at the 1024-wide minimum window the six folder buttons need about 1,140 DIP at 28pt and 900 DIP at 20pt, against about 960 available, so 28pt would overflow. 20pt is proposed. Capping was preferred over wrapping folder labels because wrapping would take list height at the 700-high minimum. The user approved 20pt and the two-row top bar on 2026-10-08, noting that the parents' Full HD displays use display scaling (effective width about 1280 DIP).
+
+## Modal OK for failures, transient notices for successes (spec.md section 5; 2026-10-08)
+
+- Decision: failures/refusals the user must read use a modal dialog with one big 「OK」 button; successes use a transient notice. Delete undo notice lasts 10 seconds. At most 2 banners at a time; only the Outbox failure banner can be closed.
+- Rationale: user decision. Assistant summary of why 10 seconds: parents react slowly and a 5-second window is easy to miss. The priority order (wrong-password > offline > Outbox failure > initial sync > others) and the rule that modal dialogs are only for actions the user just performed (automatic problems use banners) are designer-lite proposals.
+
+## Idle backfill included; mark-read only in Inbox and Spam (spec.md sections 5, 8; 2026-10-08)
+
+- Decision: background backfill of older bodies while idle is included (was optional). Opening a mail marks it read immediately only in Inbox and Spam; Ctrl+0 / Ctrl+plus / Ctrl+minus zoom shortcuts are removed (Ctrl+mouse wheel stays).
+- Rationale: user decision, no further reason stated. Assistant note: because mail selected automatically after a delete counts as opened, the next mail can be marked read without the parent reading it; the user changed this on 2026-10-08: auto-selection is visual only and does not mark the mail read (A58, Q74).
+
+## Compose close dialog default = save draft (detailed-spec section 21; 2026-10-08)
+
+- Decision: in the compose close dialog (下書きに保存 / 保存しないで閉じる(...) / 戻る) the default button is 下書きに保存.
+- Rationale: user decision; reason is the assistant's summary: saving loses nothing and the parent most likely wants the text kept, whereas 戻る would force another step. Exception to the general rule that Enter hits the cancel-type button.
