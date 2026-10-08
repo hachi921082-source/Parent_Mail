@@ -1,6 +1,6 @@
 # sync-cache PLAN-1: cache schema, repositories, folder mapping
 
-Planning status: complete. Spec: detailed-spec 3, 4 (storage); A9; Q7, Q8, Q42 (view rule).
+Planning status: complete. Spec: detailed-spec 3, 4 (storage); A9, A52; PQ7, PQ8, Q42. Wording: `ui-strings.md` (IDs in brackets).
 
 ## Index
 
@@ -32,20 +32,20 @@ drafts(id INTEGER PK, payload_json TEXT, attachment_dir TEXT, gmail_uid INTEGER 
 cache_meta(key TEXT PK, value TEXT)             -- initial_sync_done, etc.
 pending_ops(id INTEGER PK, op TEXT, gm_msgid INTEGER, arg TEXT)   -- offline \Seen changes
 ```
-- `uid_validity` stored per folder in `folders`; `message_folders.uid` is valid only for the stored validity (Q7: on change the rows of that folder are deleted and re-resolved, messages/bodies/attachments kept).
+- `uid_validity` stored per folder in `folders`; `message_folders.uid` is valid only for the stored validity (PQ7: on change the rows of that folder are deleted and re-resolved, messages/bodies/attachments kept).
 - Attachment files: `attachments\<attachments.id>.bin`; `local_path` relative to the account dir. Original file name only in DB. Outbox/draft attachment copies: `outbox\<id>\<n>.bin`, `drafts\<id>\<n>.bin` (original names in payload_json).
-- Body text/HTML are stored in DB (Q8). Derived text computed once when the body is stored.
+- Body text/HTML are stored in DB (PQ8). Derived text computed once when the body is stored.
 - Dates stored as UTC unix seconds (INTERNALDATE for ordering/12-month rule; the Date header is used for display when valid, else INTERNALDATE).
 
 ## 3. Folder mapping
 
-- Resolve IMAP folder names from LIST special-use flags: `\Sent`, `\Drafts`, `\Trash`, `\Junk`, `\All`; INBOX literal. Store in `folders.imap_name`. If a special-use folder is missing (hidden in Gmail IMAP settings) log a warning (no content), show banner 「Gmailの設定でIMAPの表示を確認してください。詳しい方に相談してください。」, and skip that folder.
+- Resolve IMAP folder names from LIST special-use flags: `\Sent`, `\Drafts`, `\Trash`, `\Junk`, `\All`; INBOX literal. Store in `folders.imap_name`. If a special-use folder is missing (hidden in Gmail IMAP settings) log a warning (no content), show red banner [BN-03] 「Gmailの設定でIMAPの表示を確認してください。詳しい方に相談してください。」, and skip that folder.
 - Folder view rule (Q42): view(F) = messages with a membership in F and, for F in {Inbox, Sent, Drafts}, no membership in Trash or Spam. AllMail membership is stored but never shown as a view.
 - Outbox view = `outbox` table rows presented as list rows.
 
 ## 4. Repository functions
 
-- `IMailRepository`: `UpsertHeader(msg, folder, uid)`, `GetFolderView(folder, limit/offset)`, `GetMessage(gmMsgId)`, `SetBody(gmMsgId, text, html, derived)`, `SetRead(gmMsgId, bool)`, `GetUnreadInboxCount()`, `GetMemberships(gmMsgId)`, `RemoveMembership(gmMsgId, folder)`, `AddMembership`, `DeleteMessage(gmMsgId)` (and its attachment files), `ResetFolderUids(folder)` (Q7), `GetKnownUids(folder)`, `GetFolderState/SaveFolderState`.
+- `IMailRepository`: `UpsertHeader(msg, folder, uid)`, `GetFolderView(folder, limit/offset)`, `GetMessage(gmMsgId)`, `SetBody(gmMsgId, text, html, derived)`, `SetRead(gmMsgId, bool)`, `GetUnreadInboxCount()`, `GetMemberships(gmMsgId)`, `RemoveMembership(gmMsgId, folder)`, `AddMembership`, `DeleteMessage(gmMsgId)` (and its attachment files), `ResetFolderUids(folder)` (PQ7), `GetKnownUids(folder)`, `GetFolderState/SaveFolderState`.
 - `IAttachmentStore`: `SaveFile(attachmentId, Stream)`, `OpenRead(attachmentId)`, `Delete(...)`.
 - `IOutboxRepository`, `IDraftRepository`: CRUD with payload (de)serialization.
 - `CacheDb.Open(accountId)` with `Migrate()`.
