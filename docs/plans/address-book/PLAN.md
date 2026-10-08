@@ -15,8 +15,8 @@ Per-account address book: repository (settings.db tables `contacts`, `contact_em
 
 ## 2. Behavior
 
-- Opened by the list-pane アドレス帳 button: modal-less window titled with the account display name; list sorted by reading (hiragana-normalized ordinal compare: katakana converted to hiragana, width-normalized; entries with empty reading sort by name after those with reading). Columns: name, reading, first email, memo (truncated).
-- Buttons: 追加, 編集, 削除 (delete asks 「この人を削除しますか?」 with 「削除」/「やめる」, default やめる). Edit dialog fields: name (required), reading (hiragana; optional but recommended hint 「並べ替えに使います」), emails (one or more, add/remove rows, validated), memo.
+- Opened by the list-pane アドレス帳 button: modal-less window titled with the account display name; list sorted by reading (hiragana-normalized ordinal compare: katakana converted to hiragana, width-normalized; entries with empty reading sort by name after those with reading). Columns (labels): 名前, ふりがな, メールアドレス, メモ.
+- Buttons: 追加, 編集, 削除 (delete asks 「この人を削除しますか?」 with 「削除」/「やめる」, default やめる). Edit dialog fields: name (required), ふりがな (reading; hiragana; optional but recommended hint 「並べ替えに使います」), emails (one or more, add/remove rows, validated), memo.
 - Duplicate rule (P2): the same email address (case-insensitive) cannot belong to two contacts in one account; saving shows 「このアドレスはすでに登録されています」.
 - Account-scoped: switching account reloads the list; data is deleted with the account (settings.db FK cascade).
 - Lookup: `IsKnown(accountId, address)` (case-insensitive) for the preview notice; `Search(accountId, prefix)` for autocomplete; `AddFromSender(accountId, name, address)` for folder-actions (opens the dialog prefilled).
