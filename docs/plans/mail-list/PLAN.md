@@ -42,7 +42,7 @@ List pane: folder view binding, rows, checkboxes and multi-select state, selecti
 
 ## 4. Functions
 
-- `ListViewModel { Items, SelectedItem, CheckedIds, CheckedCount, LoadFolder(kind), Refresh(), LoadMore(), SelectNextAfterRemoval(removedIds), ClearChecks(), ToggleCheck(item), SelectAllVisible() }`, `MailListItem { GmMsgId?, OutboxId?, Sender, Subject, DateText, IsUnread, HasAttachment, FolderLabel?, IsChecked, ShowCheckbox }`.
+- `ListViewModel { Items, SelectedItem, CheckedIds, CheckedCount, LoadFolder(kind), Refresh(), LoadMore(), SelectNextAfterRemoval(removedIds), ClearChecks(), ToggleCheck(item), SelectAllVisible() }`, `MailListItem { GmMsgId?, OutboxId?, DraftId? (local draft not yet in the cache view; Drafts folder only), Sender, Subject, DateText, IsUnread, HasAttachment, FolderLabel?, IsChecked, ShowCheckbox }`.
 - `SelectionChangedArgs { Item, SelectionSource Source }`.
 - `DateFormatter.Format(DateTimeOffset utc, DateTimeOffset now)`.
 - `RecipientSummary.Format(recipients)` -> 「宛先: first」 or 「宛先: first ほか N 人」.
