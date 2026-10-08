@@ -27,7 +27,7 @@ Separate compose window, recipient fields with autocomplete, attachments (drag a
 
 ## 3. Attachment size check (PQ11, A42)
 
-`EncodedSizeEstimator.Estimate(files, bodyBytes, subjectBytes)` = sum over files of `ceil(n/3) * 4 * 78/76` + `bodyBytes` (UTF-8) + `HeaderOverheadBytes` (10,240). Allowed when `Estimate <= 25,000,000`. The check runs when adding a file (including the new file); body growth is not rechecked live. It is rechecked at Send time: if over, Send is refused with modal notice [CP-09] 「メールが大きすぎます。添付ファイルを減らしてください。」 plus the over-amount line [CP-08]. The amount is shown in raw-file terms (A69): `overRawMb = ceil(((Estimate - 25,000,000) / 1.37) / 100,000) / 10` (encoded overage divided by 1.37, rounded UP to 0.1 MB), text 「あと約X.XMB減らしてください」, e.g. 「あと約2.3MB減らしてください」.
+`EncodedSizeEstimator.Estimate(files, bodyBytes)` = sum over files of `ceil(n/3) * 4 * 78/76` + `bodyBytes` (UTF-8) + `HeaderOverheadBytes` (10,240). Allowed when `Estimate <= 25,000,000`. The check runs when adding a file (including the new file); body growth is not rechecked live. It is rechecked at Send time: if over, Send is refused with modal notice [CP-09] 「メールが大きすぎます。添付ファイルを減らしてください。」 plus the over-amount line [CP-08]. The amount is shown in raw-file terms (A69): `overRawMb = ceil(((Estimate - 25,000,000) / 1.37) / 100,000) / 10` (encoded overage divided by 1.37, rounded UP to 0.1 MB), text 「あと約X.XMB減らしてください」, e.g. 「あと約2.3MB減らしてください」.
 
 ## 4. Functions
 
