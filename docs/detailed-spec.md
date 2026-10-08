@@ -2,7 +2,7 @@
 
 <!-- Elaboration of spec.md to a level usable for implementation plans (docs/plans/<feature-name>/PLAN.md). Created/updated by designer-lite as features are planned. -->
 
-Sources: `docs/spec.md` (S#), `docs/QA.md` resolved items (Q#) and the 21 approved assumed defaults (D#, as listed in QA.md "Assumed defaults"). Statements not traceable to those are marked **Assumption (An)** and collected in section 19. Updated 2026-10-08 with the user decisions from PLAN creation (QA.md Q44-Q57); superseded assumptions stay numbered and are marked in section 19. No rationale here (see DECISIONS.md).
+Sources: `docs/spec.md` (S#), `docs/QA.md` resolved items (Q#) and the 21 approved assumed defaults (D#, as listed in QA.md "Assumed defaults"). Statements not traceable to those are marked **Assumption (An)** and collected in section 19. Updated 2026-10-08 with the user decisions from PLAN creation (QA.md Q44-Q57) and from the reviewer-lite self-review round (Q58-Q72); superseded assumptions stay numbered and are marked in section 19. All items formerly marked APPROVED were approved by the user on 2026-10-08 (QA.md Q73-Q78); nothing is pending. No rationale here (see DECISIONS.md).
 
 ## Index
 
@@ -25,18 +25,23 @@ Sources: `docs/spec.md` (S#), `docs/QA.md` resolved items (Q#) and the 21 approv
 17. Message tone
 18. Non-functional requirements
 19. Assumptions
+20. Notices, banners and dialogs
+21. Keyboard, focus and window rules
+22. Multi-select delete
 
 ## 1. Window and layout
 
 Source: S4, Q13, Q33, D8-D9.
 
-- Main window, minimum size 1024x700 (S8). Window size and splitter position are persisted in local settings (S8).
-- Top bar, full width, left to right: account switch button, Inbox, Outbox, Sent, Trash, Drafts, Spam buttons (S4). Then the HTML/plain-text checkbox (S4; it applies to the currently displayed mail only, see section 6, Q39) and a manual refresh button (S8). Position of checkbox and refresh button within the bar: Assumption A1 (right side of the bar).
+- Main window, minimum size 1024x700 (S8). Window size and splitter position are persisted in local settings (S8). First launch (nothing persisted yet): the window opens maximized with the list pane about 35 percent of the width; afterwards the last size, state and splitter position are restored (Q58).
+- Top bar, full width, left to right: account switch button, Inbox, Outbox, Sent, Trash, Drafts, Spam buttons (S4). Then the HTML/plain-text checkbox (S4; it applies to the currently displayed mail only, see section 6, Q39) and a manual refresh button (S8). Position of checkbox and refresh button within the bar: Assumption A1 (right side of the bar). APPROVED (A50): because one row cannot hold account button, 6 folder buttons, checkbox and refresh at 1024 wide, the bar has two rows: row 1 = account button (left), checkbox and refresh (right); row 2 = the six folder buttons. See `docs/plans/window-layouts.md` section 2.
 - Account switch button: labeled, shows the account name only, no hint or arrow (S3, Q57). Shows a small unread badge, showing the unread count as a number, when the other (non-displayed) account has unread mail (Q13; number display Assumption A44).
 - Unread count is shown only on the Inbox button, besides the account-button badge (S4).
-- Mail list pane: narrow, left, below the top bar. Row = sender, subject, date/time, attachment icon; unread rows in bold (S4). Dates/times (local time): today `HH:mm`; this year `M月d日 H:mm`; older `yyyy年M月d日 H:mm` (Q44, replaces A45). The list is sorted by date descending. Action buttons at the bottom of the pane, in order: 新しいメール (compose), search, settings, address book, 受信拒否リスト (block list), 振り分けルール (filter rules) (S4, Q57).
-- Preview pane: very wide, right, most of the window (S4). Above the preview, large buttons always visible: Reply, Reply all, Forward, Delete (Q33). Context menu remains available (Q33). Next to these buttons: preview zoom controls 拡大, 縮小 and 「100%に戻す」 (Q38, Q57; section 6; control form Assumption A34).
+- Mail list pane: narrow, left, below the top bar. Each row has 2 lines (Q61): line 1 = sender (display name, else address), date/time and attachment icon (paperclip); line 2 = subject, ellipsis when long; unread rows are bold only. A checkbox is always shown at the left of every row (Q71, section 22; hidden in Trash and Outbox: APPROVED A62). Sent/Drafts rows show 「宛先: <first recipient>」, with 「ほか N 人」 appended when there are more (APPROVED A67). Dates/times (local time): today `HH:mm`; this year `M月d日 H:mm`; older `yyyy年M月d日 H:mm` (Q44, replaces A45). The list is sorted by date descending; APPROVED A68: the sort key and the displayed time are both INTERNALDATE (the same value the 12-month body window uses). Action buttons at the bottom of the pane (APPROVED A50: a 2-column x 3-row grid, labels may wrap), in order: 新しいメール (compose), search, settings, address book, 受信拒否リスト (block list), 振り分けルール (filter rules) (S4, Q57).
+- Preview pane: very wide, right, most of the window (S4). Above the preview, large buttons always visible: Reply, Reply all, Forward, Delete (Q33). Context menu remains available (Q33). Next to these buttons: preview zoom controls 拡大, 縮小 and 「100%に戻す」 (Q38, Q57; section 6; control form Assumption A34). In Drafts there is an extra large button 「編集」; the other folder-specific actions (迷惑メールではない, 受信トレイに戻す, 今すぐ送る, 下書きに戻す) are right-click only (Q63). APPROVED (A51): 削除 is placed apart from the other buttons at the far right of the header, outlined in red, so it is not pressed instead of 返信/転送. Moving to Spam gets no undo notice.
 - Splitter between list and preview is draggable (S4).
+- Text-size cap for chrome (Q59; 20pt approved, A49): the text of the top bar and of the bottom button strip stops growing at a maximum `ChromeTextMaxPt` = 20pt (the setting still applies below it; button height still grows to at least 56 DIP). Mail list, preview, dialogs and mail text follow the setting up to 48pt. The user suggested 28pt; at the 1024-wide minimum window 28pt (and 24pt) cannot fit the six folder buttons (measurements in window-layouts.md section 1.3).
+- Empty states (Q62): no mail selected = the preview shows 「左の一覧からメールを選んでください」. An empty folder shows 「メールはありません」, EXCEPT during the first sync of the account, when the empty list shows nothing and only the loading banner 「メールを読み込んでいます…」 is displayed. After delete / Move to Spam / Not spam / Restore the next OLDER mail in the list is selected automatically; if there is none, the previous (newer) one; if the list is empty, the guide text. New mail arriving by sync keeps the list scroll position and the current selection (Assumption A52).
 - Compose, reply, forward open in a separate window (S4).
 - The folder buttons use Japanese labels; exact wording: Assumption A2 (Inbox=受信トレイ, Outbox=送信トレイ, Sent=送信済み, Trash=ごみ箱, Drafts=下書き, Spam=迷惑メール).
 - Header buttons act on the selected mail. When no mail is selected they are disabled: Assumption A3. In Trash, Drafts and Outbox, Delete/Reply/Reply all/Forward availability follows the context-menu tables in section 9 (items not listed there are disabled): Assumption A3. In Spam, the header buttons Not spam / Delete are the context-menu items and Reply/Forward are disabled; an Outbox row selection shows a read-only preview and Outbox items have no read/unread state (Q56).
@@ -50,7 +55,8 @@ Source: S1, S3, S8, Q31, D4.
 - Account-add screen: fields = email address, app password, display name (Assumption A6); states that a Gmail app password is required. No in-app setup guide (S3). Before saving, the app tests IMAP and SMTP login with the entered credentials; on failure nothing is saved. An address that is already registered is rejected (Q53).
 - App password stored in Windows Credential Manager (S8). Never in SQLite or plain files.
 - Add account, delete account and password re-entry are behind a warning dialog: text says to ask a knowledgeable person; default button = Cancel; no PIN (Q31). Exception: the account-add screen shown on first launch when no account exists yet is not preceded by this dialog (Assumption A31).
-- Deleting an account removes its credential, its cache and its per-account data (address book, block list, filter rules): Assumption A7.
+- Deleting an account removes its credential, its cache and its per-account data (address book, block list, filter rules): Assumption A7. If the account still has mail in its Outbox, the deletion is STOPPED (nothing is removed) with a modal notice asking the user to send the mail or return it to drafts first (Q68; wording ui-strings AC-20, approved; replaces the earlier idea of an extra line in the delete dialog).
+- First launch with no account: if the account-add screen is closed without adding an account (やめる, Esc or X), the confirmation 「このまま閉じるとアプリは終わります。よろしいですか?」 with 「終わる」 / 「戻る」 (default 戻る) is shown; 「終わる」 quits the app (Q66; wording kept after review, ui-strings AC-19).
 - Wrong or revoked app password (S3): show a plain-language notice asking a knowledgeable person to re-enter it; open the password re-entry screen; cached mail stays viewable. Re-entry screen is not preceded by the Q31 warning dialog because it is opened by the app: Assumption A8.
 - Account switch while a sync runs does not cancel that sync (Q56).
 - Account switch: clicking the account switch button changes the displayed account; list, folders, counts, search and per-account data all follow the displayed account (S3, Q28, Q35).
@@ -74,11 +80,11 @@ Source: S8, Q12, Q14, D4.
 - First sync: headers for all mail; bodies for the most recent 12 months (S8).
 - Older bodies and all attachments: downloaded on demand when opened, then cached (S8).
 - Periodic sync: only new/changed mail via IMAP UID/UIDVALIDITY (S8). If UIDVALIDITY changes for a folder, only that folder's UID mappings are dropped and re-resolved via X-GM-MSGID; bodies and attachments are kept; re-listed mail is NOT new mail (no block list/filter processing, no unread-badge inflation) (Q51; supersedes A10). IMAP uses polling only (no IDLE); CONDSTORE is used when Gmail advertises it, otherwise UID comparison. IMAP/SMTP timeout 30 s (Q53).
-- Initial sync: the banner 「メールを読み込んでいます…」 is shown; the list fills progressively; the UI is not blocked (Q52). The 12-month body window is judged by INTERNALDATE.
-- Optional (not required): background backfill of older bodies when idle (S8).
+- Initial sync: the banner 「メールを読み込んでいます…」 is shown; the list fills progressively; the UI is not blocked (Q52). While the list is still empty the 「メールはありません」 text is not shown (Q62). Periodic sync inserting new mail keeps the list scroll position and selection (A52). The 12-month body window is judged by INTERNALDATE.
+- Background backfill of older bodies when idle is INCLUDED (Q67). Parameters carried from the PLAN, listed as assumptions (A57): idle = no user input for 60 s, 20 bodies per cycle, newest first, only while online and while no sync runs, stops on any user action or sync start; inline (cid) parts up to 5 MB are fetched with an on-demand body.
 - Fetch timing: at app startup, then every 5 minutes, plus manual refresh button (S8). At most one sync runs per account at a time: a manual refresh pressed during a running sync is merged into it (the refresh button is shown as busy) and timer ticks during a running sync are skipped (Assumption A39). Both accounts are synced on the same startup/5-minute timer (spec.md section 8, Q36), which feeds the other-account badge.
 - Mirror rules: moves to Gmail Trash are reflected locally; mail permanently gone from Gmail is deleted from the local copy (S8).
-- Read state: unread shown bold (S5). Opening a mail marks it read and the state is synced to Gmail (\Seen): Assumption A11. Context menu offers Mark read/unread (D8). While offline, Mark read/unread is queued and applied after reconnect; moves (delete, Move to Spam, Not spam, Restore, Undo) are refused with the notice 「今はインターネットにつながっていないため操作できません。つながってからもう一度お試しください。」 (Q55).
+- Read state: unread shown bold (S5). Opening a mail marks it read immediately (on selection, not after the body is displayed) and the state is synced to Gmail (\Seen), ONLY in Inbox and Spam; opening mail in Sent, Drafts, Trash and Outbox changes no read state (Q69; replaces A11). A mail selected automatically after a delete (section 1) is NOT marked read; only a row the user selects explicitly (click or key on the row) is marked read (A58, Q74). Context menu offers Mark read/unread (D8). While offline, Mark read/unread is queued and applied after reconnect; moves (delete, Move to Spam, Not spam, Restore, Undo) are refused with the notice 「今はインターネットにつながっていないため操作できません。つながってからもう一度お試しください。」 (Q55).
 - Drafts: synced with Gmail Drafts (Q12). Auto-saved drafts (section 7) are written to Gmail Drafts when online; when offline they are kept locally and uploaded after reconnect: Assumption A12.
 - New-mail handling order for a new message: download header and body (bodies of new mail are always fetched, Q17), apply block list and filter rules (sections 11, 12), then update counts/badge.
 - "New mail" = mail first seen after the initial sync of that account completes. Block list and filter rules are NOT applied during the initial sync or when an account is first added (Assumption A43).
@@ -107,15 +113,16 @@ Source: S8, S5, S14 (section 14 below).
 - Remote images in HTML are not loaded by default; a "Show images" action loads them on demand. Embedded cid/inline images display normally (S8). "Show images" applies to the one open mail only: Assumption A16.
 - Mail preview includes images (S5).
 - Attachments: list shown with the mail; save and open supported (S5). Executable rules in section 14. Saving uses a standard Save dialog; opening uses the Windows default app: Assumption A17.
-- Preview header shows the not-in-address-book notice when applicable (section 14).
+- Preview header shows 差出人, 宛先, 件名, 日時, and APPROVED (A66) a CC line (「CC」) only when the mail has CC recipients; plus the not-in-address-book notice when applicable (section 14). With no mail selected the preview shows the guide text (section 1); with several rows checked it shows the multi-select guide (section 22).
 - Text size applies to the preview (section 15), as follows (Q42):
   - The app text-size setting (18pt default) applies to WPF controls (list, buttons, headers, dialogs) and to plain-text display.
   - In HTML display mode no app CSS font-size is injected into WebView2. Instead the WebView2 ZoomFactor is used, ZoomFactor = text-size setting (pt) / 12 x temporary preview zoom, clamped to 0.25-5.0 and rounded to 2 decimals (Q45, replaces the /18 wording; 1.5 at the default 18pt, so HTML text matches plain text). WebView2 built-in zoom shortcuts are disabled.
   - Plain-text display uses the real font size multiplied by the temporary preview zoom.
   - Font size is in true points: WPF FontSize = pt x 96/72 (Q50). The ZoomFactor formula is settled by Q45 (A41 superseded).
+  - APPROVED (A70): both modes are clamped consistently: the effective preview text size = min(text-size pt x zoom, 60pt) (60pt = ZoomFactor 5.0 x 12). Plain text is clamped to 60pt too, so HTML and plain text stay the same size at every setting (otherwise 48pt x 300% would be 144pt in plain text but 60pt in HTML).
 - Mail enlarged display (preview zoom) (Q38, S5):
   - Zoom is a temporary multiplier on top of the text-size setting and affects the preview pane only; it does not change the stored text-size setting; the compose window is not affected (Assumption A33).
-  - Controls: large "+", "-" and "reset" buttons beside the preview header buttons, plus Ctrl+mouse wheel over the preview (Assumption A34).
+  - Controls: large 拡大, 縮小 and 「100%に戻す」 buttons beside the preview header buttons, plus Ctrl+mouse wheel over the preview (Assumption A34). No other zoom shortcuts: Ctrl+0, Ctrl+plus and Ctrl+minus are NOT provided (Q69; removes the shortcuts the PLAN had added).
   - Range 100%-300%, step 25%, default 100% (Assumption A35).
   - Zoom resets to 100% whenever the displayed mail, folder or account changes (Q46; supersedes A36).
   - Zoom is never persisted; every launch starts at 100% (Q38; A37 confirmed by the user, Q46).
@@ -130,8 +137,8 @@ Source: S4, S5, Q19, Q20, Q21, D14-D16.
 - Separate window, opened by the compose button in the main window (S4).
 - Fields: To, CC, BCC, subject, body, attachments (S5). The body is plain text only (text/plain, UTF-8); no HTML composing. The From header carries the account's address only, never the display name (Q47). Window title: 「新しいメール - <account display name>」 (Q57). BCC is hidden until requested (D14).
 - Recipient autocomplete: candidates from the displayed account's address book and that account's previously used recipients (Q19, D17). "Previously used" = addresses in To/CC/BCC of mails in that account's Sent: Assumption A19.
-- Attachments: drag and drop onto the compose window, plus an "Attach" button (D16). Size limit: Gmail's 25 MB applies to the whole encoded message and base64 inflates by about 1.37x, so the check uses the estimated encoded message size (limit 25 MB, roughly 18 MB of raw files). When exceeded, warn in plain language 「ファイルが大きすぎます」 and refuse the attachment (D16, Q42). Threshold: estimated encoded size = sum over files of ceil(n/3) x 4 x 78/76, plus body bytes, plus 10,240 bytes header overhead, must be <= 25,000,000 bytes; the message shows how far over (Q50; settles A42). Each attachment can be removed (D16). Executable files (section 14 list, archives one level deep) are warned about and blocked from being attached (Q41).
-- Draft auto-save every 30 seconds while editing (D15, S5); drafts are stored in Gmail Drafts (Q12, section 4).
+- Attachments: drag and drop onto the compose window, plus an "Attach" button (D16). Size limit: Gmail's 25 MB applies to the whole encoded message and base64 inflates by about 1.37x, so the check uses the estimated encoded message size (limit 25 MB, roughly 18 MB of raw files). When exceeded, warn in plain language 「ファイルが大きすぎます」 and refuse the attachment (D16, Q42). Threshold: estimated encoded size = sum over files of ceil(n/3) x 4 x 78/76, plus body bytes, plus 10,240 bytes header overhead, must be <= 25,000,000 bytes; the message shows how far over (Q50; settles A42). APPROVED (A69): the over amount is shown in raw-file terms, i.e. the encoded overage divided by 1.37, rounded up to 0.1 MB (e.g. 「あと約2.3MB減らしてください」 means 2.3 MB of files), because the parent only sees file sizes, not encoded sizes. Each attachment can be removed (D16). Executable files (section 14 list, archives one level deep) are warned about and blocked from being attached (Q41).
+- Draft auto-save every 30 seconds while editing (D15, S5); drafts are stored in Gmail Drafts (Q12, section 4). APPROVED (A71): if all fields and attachments are cleared after an auto-save has happened, the next auto-save tick (or close) deletes that auto-saved draft instead of keeping an empty draft (consistent with A20). APPROVED (A74): if uploading an auto-saved draft fails, the app retries silently each cycle and shows a small status line in the compose window; a modal OK dialog appears only when the user explicitly chose 下書きに保存 and it failed.
 - Closing the window with unsent text: always show a dialog with three large buttons: save draft / discard / cancel (Q20). Auto-save stays active.
   - Save draft: saves the current text to Gmail Drafts and closes.
   - Discard: discards only the edits made after the last auto-save. A draft already auto-saved to Gmail Drafts is KEPT in Drafts (Q37). If no auto-save has happened yet (first 30 s), Discard leaves nothing behind.
@@ -147,7 +154,10 @@ Source: S4, S5, Q19, Q20, Q21, D14-D16.
 Source: S5, D14.
 
 - Open in a separate window, same as compose (S5).
-- Reply quotes the original (D14). Forward quoting/attachments carry-over: Assumption A22 (forward includes the original text quoted and the original attachments).
+- Reply quotes the original (D14). APPROVED (Q70), as in the reply-forward PLAN:
+  - Reply: To = Reply-To header if present, else From. Subject = `Re: ` + original subject unless it already starts with Re:/RE:/返信:. Quote: first line `yyyy年M月d日 H:mm、<sender name> さんは書きました:`, then each original line prefixed `> `; blank line above the quote and the cursor above it. Source text = body text, else the text derived from HTML.
+  - Reply all: To = Reply-To/From; CC = original To + CC minus the account's own address and duplicates (case-insensitive).
+  - Forward: subject `Fwd: ` (not repeated if Fwd:/Fw:/転送: present); body = blank lines, `---------- 転送メッセージ ----------`, 差出人/日時/件名/宛先 lines, blank line, then the original text unquoted; To empty; the original attachments are carried over (below).
 - Subject prefix and quote format: Assumption A22 ("Re: " / "Fwd: " prefixes).
 - Reply and reply all pre-fill To/CC from the original: Assumption A22.
 - Forward fetches the original's attachments (downloading them if needed) and applies the same executable and size checks as compose; violating attachments are dropped and a notice says so. If an attachment is not downloaded and the app is offline, a notice is shown and the forward continues without it (Q54).
@@ -166,10 +176,11 @@ Source: S5, D8-D9, Q22.
 | Outbox | Send now, Return to drafts |
 
 - Delete = IMAP move to Gmail Trash (S8). Applies to both the Delete menu item and the Delete header button.
-- Delete shows no confirmation dialog. Instead a non-modal notice 「ごみ箱に移動しました [元に戻す]」 is shown for a few seconds; "元に戻す" (Undo) moves the mail back to the folder in which it was viewed when deleted; other Gmail labels are not restored (Q40, Q55). Undo is refused while offline. Notice duration 5 seconds: Assumption A38.
+- Delete shows no confirmation dialog. Instead a non-modal notice 「ごみ箱に移動しました [元に戻す]」 is shown for 10 seconds; "元に戻す" (Undo) moves the mail back to the folder in which it was viewed when deleted; other Gmail labels are not restored (Q40, Q55). Undo is refused while offline. The notice stays for 10 seconds (Q64; replaces A38, 5 s). Moving a mail to Spam gets NO undo notice (Q63). Only the latest delete can be undone (a new delete replaces the notice). The Delete key deletes only while the mail list has keyboard focus (section 21). Deleting several checked mails: section 22.
 - Moves in this table are refused while offline (section 4, Q55). The block menu item reads 「受信拒否に追加」 (Q57).
 - "Add sender to address book" adds to the displayed account's address book (D19). "Block sender" adds to the displayed account's block list (Q35); its entry-unit choice follows section 11.
-- Preview-header buttons (section 1) are enabled only where the same action exists in this table: Assumption A3.
+- Preview-header buttons (section 1) are enabled only where the same action exists in this table: Assumption A3. Exception (Q63): in Drafts the header also has the large 「編集」 button (= the Edit menu item).
+- Right-click menu Delete on a row: if that row is checked it deletes all checked rows, otherwise only the clicked row (APPROVED A76).
 
 ## 10. Address book
 
@@ -210,7 +221,7 @@ Source: S5, Q11, Q29, Q30, D20.
 
 - An inline search box is always visible at the top of the list pane; results replace the list; a "Clear" button restores it (D20). Pressing the search button at the bottom of the list pane (S4) moves the input focus to this box (Assumption A47).
 - Scope: all folders of the displayed account, including mail present only in All Mail (Q29, Q11). Results show the folder name (Q29).
-- Matching: local cache only; fields = sender, subject, downloaded bodies. Unfetched older bodies are excluded and the UI says so (Q30). Match = SQLite `LIKE` substring scan normalizing case and full/half width only; no hiragana/katakana folding (Q47; supersedes A28).
+- Matching: local cache only; fields = sender, subject, downloaded bodies. Unfetched older bodies are excluded and the UI says so (Q30). Match = SQLite `LIKE` substring scan normalizing case and full/half width only; no hiragana/katakana folding (Q47; supersedes A28). Several words separated by spaces are ANDed (each word must match some field); results are capped at 500 rows with the note 「結果が多いため一部のみ表示しています」 (Q70, approved as in the search PLAN). Search results also have row checkboxes and support multi-select delete (section 22).
 - Works offline (Q30).
 
 ## 14. Safety warnings
@@ -240,7 +251,7 @@ Sender not in the address book (Q26, D18): a notice in the preview header only (
 
 Source: S5, S8, Q31, Q32, D21.
 
-- Opened by the settings button (S4). Contents: text size, accounts (rename, add, delete, password re-entry) (A5; Q31 for protection). Anything else is not part of the first release (including signature, print, star, themes, S6).
+- Opened by the settings button (S4). Contents: text size, accounts (rename, add, delete, password re-entry) (A5; Q31 protects add, delete and password re-entry, NOT rename: Q79). Anything else is not part of the first release (including signature, print, star, themes, S6).
 - Text size: default 18pt equivalent, in true points: WPF FontSize = pt x 96/72 (S8, Q50). Changed by free numeric input or slider (Q32). Range 12-48pt, live sample preview in the settings screen, applies to list, preview, compose window and dialogs (D21).
 - Account add, delete and password re-entry are behind the warning dialog (section 2, Q31).
 - Preview zoom (section 6) is not a setting and is not stored; the text-size setting is unaffected by it (Q38, A33).
@@ -268,7 +279,7 @@ Source: D1, S3.
 
 - UI language: Japanese only (D1).
 - Notices and errors: polite plain Japanese, no technical terms, one sentence on what to do next. Problems that the parent cannot fix say to ask a knowledgeable person (D1).
-- Banners required by the spec: offline banner and wrong-password notice (S3, S8, D7).
+- Banners required by the spec: offline banner and wrong-password notice (S3, S8, D7). Which message is a banner, a transient notice or a modal OK dialog: section 20.
 - Close-dialog buttons: 「下書きに保存」, 「保存しないで閉じる(前に自動保存された下書きは残ります)」, 「戻る」.
 
 ## 18. Non-functional requirements
@@ -290,15 +301,15 @@ Added by designer-lite because the source documents do not state them; each need
 
 - A1 Checkbox and refresh button sit on the right side of the top bar.
 - A2 Japanese labels: 受信トレイ, 送信トレイ, 送信済み, ごみ箱, 下書き, 迷惑メール; not-in-address-book notice wording in Japanese.
-- A3 Preview-header buttons are disabled with no selection and when the action is absent from the section 9 table for that folder.
+- A3 Preview-header buttons are disabled with no selection and when the action is absent from the section 9 table for that folder. EXTENDED by Q63: Drafts also has the large 「編集」 button.
 - A4 "Add account" is disabled or hidden once 2 accounts exist.
 - A5 Account rename lives in the settings screen.
 - A6 Account-add fields: email address, app password, display name.
-- A7 Deleting an account removes its credential, cache, address book, block list and filter rules.
+- A7 Deleting an account removes its credential, cache, address book, block list and filter rules. EXTENDED by Q68: blocked while the account has Outbox mail.
 - A8 Password re-entry screen opened by the app is not preceded by the Q31 warning dialog.
 - A9 Per-account cache DB plus a separate settings DB.
 - A10 SUPERSEDED by Q51: UIDVALIDITY change drops only UID mappings; bodies/attachments kept; not new mail.
-- A11 Opening a mail marks it read and syncs \Seen to Gmail.
+- A11 SUPERSEDED by Q69: opening a mail marks it read immediately and syncs \Seen, only in Inbox and Spam.
 - A12 Offline auto-saved drafts are kept locally and uploaded to Gmail Drafts after reconnect.
 - A13 Failure notice = banner plus marker on the Outbox row.
 - A14 Retry counter persists across restarts.
@@ -321,11 +332,11 @@ Added by designer-lite because the source documents do not state them; each need
 - A31 First launch without any account opens the account-add screen, which is not preceded by the Q31 warning dialog.
 - A32 Quitting with open compose windows goes through the section 7 close dialog.
 - A33 Preview zoom is a temporary multiplier on the text-size setting, applies to the preview pane only, does not change the stored text-size setting, and does not affect the compose window.
-- A34 Zoom controls: large "+", "-", "reset" buttons beside the preview header buttons, plus Ctrl+mouse wheel.
+- A34 Zoom controls: large 拡大, 縮小, 「100%に戻す」 buttons beside the preview header buttons, plus Ctrl+mouse wheel. NARROWED by Q69: no Ctrl+0 / Ctrl+plus / Ctrl+minus.
 - A35 Zoom range 100%-300%, step 25%, default 100%.
 - A36 SUPERSEDED by Q46: zoom resets to 100% on mail/folder/account change.
 - A37 CONFIRMED by the user (Q46): zoom is never persisted; every launch starts at 100%.
-- A38 The Delete undo notice stays for 5 seconds.
+- A38 SUPERSEDED by Q64: the Delete undo notice stays for 10 seconds.
 - A39 Sync mutual exclusion: at most one sync per account at a time; a manual refresh during a running sync is merged into it (button shown busy); timer ticks during a running sync are skipped.
 - A40 A send failure is also shown on the Outbox top-bar button (marker or count of failed messages), extending A13.
 - A41 SUPERSEDED by Q45: ZoomFactor = pt / 12 x zoom, clamp 0.25-5.0, 2 decimals.
@@ -337,3 +348,110 @@ Added by designer-lite because the source documents do not state them; each need
 - A47 The search button moves input focus to the always-visible inline search box.
 - A48 SETTLED by Q52: SessionEnding is intercepted with the 3-button dialog.
 - A2 (extension): wording for compose, block list, filter rules, zoom reset, Trash restore, address-book notice and ふりがな is fixed in ui-strings.md section 17 (Q57).
+- A49 CONFIRMED (Q59): chrome text cap `ChromeTextMaxPt` = 20pt for the top bar and the bottom button strip (the user suggested 28pt; it does not fit at 1024 wide, see window-layouts.md 1.3).
+- A50 CONFIRMED: top bar in two rows (row 1 account button + checkbox + refresh; row 2 six folder buttons); bottom strip a 2 x 3 grid with wrapping labels.
+- A51 CONFIRMED (Q63): 削除 header button placed apart at the far right, red-outlined.
+- A52 CONFIRMED (listed at the user's request, Q62): new mail arriving by sync keeps the list scroll position and the current selection.
+- A53 CONFIRMED (Q64): banner region above the top bar; priority wrong-password > offline > Outbox failure > initial sync > others; maximum 2 shown (lower ones wait); 「×」 only on the Outbox failure banner (it stays hidden afterwards; the marker and button count stay).
+- A54 CONFIRMED: transient success notices stay 4 seconds (delete undo: 10 seconds).
+- A55 CONFIRMED: the message-to-class table in section 20 (modal OK / banner / transient / in-place).
+- A56 CONFIRMED (Q65): window layouts and common window rules in `docs/plans/window-layouts.md` (modal dialogs, Enter/Esc, button order, sizes, tab and field order, initial focus).
+- A57 CONFIRMED (Q67): idle backfill parameters carried from the PLAN: idle 60 s, 20 bodies per cycle, newest first, inline parts <= 5 MB.
+- A58 CHANGED and CONFIRMED (Q74): a mail selected AUTOMATICALLY after a delete / move is NOT marked read; auto-selection is visual only. Read marking happens only when the user explicitly selects a row (click) or presses a key on it.
+- A59 CONFIRMED (Q71): in the mail list, clicking a row selects it for the preview and clicking its checkbox toggles the check; the two are independent. Header Delete: if at least one row is checked it deletes the checked rows (label 「選んだN通を削除」), otherwise the selected row.
+- A60 CONFIRMED (Q71): while at least one row is checked the preview shows the multi-select guide and only the delete button is enabled.
+- A61 CONFIRMED (Q71): 「すべて選ぶ」 header checkbox and 「選択をやめる」 clear button; at most 200 mails per delete action.
+- A62 CONFIRMED (Q71): multi-select in Inbox, Sent, Spam, Drafts and search results; checkbox column and 「すべて選ぶ」 hidden in Trash and Outbox.
+- A63 CONFIRMED (Q71): in search results, checked mails already in Trash are skipped; Undo restores each mail to the folder shown on its result row, an All-Mail-only mail returns to All Mail only.
+- A64 CONFIRMED (Q71): if some moves of a multi-delete fail, the moved ones stay moved, the others are restored locally, a modal OK dialog reports it, and Undo covers the moved ones.
+- A65 CONFIRMED (Q71): Space toggles the check of the focused row; checks are cleared on folder, account or search change and kept across a sync reload (mails that disappeared are dropped).
+- A66 CONFIRMED (Q72): the preview header shows a CC line only when the mail has CC recipients.
+- A67 CONFIRMED (Q72): Sent/Drafts rows show 「宛先: <first recipient> ほか N 人」 when there are more recipients.
+- A68 CONFIRMED (Q72): list sort key and displayed time are both INTERNALDATE.
+- A69 CONFIRMED (Q72): attachment over-limit amount shown in raw-file terms (encoded overage / 1.37).
+- A70 CONFIRMED (Q72): preview text size clamped consistently in plain text and HTML: effective size = min(pt x zoom, 60pt).
+- A71 CONFIRMED (Q72): clearing everything in a compose window after an auto-save deletes that auto-saved draft (reviewer item 41).
+- A72 CONFIRMED (Q68): wording of the account-delete-blocked message (ui-strings AC-20).
+- A73 CONFIRMED (Q66): wording of the first-launch close confirmation (ui-strings AC-19; alternative given).
+- A74 CONFIRMED: draft upload failure during auto-save is silent (retry each cycle plus a status line in the compose window); modal only when the user explicitly saved the draft.
+- A75 CHANGED and CONFIRMED (Q75): the compose close dialog default button is 「下書きに保存」 (not 「戻る」); the three labels stay as in Q20.
+- A76 CONFIRMED (Q71): right-click Delete on a checked row deletes all checked rows; on an unchecked row only that row.
+
+## 20. Notices, banners and dialogs
+
+Source: Q60, Q64. Palette, mockup and the class of each message were approved on 2026-10-08.
+
+### 20.1 Four kinds of message
+
+| Kind | Used for | Form |
+|---|---|---|
+| Banner | A state that lasts while a condition holds | Full-width bar above the top bar, bold text, at least 56 DIP high |
+| Modal notice | A failure or refusal the user must read (Q64, decided) | Modal dialog with ONE big 「OK」 button (Enter and Esc close it) |
+| Transient notice | A success (Q64, decided) | Bar at the bottom of the preview pane, 4 seconds (A54); delete undo 10 seconds with 「元に戻す」 |
+| In-place text | Hints and field errors | Text inside the pane or dialog (header notice, red error line under a field, search note) |
+
+Rule: modal notices are only for actions the user just performed. Problems found automatically (a body that cannot be fetched while moving down the list, sync errors) use a banner or in-place text so that several dialogs never pile up.
+
+### 20.2 Banners (Q64 order APPROVED)
+
+- Maximum 2 banners at a time. Priority, highest first: 1 wrong password (with 「入れ直す」), 2 offline, 3 Outbox failure, 4 initial sync (「メールを読み込んでいます…」), 5 others (missing Gmail folder, generic sync error). When more than 2 conditions hold, the two highest are shown; a lower one appears when a higher one ends.
+- Close button 「×」 only on the Outbox failure banner. After closing it does not come back for the same failure (the failure marker on the Outbox row and the count on the Outbox button stay, A13, A40). The other banners end when their condition ends.
+- The red suspicious-link banner is inside the preview pane at the top of the mail and is not part of this stack.
+
+### 20.3 Message classes (APPROVED)
+
+| Message (ui-strings ID) | Kind |
+|---|---|
+| Wrong/revoked password (AC-16) | Banner, red |
+| Offline (BN-01) | Banner, yellow |
+| Outbox failure after 3 tries (OB-01) | Banner, red, with 「×」 |
+| Initial sync (BN-02) | Banner, light blue |
+| Missing Gmail folder (BN-03), generic sync error (BN-19) | Banner, red |
+| Suspicious link (SW-01) | In-preview red banner |
+| Move refused offline (BN-05), move failed (BN-06), multi-delete partial failure (BN-21), account delete blocked (AC-20), unhandled error (BN-04), attachment blocked/too large (SW-06, CP-07, CP-09), forward dropped files (RF-05, RF-06), attachment not downloaded (BN-09), attachment download/save/open failure (BN-14 to BN-16), Send-now failed (OB-05), draft save failed after explicit save (BN-17), link refused (SW-05), WebView2 missing (PV-06) | Modal notice with 「OK」 |
+| Delete done (BN-07, BN-11), block added (FA-11) | Transient notice |
+| Body not downloaded (BN-08), body loading (BN-10), body fetch failure (BN-13), draft upload pending (BN-18), not in address book (PV-02), images hidden (PV-05), search note (SR-05), field errors | In-place text |
+
+### 20.4 Colours (APPROVED; contrast ratio per WCAG 2.x, target at least 7:1 for text)
+
+| Use | Background | Text | Ratio |
+|---|---|---|---|
+| Page, list, preview | #FFFFFF | #000000 | 21.0 |
+| Offline banner | #FFD54F yellow | #000000 bold | 14.9 |
+| Error and suspicious-link banner | #A80000 red | #FFFFFF bold | 7.9 |
+| Loading / initial sync banner | #CFE8FF light blue | #000000 bold | 16.6 |
+| Unread badge, Outbox failure pill | #A80000 | #FFFFFF bold | 7.9 |
+| Success / undo notice | #1B5E20 dark green | #FFFFFF bold | 7.9 |
+| Primary button, active folder | #0B4FA8 | #FFFFFF | 7.8 |
+| Normal button | #E8E8E8, border #767676 | #000000 | 17.1 |
+| Selected row | #D6E4F7 + 6 px bar #0B4FA8 | #000000 | 16.3 |
+| List date text | #FFFFFF | #333333 | 12.6 |
+| Hint text | #FFFFFF | #595959 | 7.0 |
+
+The Outbox failure marker in a row is a red pill with white text (not red text), because red text on the selected-row colour is only 6.1. The Inbox count badge on the (blue) active folder button is a white pill with red text and a red border. Colour is never the only signal (text, number or bold always accompanies it). Mockup: `docs/plans/mockups/main-window.html`.
+
+## 21. Keyboard, focus and window rules (APPROVED, A56)
+
+Full detail, sizes and per-window sketches: `docs/plans/window-layouts.md`. Summary:
+- Dialogs and windows opened from the main window are modal; compose windows are independent. Centered on the owner.
+- Enter = the safe default button (confirm dialogs: the cancel-type one; add/edit forms: 保存). Exception (Q75): the compose close dialog (下書きに保存 / 保存しないで閉じる(...) / 戻る) has 「下書きに保存」 as the default, because saving loses nothing. Esc = cancel. Buttons right-aligned, the safe choice last.
+- Delete key deletes only while the mail list has keyboard focus. F5 = refresh. No keyboard shortcut for Send. Ctrl+mouse wheel zooms the preview; there are no other zoom shortcuts (Q69).
+- Initial focus: main window = mail list; compose = 宛先; dialogs = default button (forms: first field).
+- Sizes: button height at least 56 DIP, any clickable target at least 48 DIP, gaps 16 DIP, dialog margin 24 DIP, thick visible focus rectangle.
+- Tab order follows the field order listed per window in window-layouts.md.
+
+## 22. Multi-select delete (Q71 approved as a feature; details approved 2026-10-08)
+
+Decided by the user (Q71): a checkbox is always shown at the left of every row of the mail list; the checked mails are deleted together with the Delete button (moved to Gmail Trash); the notice reads 「N通をごみ箱に移動しました [元に戻す]」 for 10 seconds and Undo restores all of them. The remaining details were approved on 2026-10-08 (Q77).
+
+- Selecting vs checking (A59): clicking a row selects it (preview, single mail); clicking the row's checkbox only toggles the check. A mail can be both. Checks do not mark mail read.
+- Header Delete button: with no row checked it deletes the selected mail (single delete, notice 「ごみ箱に移動しました [元に戻す]」). With one or more rows checked it deletes exactly the checked rows and its label becomes 「選んだN通を削除」; the selected row is ignored unless it is also checked. Right-click Delete: see A76. Delete key (list focused): same rule as the button.
+- Preview (A60): while one or more rows are checked the preview shows 「N通のメールを選んでいます。「削除」を押すと、まとめてごみ箱に移します。」; 返信, 全員に返信, 転送, 編集 and the zoom buttons are disabled. When all checks are cleared the selected mail is shown again.
+- Clearing and select-all (A61): header row of the list has a 「すべて選ぶ」 checkbox (selects the rows currently in the list, up to 200) and, while something is checked, the text 「N通を選んでいます」 with a 「選択をやめる」 button. Unchecking 「すべて選ぶ」 also clears. More than 200 checked rows: the delete is refused with 「一度に選べるのは200通までです」 (modal OK).
+- Folders (A62): Inbox, Sent, Spam, Drafts and search results have the checkboxes. In Trash and Outbox the checkbox column and 「すべて選ぶ」 are hidden because the app has no permanent delete (Trash) and Outbox items are not Gmail mail.
+- Search results (A63): same checkboxes and Delete. Checked mails already in Trash are skipped. Undo returns each mail to the folder shown on its result row; a mail that was only in All Mail returns to All Mail only.
+- Offline: refused with the standard offline refusal modal (BN-05); nothing changes. Undo is also refused offline.
+- Partial failure (A64): moved mails stay moved; the ones that failed are restored in the list; modal 「N通のうちM通を移せませんでした。もう一度お試しください。」; Undo (if still shown) covers the moved ones.
+- After the delete: the checks are cleared; the next older mail after the oldest deleted position is selected (fallback: the previous one; none: guide text) as in section 1. The auto-selected mail is not marked read (A58, Q74).
+- Undo: one notice, the latest delete only; a new delete replaces it. Per mail the folder it was viewed in is restored; other Gmail labels are not (Q55).
+- Keyboard (A65): Space toggles the focused row's check; checks are cleared on folder, account or search change and kept when a sync reloads the list.
