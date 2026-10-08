@@ -22,7 +22,7 @@ Context menus and the four header buttons per folder, Delete with Undo notice, S
 | Sent | 転送, 削除 | Forward, Delete |
 | Drafts | 編集, 削除 | Delete |
 | Spam | 迷惑メールではない(受信トレイへ), 削除 | Delete |
-| Trash | 元に戻す(受信トレイへ) | none |
+| Trash | 受信トレイに戻す | none |
 | Outbox | 今すぐ送る, 下書きに戻す | none |
 
 No selection: all header buttons disabled (A3).
@@ -36,7 +36,7 @@ No selection: all header buttons disabled (A3).
 - Add sender to address book: opens the address-book add dialog prefilled (name = sender name, email = sender address) for the displayed account; if the address already exists, show 「すでに登録されています」.
 - Block sender: dialog asking 「このアドレスだけ」/「このドメイン全体」 (default address), adds to the block list, shows 「受信拒否に追加しました」. Existing mail is not moved (A25).
 - Drafts Edit: open compose with the draft (compose PLAN-2). Outbox: calls outbox-send.
-- Offline: move-type actions refused with 「今はインターネットにつながっていないため操作できません」; Mark read/unread allowed (queued).
+- Offline: move-type actions refused with 「今はインターネットにつながっていないため操作できません。つながってからもう一度お試しください。」; Mark read/unread allowed (queued).
 - Top-bar folder buttons: click selects folder, loads list (mail-list), clears selection, resets zoom, clears search; the active folder button is highlighted.
 - Failed IMAP move: revert local change and show 「操作できませんでした。もう一度お試しください。」.
 
