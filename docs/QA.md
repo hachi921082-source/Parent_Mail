@@ -69,27 +69,42 @@
 - Q36 Sync: [Gmail]/All Mail is synced too under the same rules; one message stored once (X-GM-MSGID); both accounts sync on the same timer. Reflected in spec.md section 8.
 - Q37 Compose close dialog "Discard": an auto-saved draft in Gmail Drafts is KEPT (user chose this over deleting it); Discard only drops edits made after the last auto-save; if no auto-save has happened yet, nothing remains. The middle-button label must not promise deletion; exact Japanese wording is undecided (options in detailed-spec.md section 17).
 
+- Q38 New feature "mail enlarged display" (preview zoom), adopted by the user. Rule: zoom returns to the default when the application exits. Interpretation by designer-lite (to be confirmed): the zoom level is not persisted and each launch starts at the default (100% = the text-size setting value). Reflected in spec.md sections 4 and 5; details and assumptions A33-A37 in detailed-spec.md (controls, range 100%-300% in 25% steps, preview-only, session-wide while switching mails).
+
+- Q39 HTML/plain-text checkbox applies to the currently displayed mail only; opening another mail resets it to plain text (HTML-only mails keep the derived-text fallback). Reflected in spec.md sections 4 and 8.
+- Q40 Delete (button or menu): no confirmation dialog; non-modal notice "ごみ箱に移動しました [元に戻す]" for a few seconds (5 s, assumption A38); Undo returns the mail to its previous folder. Reflected in spec.md section 5.
+- Q41 Attaching an executable file (same list as receive side, archives one level deep) is warned about and blocked. Reflected in spec.md section 5.
+- Q13 re-confirmed: other-account indicator stays a small unread badge (no change).
+- Also recorded: Outbox is a local-only concept and delete is an IMAP move to Gmail Trash (spec.md section 8); at most one sync per account at a time (A39); send failure also visible on the Outbox top-bar button (A40). Both are assumptions in detailed-spec.md.
+
+- Q42 Review follow-ups (second external review). (1) Text size vs zoom: no app CSS font-size injected into WebView2; HTML mode uses ZoomFactor = text-size setting / 18pt x temporary zoom; plain text uses real font size x temporary zoom (formula = assumption A41). (2) Attachment limit: check uses estimated encoded message size (25 MB, about 18 MB raw), plain-language 「ファイルが大きすぎます」, attachment refused (threshold computation = assumption A42). (3) Folder view rule: a view shows messages whose membership includes that folder; messages also in Trash/Spam appear only there; All-Mail-only messages appear in no view but are searchable; message table separate from folder-membership mapping. Reflected in spec.md section 8 (note 1) and detailed-spec.md sections 3, 6, 7.
+
+- Q43 Self-review follow-ups. User decision: quitting with unsent Outbox mail shows the warning 「送信待ちのメールがあります。このまま閉じると送信されません」 with 「送信してから閉じる」/「このまま閉じる」/「戻る」(default); failed send-then-close keeps the app open with the failure notice. Reflected in spec.md section 8 and detailed-spec.md sections 5, 16. Assumptions added (user can veto): A43 no block/filter on initial sync; A44 other-account badge shows unread count; A45 Japanese date format; A46 successful send deletes the Gmail Drafts draft; A47 search button focuses the always-visible inline box; A48 shutdown interception where feasible; A31 tightened (first-launch account-add has no Q31 warning).
+
 ## Open
 
-Purpose: decisions needed before docs/detailed-spec.md can be written. Themes are ordered by dependency (A first). "Rec." = recommended option.
+None. All questions are answered. The 21 assumed defaults below (D1-D21) were approved by the user as-is and are incorporated in detailed-spec.md (referenced there as D#). Other assumptions (A1-A48) are listed in detailed-spec.md section 19 and remain open to user veto.
 
-All themes answered. Remaining step: user vetoes assumed defaults below, then detailed-spec.md is written.
+### Approved assumed defaults (D1-D21)
 
-### Assumed defaults (veto if wrong)
-
-- UI language: Japanese only. Error/notice tone: polite plain Japanese, no technical terms, one sentence on what to do next; settings problems say "ask a knowledgeable person".
-- Outbox is local-only (Gmail has none). Sent mail is not APPENDed manually; Gmail saves it to Sent after SMTP.
-- Folder mapping: INBOX, [Gmail]/Sent Mail, [Gmail]/Drafts, [Gmail]/Trash, [Gmail]/Spam via special-use flags.
-- Separate cache (SQLite file/tables) and sync per account; startup opens last-used account's Inbox.
-- Context menus: Inbox: Reply, Reply all, Forward, Mark read/unread, Move to Spam, Delete, Add sender to address book, Block sender. Sent: Forward, Delete. Drafts: Edit, Delete. Spam: Not spam (to Inbox), Delete. Trash: Restore (to Inbox) only (no permanent delete). Outbox: Send now, Return to drafts.
-- Filter rules: apply to new incoming mail only, top-to-bottom, first match stops; edited in a simple list dialog with enable/disable.
-- Search: inline box at top of the list pane, results replace the list, "Clear" button returns.
-- Attachments: drag-and-drop onto compose window plus an "Attach" button; total limit 25 MB (Gmail), warn when exceeded and refuse; each attachment removable.
-- Compose: empty-subject warning; reply quotes original; To/CC/BCC fields, BCC hidden until requested.
-- Draft auto-save every 30 s while editing.
-- Auto-start with Windows: off, no setting.
-- Wrong-password and offline banners per spec sections 3 and 8.
-- Filter body conditions: rules run after the new mail's body is fetched; HTML-only mails matched on derived plain text; undownloaded old bodies never match; rules never trigger old-body fetches.
-- Send: empty-subject warning stays; no other confirmation; compose window closes after Send.
-- Per-account scope (Q28/Q35): autocomplete, "not in address book" notice and "Add sender to address book" use the displayed account's address book; block list and filter rules per account.
-- Text size: range 12-48pt, live sample in settings, applies everywhere.
+1. UI language: Japanese only. Error/notice tone: polite plain Japanese, no technical terms, one sentence on what to do next; settings problems say "ask a knowledgeable person".
+2. Folder mapping: INBOX, [Gmail]/Sent Mail, [Gmail]/Drafts, [Gmail]/Trash, [Gmail]/Spam via special-use flags.
+3. Outbox is local-only (Gmail has none). Sent mail is not APPENDed manually; Gmail saves it to Sent after SMTP.
+4. Separate cache (SQLite) and sync per account.
+5. Startup opens the last-used account's Inbox.
+6. Auto-start with Windows: off, no setting.
+7. Wrong-password and offline banners per spec sections 3 and 8.
+8. Inbox context menu: Reply, Reply all, Forward, Mark read/unread, Move to Spam, Delete, Add sender to address book, Block sender.
+9. Other context menus: Sent: Forward, Delete. Drafts: Edit, Delete. Spam: Not spam (to Inbox), Delete. Trash: Restore (to Inbox) only (no permanent delete). Outbox: Send now, Return to drafts.
+10. Filter rules: apply to new incoming mail only, top-to-bottom, first match stops.
+11. Filter rules are edited in a simple list dialog with enable/disable.
+12. Filter body conditions: rules run after the new mail's body is fetched; HTML-only mails matched on derived plain text; undownloaded old bodies never match; rules never trigger old-body fetches.
+13. Send: empty-subject warning stays; no other confirmation; compose window closes after Send.
+14. Reply quotes the original; BCC hidden until requested.
+15. Draft auto-save every 30 s while editing.
+16. Attachments: drag-and-drop onto compose window plus an "Attach" button; Gmail's 25 MB limit (check refined by Q42); warn when exceeded and refuse; each attachment removable.
+17. Recipient autocomplete: displayed account's address book plus that account's previously used recipients.
+18. "Not in address book" notice uses the displayed account's address book.
+19. "Add sender to address book" adds to the displayed account's address book.
+20. Search: inline box at top of the list pane, results replace the list, "Clear" button returns.
+21. Text size: range 12-48pt, live sample in settings, applies everywhere.
