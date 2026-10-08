@@ -15,7 +15,7 @@ Temporary preview zoom controls and the mapping of text size and zoom to plain-t
 
 ## 2. Behavior
 
-- Controls next to the header buttons: large 「拡大」(+), 「縮小」(-), 「元に戻す」(reset) buttons and Ctrl+mouse wheel over the preview (plain view: `PreviewMouseWheel`; HTML view: WebView2 wheel events are captured via the host's `PreviewMouseWheel` while Ctrl is held and via `WebView2.CoreWebView2.Settings.IsZoomControlEnabled=false` plus `AreBrowserAcceleratorKeysEnabled=false` so Ctrl+wheel/Ctrl+plus/minus do not zoom natively; Ctrl+wheel reaching the app is translated to a zoom step). Ctrl+0 = reset, Ctrl+plus/minus also step.
+- Controls next to the header buttons: large 「拡大」(+), 「縮小」(-), 「100%に戻す」(reset) buttons and Ctrl+mouse wheel over the preview (plain view: `PreviewMouseWheel`; HTML view: WebView2 wheel events are captured via the host's `PreviewMouseWheel` while Ctrl is held and via `WebView2.CoreWebView2.Settings.IsZoomControlEnabled=false` plus `AreBrowserAcceleratorKeysEnabled=false` so Ctrl+wheel/Ctrl+plus/minus do not zoom natively; Ctrl+wheel reaching the app is translated to a zoom step). Ctrl+0 = reset, Ctrl+plus/minus also step.
 - Range 100%-300%, step 25%; the buttons disable at the limits; label shows the percentage (「150%」).
 - Zoom applies only while the current mail is displayed: it resets to 100% when the selected mail changes, or the folder or account changes (changed from A36/A37). It is never persisted and not stored in settings. Does not affect compose windows or other panes.
 - Plain mode: `font size = TextSizePt * 96/72 * zoom` DIP.
