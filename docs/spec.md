@@ -33,6 +33,8 @@
 - Each account has a renamable display name.
 - Switched by the account switch button at the left end of the top bar. It is an obvious, labeled button showing the current account name.
 - Account-add screen states that a Gmail app password is required. Adding an account first tests IMAP and SMTP login with the entered address and app password; a duplicate address is rejected. No detailed in-app setup guide (a knowledgeable person sets up the accounts).
+- If the first account-add screen (no account exists yet) is closed without adding an account, a confirmation 「このまま閉じるとアプリは終わります。よろしいですか?」 with 「終わる」 / 「戻る」 (default 戻る) is shown (wording approved).
+- An account that still has mail in its Outbox cannot be deleted: the deletion is stopped with a message asking the user to send the mail or return it to drafts first.
 - If the app password is wrong or no longer valid: show a plain-language notice asking a knowledgeable person to re-enter it, and open the password re-entry screen; cached mail stays viewable.
 
 ## 4. UI Layout
@@ -41,14 +43,16 @@ Main window has 3 areas (see sketch: `docs/images/layout-sketch.png`).
 
 - Top bar (full window width), left to right: account switch button, Inbox, Outbox, Sent, Trash, Drafts, Spam. Folders are not in a left pane.
 - Mail list: narrow pane at the left below the top bar.
+  - Each row has 2 lines: line 1 = sender, date/time and an attachment icon (paperclip); line 2 = subject, shortened with an ellipsis when long. Unread mails are bold (bold only). A checkbox is always shown at the left of every row (multi-select delete, section 5).
   - Action buttons at the bottom of the mail list pane (Japanese labels): 新しいメール (compose), search, settings, address book, 受信拒否リスト (block list), 振り分けルール (filter rules).
   - Dates in rows: today `HH:mm`; this year `M月d日 H:mm`; older `yyyy年M月d日 H:mm` (local time).
 - Mail preview (text): very wide pane at the right, taking most of the window.
-  - Large buttons always shown at the top of the preview pane: Reply, Reply all, Forward, Delete (the context menu remains available as well).
+  - Large buttons always shown at the top of the preview pane: Reply, Reply all, Forward, Delete (the context menu remains available as well). In Drafts there is also a large 「編集」 button. Other folder-specific actions (迷惑メールではない, 受信トレイに戻す, 今すぐ送る, 下書きに戻す) are right-click only.
+  - No mail selected: the preview shows the guide text 「左の一覧からメールを選んでください」.
   - Preview zoom ("mail enlarged display") controls near these buttons (see section 5).
-  - Each row shows: sender, subject, date/time, attachment icon; unread mails in bold.
 - Composing a new mail, reply, and forward open in a separate window, not inline in the main window.
-- The boundary between mail list and preview is draggable (resizable splitter).
+- The boundary between mail list and preview is draggable (resizable splitter). First launch: the window opens maximized with the list pane about 35 percent of the width; afterwards the last size and splitter position are restored.
+- The text of the top bar and of the bottom button strip of the list pane is capped (it stops growing above a maximum size) so that it always fits; mail list, preview and mail text follow the text-size setting up to 48pt. The cap is 20pt; the top bar has two rows and the bottom strip is a 2 x 3 grid (detailed-spec section 1).
 - Unread count is shown only on the Inbox folder button. Exception: the account switch button shows a small unread badge showing the unread count when the other (non-displayed) account has unread mail.
 - HTML/plain-text switch: a checkbox in the top bar. It applies to the currently displayed mail only; opening another mail resets it to the default plain-text display.
 
@@ -68,10 +72,12 @@ All features below are in the first release (no phasing), including the local ma
 - Reply / reply all / forward (open in a separate window, same as compose).
 - Attachment save / open.
 - Text-size setting (large by default, changeable by free numeric input or slider).
-- Mail enlarged display (preview zoom): the preview can be enlarged temporarily; the zoom is never saved. It resets to 100% whenever the displayed mail, folder or account changes (and therefore on every launch). Buttons: 拡大 / 縮小 / 100%に戻す.
-- Read/unread display (unread shown in bold in the mail list).
+- Mail enlarged display (preview zoom): the preview can be enlarged temporarily; the zoom is never saved. It resets to 100% whenever the displayed mail, folder or account changes (and therefore on every launch). Buttons: 拡大 / 縮小 / 100%に戻す, plus Ctrl+mouse wheel over the preview; there are no other zoom keyboard shortcuts.
+- Read/unread display (unread shown in bold in the mail list). Opening a mail marks it read immediately, only in Inbox and Spam.
 - Safety warnings for suspicious links and executable attachments. Attaching an executable file to an outgoing mail is warned about and blocked. Executable list: exe, msi, bat, cmd, scr, js, vbs, ps1, jar, lnk, macro-enabled Office files, plus hta, com, pif, reg, wsf, vbe, jse, msc, dll, cpl, iso, img and similar script/installer/disk-image types (full list in detailed-spec section 14). Only zip is inspected, one level deep; an unreadable or encrypted zip is treated as suspicious. Extension match: last extension, case-insensitive, trailing spaces/dots stripped; file names with right-to-left override characters are flagged. Link banner judges both HTML and text parts; non-suspicious links open in the default browser with no dialog; `mailto:` opens compose.
-- Delete (button or menu item) shows no confirmation dialog; a non-modal notice "ごみ箱に移動しました [元に戻す]" is shown for a few seconds and Undo moves the mail back to the folder it was viewed in (other Gmail labels are not restored). In Trash the menu item 「受信トレイに戻す」 always restores to the Inbox. While offline, moves (delete, spam, restore, undo) are refused with a plain notice; mark read/unread is queued.
+- Delete (button, menu item or the Delete key while the mail list has focus) shows no confirmation dialog; a non-modal notice "ごみ箱に移動しました [元に戻す]" is shown for 10 seconds and Undo moves the mail back to the folder it was viewed in (other Gmail labels are not restored). Moving a mail to Spam shows no undo notice. After a delete, move to Spam or Restore, the next older mail in the list is selected automatically (the previous one if there is none; the guide text if the list is empty). The automatically selected mail is NOT marked read; only a mail the user selects explicitly is.
+- Multi-select delete: checked mails (checkbox at the left of each row) are deleted together with the Delete button (moved to Gmail Trash); the notice reads 「N通をごみ箱に移動しました [元に戻す]」 for 10 seconds and Undo restores all of them. Details and open proposals: detailed-spec section 22.
+- Notices: a failure or refusal the user must read is a modal dialog with one big 「OK」 button; a success is a transient banner or notice. Several banners can be shown at once (maximum 2, in a fixed priority order; only the Outbox failure banner has a close button 「×」). Details: detailed-spec section 20. In Trash the menu item 「受信トレイに戻す」 always restores to the Inbox. While offline, moves (delete, spam, restore, undo) are refused with a plain notice; mark read/unread is queued.
 - Draft auto-save.
 
 ## 6. On-Hold Features
@@ -115,7 +121,8 @@ Out of scope:
   - First sync downloads headers for all mail and bodies for the most recent 12 months.
   - Older bodies and all attachments are downloaded on demand when opened, then cached locally (SQLite).
   - Periodic sync checks only new/changed mail (IMAP UID/UIDVALIDITY), not the whole mailbox.
-  - Optional: background backfill of older bodies when idle.
+  - Background backfill of older bodies while the app is idle is included (parameters in detailed-spec section 4).
+  - During the first sync with an empty list the list shows no 「メールはありません」, only the loading banner.
   - Gmail "All Mail" is also synced, under the same rules as the other folders; a message appearing in several Gmail folders is stored once (keyed by X-GM-MSGID).
   - Both accounts are synced on the same timer (startup, then every 5 minutes).
 - Fetch timing: on app startup, then automatically every 5 minutes, plus a manual refresh button.
