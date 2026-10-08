@@ -23,7 +23,7 @@ Startup sequence, first-launch handling, quit by X, open compose windows at quit
      - このまま閉じる: quit; unsent mail stays in Outbox.
      - 戻る: abort.
   3. Stop sync and workers, flush settings (window state), dispose DB connections, exit.
-- Windows shutdown/logoff (A48, PQ16): handle `SessionEnding`: if compose windows have content or Outbox is non-empty, set `e.Cancel = true` and run the same sequence (shutdown block reason text [QT-05] 「送信待ちのメールがあります」 registered through `ShutdownBlockReasonCreate`); 「このまま閉じる」 (and nothing-to-warn) -> `Application.Shutdown()` and let Windows proceed (no further cancel; Windows is not re-requested); 「戻る」 keeps the app running and the shutdown cancelled. If Windows force-closes the app, nothing more is done (best effort).
+- Windows shutdown/logoff (A48, PQ16): handle `SessionEnding`: if compose windows have content or Outbox is non-empty, register the shutdown block reason [QT-05] 「送信待ちのメールがあります」 (`ShutdownBlockReasonCreate`) and run the same sequence SYNCHRONOUSLY inside the handler (modal dialog on a nested dispatcher loop; no async work may continue after the handler returns). Decide `e.Cancel` from the result: 「このまま閉じる」, a completed 送信してから閉じる and nothing-to-warn -> `e.Cancel = false` (Windows proceeds); 「戻る」 -> `e.Cancel = true` (shutdown cancelled, app keeps running; the user must start the shutdown again). If Windows force-closes the app, nothing more is done (best effort).
 - Unhandled exception during quit logs only.
 
 ## 3. Functions
