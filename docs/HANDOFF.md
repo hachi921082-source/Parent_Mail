@@ -13,7 +13,7 @@ Session-handoff file. Read this first in a fresh conversation, then open only th
 
 ## 1. Status
 
-- Phase: specification, window layouts, colour palette and ALL UI strings are fully approved by the user (2026-10-08, QA.md Q58-Q78); no proposals remain. Implementation plans exist (`docs/plans/README.md` + per-feature PLANs) but still need the edits in `docs/plans/pending-plan-edits.md`. Next: developer-lite applies `docs/plans/pending-plan-edits.md` Parts A, B and C, then implementation per `docs/plans/README.md` section 11 (tier order). `docs/plans/ui-strings.md` is the source of truth for wording. The user can supply a test Gmail account for manual verification.
+- Phase: specification, window layouts, colour palette and ALL UI strings are fully approved by the user (2026-10-08, QA.md Q58-Q78); no proposals remain. Implementation plans (`docs/plans/README.md` + per-feature PLANs) have `docs/plans/pending-plan-edits.md` Parts A, B and C applied and were self-reviewed on 2026-10-08 (consistency fixes: incoming rules apply to new Inbox mail only, local drafts in the Drafts folder, SessionEnding handling, HTML Ctrl+wheel spike). Next: designer-lite aligns spec A43 (Inbox-only incoming rules), then implementation per `docs/plans/README.md` section 11 (tier order). `docs/plans/ui-strings.md` is the source of truth for wording. The user can supply a test Gmail account for manual verification.
 - Repository: `main`, private GitHub repo `hachi921082-source/Parent_Mail`.
 - Specs updated 2026-10-08 with the planning decisions (QA.md Q44-Q57); commit state: see `git status`.
 - Agent set: lite (`designer-lite`, `developer-lite`, `reviewer-lite`); do not mix with the full set (see `CLAUDE.md`).
@@ -46,9 +46,10 @@ Nothing pending from the 2026-10-08 review round (Q73-Q78). Two changes made by 
 
 ## 5. Recommended next steps
 
-1. developer-lite applies `docs/plans/pending-plan-edits.md` Parts A, B and C to the PLANs and `plans/README.md`, then commits the docs (one file per commit, role in the message body, Japanese).
-2. Implement features per `docs/plans/README.md` section 11 (T0 app-shell and settings first), using the user's test Gmail account for manual checks.
-3. Implement in feature branches per `~/.claude/shared/dev-workflow.md` section 7; confirm with the user before merge/push/branch delete.
+1. designer-lite updates `detailed-spec.md` A43 / `spec.md`: block list and filter rules apply to new INBOX mail only.
+2. Spike first: Ctrl+wheel capture over the WebView2 HTML view (mail-display PLAN-2); if it fails, HTML mode keeps buttons only and the spec is updated.
+3. Implement features per `docs/plans/README.md` section 11 (T0 app-shell and settings first), using the user's test Gmail account for manual checks.
+4. Implement in feature branches per `~/.claude/shared/dev-workflow.md` section 7; confirm with the user before merge/push/branch delete.
 
 ## 6. Working notes
 
