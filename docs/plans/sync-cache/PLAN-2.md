@@ -29,7 +29,7 @@ Planning status: complete. Spec: detailed-spec 4, 5; A11, A39, A43, A53; Q51, Q6
 
 ## 3. Incoming-mail pipeline
 
-New mail = message first seen after initial sync (and not from UIDVALIDITY re-listing). For each new message after its body is stored: (1) block list check -> move to Spam via IMAP and update memberships; stop; (2) filter rules top-to-bottom, first enabled match applies action (MoveToTrash/MoveToSpam/MarkRead); (3) update counts and raise `NewMailProcessed`. Pipeline calls `IIncomingRule` implementations registered by block-list and filter-rules (`IEnumerable<IIncomingRule>` in order block, filter). If a rule action fails (network) the message stays where it is and is logged.
+New mail = message first seen in the INBOX after the account's initial sync (and not from UIDVALIDITY re-listing). Mail first seen in Sent, Drafts, Trash, Spam or AllMail only never enters the pipeline, so the user's own sent mail is never moved by a rule. For each new message after its body is stored: (1) block list check -> move to Spam via IMAP and update memberships; stop; (2) filter rules top-to-bottom, first enabled match applies action (MoveToTrash/MoveToSpam/MarkRead); (3) update counts and raise `NewMailProcessed`. Pipeline calls `IIncomingRule` implementations registered by block-list and filter-rules (`IEnumerable<IIncomingRule>` in order block, filter). If a rule action fails (network) the message stays where it is and is logged.
 
 ## 4. Functions
 
