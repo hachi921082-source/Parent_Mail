@@ -13,25 +13,25 @@ Session-handoff file. Read this first in a fresh conversation, then open only th
 
 ## 1. Status
 
-- Phase: specification complete; implementation not started. No source code, no `docs/plans/<feature>/PLAN.md` yet.
+- Phase: specification complete; implementation plans exist (`docs/plans/README.md` + per-feature PLANs); `docs/plans/ui-strings.md` is approved by the user (2026-10-08) and is the source of truth for UI wording. Implementation not started; next = implement per `docs/plans/README.md` section 11 (tier order). The user can supply a test Gmail account for manual verification.
 - Repository: `main`, private GitHub repo `hachi921082-source/Parent_Mail`.
-- Uncommitted at the time of writing: `docs/spec.md`, `docs/detailed-spec.md`, `docs/QA.md`, `docs/HANDOFF.md` (last pushed commit: detailed-spec first version, `bf238d2`).
+- Specs updated 2026-10-08 with the planning decisions (QA.md Q44-Q57); commit state: see `git status`.
 - Agent set: lite (`designer-lite`, `developer-lite`, `reviewer-lite`); do not mix with the full set (see `CLAUDE.md`).
 
 ## 2. Documents and where decisions live
 
 - `docs/spec.md` — confirmed spec (8 sections, index at top). Self-contained summary of decisions; read first.
 - `docs/detailed-spec.md` — implementation-ready detail in 19 sections; source for PLAN.md files. Section 19 lists 48 assumptions (A1-A48).
-- `docs/QA.md` — all questions Q1-Q43 resolved; no open items; approved defaults D1-D21.
-- `docs/DECISIONS.md` — rationale only (top-bar layout, app password, no encryption, text default).
+- `docs/QA.md` — all questions Q1-Q57 resolved; no open items; approved defaults D1-D21.
+- `docs/DECISIONS.md` — rationale only (top-bar layout, app password, no encryption, text default, ZoomFactor /12, zoom reset, log file, executable list, Undo scope).
 - `docs/images/layout-sketch.png` — main-window sketch (top bar, narrow list, wide preview).
 
 ## 3. Awaiting user confirmation
 
 - A1-A48 in detailed-spec section 19 are assumptions added by designer-lite; the user can veto any.
-- A37: "return to default at app exit" for the preview zoom was interpreted as "zoom is not persisted; every launch starts at 100%". Not explicitly confirmed.
+- A37 confirmed by the user (Q46); A36 replaced: zoom resets to 100% on mail/folder/account change.
 - "Unread shown in bold" and the read/unread display were bundled into the text of an answer choice (Q8/Q9) and recorded as adopted; not separately confirmed.
-- A41 (WebView2 ZoomFactor formula) and A42 (attachment size threshold computation) are to be settled in PLAN.md.
+- A41 and A42 are settled (Q45, Q50). Superseded/settled assumptions are marked in detailed-spec section 19.
 
 ## 4. Known risks accepted by the user
 
@@ -42,14 +42,13 @@ Session-handoff file. Read this first in a fresh conversation, then open only th
 
 ## 5. Recommended next steps
 
-1. Review and commit the uncommitted docs (one file per commit, role in the message body, Japanese), then push.
-2. Have `developer-lite` read `docs/spec.md` (index) and `docs/detailed-spec.md`, propose a feature split and dependency order, and create `docs/plans/<feature>/PLAN.md` per feature plus `docs/plans/README.md` (shared index, project layout, shared models, tier table). Suggested split by detailed-spec sections: accounts/auth, Gmail mapping + sync + SQLite cache, Outbox/send/retry, mail display (text/HTML/zoom), compose/reply/forward, folder menus, address book, block list + filter rules, search, safety warnings, settings, startup/shutdown.
-3. Settle open implementation choices in PLAN.md: A29 (shortener list, look-alike domain detection), A41, A42, A9 (settings DB vs cache DB), UIDVALIDITY handling.
-4. Implement in feature branches per `~/.claude/shared/dev-workflow.md` section 7; confirm with the user before merge/push/branch delete.
+1. Commit the updated docs (one file per commit, role in the message body, Japanese).
+2. Implement features per `docs/plans/README.md` section 11 (T0 app-shell and settings first), using the user's test Gmail account for manual checks.
+3. Implement in feature branches per `~/.claude/shared/dev-workflow.md` section 7; confirm with the user before merge/push/branch delete.
 
 ## 6. Working notes
 
-- Out-of-scope ideas recommended but not adopted (only the preview zoom was adopted): scam-phrase detection, "help" status button, automatic backup of local settings, read-aloud, settings export/import, error log.
+- Out-of-scope ideas recommended but not adopted (only the preview zoom was adopted): scam-phrase detection, "help" status button, automatic backup of local settings, read-aloud, settings export/import, error log (the local log file WAS later adopted, Q53).
 - External review (Gemini) only sees what it is given and repeated already-decided points three times; give it `spec.md` plus `detailed-spec.md` and `QA.md` together, or skip further rounds.
 - Language policy: docs in English; code comments in Japanese; commit bodies in Japanese; final chat reports in Japanese. Build artifacts need a date-time in the file name.
 - Paths and file names with Japanese characters must work everywhere (attachments, save dialogs, cache paths).
