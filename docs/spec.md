@@ -43,10 +43,11 @@ Main window has 3 areas (see sketch: `docs/images/layout-sketch.png`).
 - Mail list: narrow pane at the left below the top bar.
   - Action buttons at the bottom of the mail list pane: compose, search, settings, address book, block list, filter rules.
 - Mail preview (text): very wide pane at the right, taking most of the window.
+  - Large buttons always shown at the top of the preview pane: Reply, Reply all, Forward, Delete (the context menu remains available as well).
   - Each row shows: sender, subject, date/time, attachment icon; unread mails in bold.
 - Composing a new mail, reply, and forward open in a separate window, not inline in the main window.
 - The boundary between mail list and preview is draggable (resizable splitter).
-- Unread count is shown only on the Inbox folder button.
+- Unread count is shown only on the Inbox folder button. Exception: the account switch button shows a small unread badge when the other (non-displayed) account has new mail.
 - HTML/plain-text switch: a checkbox in the top bar.
 
 ## 5. Confirmed Features (first release)
@@ -54,9 +55,9 @@ Main window has 3 areas (see sketch: `docs/images/layout-sketch.png`).
 All features below are in the first release (no phasing), including the local mail cache (section 8).
 
 - Standard folders: Inbox, Outbox, Sent, Trash, Drafts, Spam, each with the context (right-click) menu items needed for it.
-- Address book.
-- Filter/sorting rules.
-- Block list.
+- Address book (separate per account).
+- Filter/sorting rules (per account).
+- Block list (per account).
 - Attachment by drag and drop.
 - HTML mail display plus plain-text mode.
 - Mail content preview, including images.
@@ -64,7 +65,7 @@ All features below are in the first release (no phasing), including the local ma
 - Compose with To, CC, BCC.
 - Reply / reply all / forward (open in a separate window, same as compose).
 - Attachment save / open.
-- Text-size setting (large by default, changeable).
+- Text-size setting (large by default, changeable by free numeric input or slider).
 - Read/unread display (unread shown in bold in the mail list).
 - Safety warnings for suspicious links and executable attachments.
 - Draft auto-save.
@@ -106,6 +107,8 @@ Out of scope:
   - Older bodies and all attachments are downloaded on demand when opened, then cached locally (SQLite).
   - Periodic sync checks only new/changed mail (IMAP UID/UIDVALIDITY), not the whole mailbox.
   - Optional: background backfill of older bodies when idle.
+  - Gmail "All Mail" is also synced, under the same rules as the other folders; a message appearing in several Gmail folders is stored once (keyed by X-GM-MSGID).
+  - Both accounts are synced on the same timer (startup, then every 5 minutes).
 - Fetch timing: on app startup, then automatically every 5 minutes, plus a manual refresh button.
 - Offline / Gmail unreachable: show cached mail with a plain-language banner; outgoing mail is held in Outbox and sent automatically after reconnect.
 - HTML display default: plain-text mode; the top-bar checkbox switches to HTML. If a mail has no text part (HTML only), the plain text derived from the HTML is shown instead of an empty pane.
