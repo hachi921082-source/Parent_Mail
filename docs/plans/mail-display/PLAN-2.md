@@ -16,6 +16,7 @@ Temporary preview zoom controls and the mapping of text size and zoom to plain-t
 ## 2. Behavior
 
 - Controls next to the header buttons: large 「拡大」(+), 「縮小」(-), 「100%に戻す」(reset) buttons [TB-21] and Ctrl+mouse wheel over the preview (plain view: `PreviewMouseWheel`; HTML view: WebView2 wheel events are captured via the host's `PreviewMouseWheel` while Ctrl is held and via `WebView2.CoreWebView2.Settings.IsZoomControlEnabled=false` plus `AreBrowserAcceleratorKeysEnabled=false` so Ctrl+wheel/Ctrl+plus/minus do not zoom natively; Ctrl+wheel reaching the app is translated to a zoom step). There are NO other zoom shortcuts (no Ctrl+0, no Ctrl+plus/minus; Q69).
+- Risk: WebView2 may not forward mouse-wheel input to the WPF host, and scripts are disabled so none can be injected. Verify with a spike first (T3 start). If Ctrl+wheel over HTML cannot be captured, HTML mode keeps only the 拡大 / 縮小 / 100%に戻す buttons (plain mode keeps Ctrl+wheel); update spec if so.
 - Range 100%-300%, step 25%; the buttons disable at the limits; label shows the percentage [TB-22] (「150%」).
 - Zoom applies only while the current mail is displayed: it resets to 100% when the selected mail changes, or the folder or account changes (Q46). It is never persisted and not stored in settings. Does not affect compose windows or other panes.
 - Effective preview size (A70): `EffectivePt = min(TextSizePt * zoom, 60)` in both modes (constant `PreviewTextMaxPt = 60`).
