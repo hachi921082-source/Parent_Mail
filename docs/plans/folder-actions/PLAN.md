@@ -39,7 +39,7 @@ Right-click menu items (rows are the same size as buttons, min height 48 DIP) an
 - Mark read/unread: toggles per current state, immediate local update, `SetSeenAsync`; allowed offline (queued).
 - Add sender to address book: opens the address-book add dialog [WD-12] prefilled (name = sender name, email = sender address) for the displayed account; if the address already exists show modal notice [FA-12] 「すでに登録されています」.
 - Block sender: dialog [WD-16] (title 「受信拒否に追加」, buttons 追加* / やめる) with the options [FA-10] 「このアドレスだけ」/「このドメイン全体」 (default address); adds to the block list and shows transient notice [FA-11] 「受信拒否に追加しました」 (4 s). Existing mail is not moved (A25).
-- Drafts 編集: open compose with the draft (compose PLAN-2). Outbox actions call outbox-send.
+- Drafts 編集: open compose with the draft (compose PLAN-2); a row with `DraftId` (local draft not yet uploaded) opens from the local `drafts` row. Delete of a Drafts row: a cached Gmail draft is moved to Trash by IMAP and its linked local `drafts` row (matched by Message-ID) is removed; a `DraftId` row is deleted locally only (no Undo, no IMAP) via `IDraftService.DeleteAsync`; deleted drafts must not reappear after the next sync. Outbox actions call outbox-send.
 - Offline: move-type actions (delete, spam, restore, undo) are refused with modal notice [BN-05] 「今はインターネットにつながっていないため操作できません。つながってからもう一度お試しください。」 (title 「お知らせ」, button 「OK」).
 - Failed IMAP move: revert the local change and show modal notice [BN-06].
 - Top-bar folder buttons: click selects folder, loads list (mail-list), clears selection, checks and search, resets zoom; the active folder button is drawn pressed.
