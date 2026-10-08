@@ -1,6 +1,6 @@
 # mail-display PLAN-3: attachment list, save, open
 
-Planning status: complete. Spec: detailed-spec 6, 14; A17; Q25.
+Planning status: complete. Spec: detailed-spec 6, 14, 20; A17, A55; Q25, Q64. Wording: `ui-strings.md` (IDs in brackets).
 
 ## Index
 
@@ -15,11 +15,11 @@ Attachment list under the preview body, save and open actions, executable handli
 
 ## 2. Behavior
 
-- List shown below the body when the message has non-inline attachments: each row = file icon, name, size (KB/MB), buttons 「開く」 and 「保存」. Font follows `AppFontSize`.
+- List shown below the body when the message has non-inline attachments: each row = file icon, name, size (KB/MB), buttons [PV-07] 「開く」 and 「保存」; sizes shown as KB/MB [PV-11]. Font follows `AppFontSize`.
 - Executable check (`ExecutableChecker.Check(fileName, content?)`, PLAN-2) runs when the list is built using the file name; for `.zip` it needs the file content, so the zip is checked after it is downloaded (the row shows the plain name until then; opening a zip first downloads it, checks, and applies the result).
-- Flagged attachment: row shows a red 「危険なファイルです」 marker; 「開く」 is disabled (opening forbidden); 「保存」 asks for confirmation: strong warning dialog 「このファイルはパソコンに害を与える可能性があります。保存しますか?」, default = キャンセル, then standard Save dialog.
+- Flagged attachment: row shows a red [PV-08] 「危険なファイルです」 marker (unreadable zip: reason line [SW-07] 「中身を確認できないファイルです。」); 「開く」 is disabled (opening forbidden); 「保存」 asks for confirmation: strong warning dialog [WD-27] (title 「危険なファイル」, text [PV-09] 「このファイルはパソコンに害を与える可能性があります。保存しますか?」, buttons [PV-10] 保存する / キャンセル*, modal, Enter = キャンセル), then standard Save dialog [WD-29] 「名前を付けて保存」.
 - Normal attachment: 「保存」 uses `Microsoft.Win32.SaveFileDialog` with the original file name (Japanese-safe); 「開く」 copies the cached file to a temp folder (`%LOCALAPPDATA%\Parent_Mail\temp\<guid>\<original name>`) and starts it with the Windows default app (`UseShellExecute`); the temp folder is cleaned at app start.
-- Download via `IAttachmentService.EnsureLocalAsync` (sync-cache PLAN-3) with busy state; offline messages as defined there.
+- Download via `IAttachmentService.EnsureLocalAsync` (sync-cache PLAN-3) with busy state. Failures are modal notices (title 「お知らせ」, button 「OK」) because they follow a user action: not downloaded while offline [BN-09]; download failed [BN-14]; save failed [BN-15]; open failed [BN-16].
 - Inline images (cid) are not listed.
 
 ## 3. Functions
