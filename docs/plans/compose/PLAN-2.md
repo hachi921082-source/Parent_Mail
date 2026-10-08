@@ -36,7 +36,7 @@ Draft model, 30-second auto-save, Gmail Drafts upload (online and offline), clos
 
 ## 4. Functions
 
-- `IDraftService { SaveAsync(DraftSnapshot, bool uploadNow); DeleteAsync(draftId); FlushDirtyAsync(accountId); OpenForEditAsync(gmMsgId) }`.
+- `IDraftService { SaveAsync(DraftSnapshot, bool uploadNow); DeleteAsync(draftId); FlushDirtyAsync(accountId); OpenForEditAsync(gmMsgId | draftId) }` (draftId = local draft row, see folder-actions).
 - `DraftAutoSaver (DispatcherTimer 30 s)` per `ComposeViewModel`.
 - `CloseDialogResult ShowCloseDialog()`.
 - `ComposeViewModel.HasContent`, `IsDirtySinceLastSave`.
