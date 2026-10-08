@@ -22,7 +22,7 @@ Preview pane content: header block, plain-text view, HTML view in WebView2, deri
 - HTML navigation: `NavigationStarting` always cancelled except the initial string load; link clicks are passed to `LinkClickHandler` (safety-warnings PLAN-1): suspicious -> confirm dialog; allowed -> `Process.Start` default browser (`UseShellExecute`); `mailto:` -> open compose with To prefilled (compose PLAN-1 API). New-window requests are handled the same way.
 - Plain-text link click uses the same `LinkClickHandler`.
 - The WebView2 user data folder is `%LOCALAPPDATA%\Parent_Mail\webview2` (non-ASCII safe); runtime missing -> HTML checkbox disabled with a notice 「HTML表示ができません。詳しい方に相談してください。」.
-- Not-in-address-book notice (D18, Q26): when the sender address is not in the displayed account's contacts, show 「アドレス帳にない人です」 in the header; hidden for Sent/Drafts/Outbox.
+- Not-in-address-book notice (D18, Q26): when the sender address is not in the displayed account's contacts, show 「アドレス帳に登録されていません」 in the header; hidden for Sent/Drafts/Outbox.
 - Offline/not downloaded states per sync-cache PLAN-3.
 
 ## 3. Functions
