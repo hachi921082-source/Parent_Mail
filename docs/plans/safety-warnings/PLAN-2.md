@@ -1,6 +1,6 @@
 # safety-warnings PLAN-2: executable file checker
 
-Planning status: complete. Spec: detailed-spec 14, 7; A30; Q25, Q41, Q22 (extended list, spec change).
+Planning status: complete. Spec: detailed-spec 14, 7; A30; Q25, Q41, PQ22 (extended list). Wording: `ui-strings.md` (IDs in brackets).
 
 ## Index
 
@@ -20,7 +20,7 @@ One shared `ExecutableChecker` used by receive-side attachments (mail-display PL
 - Names containing RTL override or other bidi control characters (U+202A-202E, U+2066-2069) are flagged.
 - `.zip` only: opened one level deep with `System.IO.Compression.ZipArchive`; any entry whose name matches the list (same normalization) flags the archive; an archive that cannot be read, is corrupt, or has encrypted entries is flagged as suspicious (reason `UnreadableArchive`). Nested archives are not expanded. Other archive types (rar, 7z, etc.) are not inspected.
 - Result: `ExecutableCheckResult { Flagged, Reason (Extension|Macro|InArchive|UnreadableArchive|BidiName), Detail }`.
-- Receive side: flagged -> strong warning, open forbidden, save only after confirmation (see mail-display PLAN-3). Attach/forward side: flagged -> blocked, never added, with dialog 「このファイルは危険な可能性があるため、添付できません。」.
+- Receive side: flagged -> strong warning, open forbidden, save only after confirmation (see mail-display PLAN-3). Attach/forward side: flagged -> blocked, never added, with modal notice [SW-06] 「このファイルは危険な可能性があるため、添付できません。」 (title 「お知らせ」, button 「OK」); an unreadable/encrypted zip additionally shows the reason line [SW-07] 「中身を確認できないファイルです。」.
 
 ## 3. Functions
 
