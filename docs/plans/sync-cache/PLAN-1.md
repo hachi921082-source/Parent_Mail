@@ -35,7 +35,7 @@ pending_ops(id INTEGER PK, op TEXT, gm_msgid INTEGER, arg TEXT)   -- offline \Se
 - `uid_validity` stored per folder in `folders`; `message_folders.uid` is valid only for the stored validity (PQ7: on change the rows of that folder are deleted and re-resolved, messages/bodies/attachments kept).
 - Attachment files: `attachments\<attachments.id>.bin`; `local_path` relative to the account dir. Original file name only in DB. Outbox/draft attachment copies: `outbox\<id>\<n>.bin`, `drafts\<id>\<n>.bin` (original names in payload_json).
 - Body text/HTML are stored in DB (PQ8). Derived text computed once when the body is stored.
-- Dates stored as UTC unix seconds (INTERNALDATE for ordering/12-month rule; the Date header is used for display when valid, else INTERNALDATE).
+- Dates stored as UTC unix seconds (INTERNALDATE is used for ordering, the 12-month rule AND the displayed time, A68; the Date header is not used for display).
 
 ## 3. Folder mapping
 
