@@ -1,6 +1,6 @@
 # sync-cache PLAN-3: on-demand fetch, offline behavior, backfill
 
-Planning status: complete. Spec: detailed-spec 4, 5; Q30 context.
+Planning status: complete. Spec: detailed-spec 4, 5, 20; A57, A58; Q30 context, Q67. Wording: `ui-strings.md` (IDs in brackets).
 
 ## Index
 
@@ -11,14 +11,14 @@ Planning status: complete. Spec: detailed-spec 4, 5; Q30 context.
 
 ## 1. Scope
 
-Fetching older bodies and attachments when opened, offline "not downloaded yet" behavior with automatic fetch on reconnect, optional idle backfill.
+Fetching older bodies and attachments when opened, offline "not downloaded yet" behavior with automatic fetch on reconnect, idle backfill.
 
 ## 2. Behavior
 
-- Opening a message with `body_state = None`: if online, fetch body (by folder uid of any membership), store, then display; show a small busy text 「読み込んでいます…」. If offline: display 「このメールはまだ保存されていません。インターネットにつながると自動で表示します。」 and register the message in `pending_fetch` (memory set); when the next sync succeeds (online) the fetch runs and the preview updates if the message is still displayed.
-- Attachments: file downloaded only on Save/Open (`IAttachmentService.EnsureLocalAsync(attachmentId)`); once stored as a file it stays cached. Offline and not downloaded: notice 「この添付ファイルはまだ保存されていません。インターネットにつながってから開いてください。」 (no auto-open after reconnect; Save/Open must be repeated, except forward uses the compose flow).
+- Opening a message with `body_state = None`: if online, fetch body (by folder uid of any membership), store, then display; show a small in-place busy text [BN-10] 「読み込んでいます…」. If offline: display in place [BN-08] 「このメールはまだ保存されていません。インターネットにつながると自動で表示します。」 (fetch failure while online: in-place [BN-13], never a dialog, because it can happen automatically while moving down the list) and register the message in `pending_fetch` (memory set); when the next sync succeeds (online) the fetch runs and the preview updates if the message is still displayed.
+- Attachments: file downloaded only on Save/Open (`IAttachmentService.EnsureLocalAsync(attachmentId)`); once stored as a file it stays cached. Offline and not downloaded: modal notice [BN-09] 「この添付ファイルはまだ保存されていません。インターネットにつながってから開いてください。」 (failures: [BN-14]) (no auto-open after reconnect; Save/Open must be repeated, except forward uses the compose flow).
 - Inline cid images: fetched with the body for 12-month mail; for older mail fetched together with the on-demand body (all inline parts with size <= 5 MB); stored as attachment files with `is_inline = 1`.
-- Idle backfill (optional, included): when no sync is running and the app has been idle (no user input) for 60 s, fetch bodies of the oldest-unfetched messages, 20 per cycle, newest first, only while online; stops on any user action or sync start. Disabled when the displayed account is syncing.
+- Idle backfill (INCLUDED, not optional; Q67, parameters are assumption A57): when no sync is running and the app has been idle (no user input) for 60 s, fetch bodies of the oldest-unfetched messages, 20 per cycle, newest first, only while online; stops on any user action or sync start. Disabled when the displayed account is syncing.
 - Rules never trigger old-body fetches (D12); search never triggers fetches (Q30).
 
 ## 3. Functions
