@@ -1,6 +1,6 @@
 # app-lifecycle
 
-Planning status: complete. Spec: detailed-spec 16, 7; A31, A32, A48; Q16, Q34, Q43.
+Planning status: complete. Spec: detailed-spec 16, 7; A31, A32, A48, A56; PQ16, Q34, Q43, Q52, Q58, Q66, Q75. Wording: `ui-strings.md` (IDs in brackets).
 
 ## Index
 
@@ -15,15 +15,15 @@ Startup sequence, first-launch handling, quit by X, open compose windows at quit
 
 ## 2. Behavior
 
-- Startup (D5): acquire single instance (app-shell) -> open `settings.db` and migrate -> load settings -> load accounts -> if none: show the account-add screen (no warning dialog, A31) and continue startup after a successful add (closing the screen without adding exits the app) -> select last-used account (fallback first) -> show main window on its Inbox -> start `SyncCoordinator` (immediate sync of both accounts, then every 5 min) -> flush dirty drafts and retry Outbox at the first sync. No auto-start with Windows and no setting for it (D6). No tray, no background process.
+- Startup (D5): acquire single instance (app-shell) -> open `settings.db` and migrate -> load settings -> load accounts -> if none: show the account-add screen (no warning dialog, A31) and continue startup after a successful add (closing it without adding asks the confirm dialog [WD-09] 「このまま閉じるとアプリは終わります。よろしいですか?」 [AC-19] with 終わる / 戻る*; 終わる exits the app; accounts-auth PLAN-1) and the main window then opens maximized with the list pane about 35 percent wide (Q58, app-shell PLAN 3.2); on later launches the last size, state and splitter position are restored -> select last-used account (fallback first) -> show main window on its Inbox -> start `SyncCoordinator` (immediate sync of both accounts, then every 5 min) -> flush dirty drafts and retry Outbox at the first sync. No auto-start with Windows and no setting for it (D6). No tray, no background process.
 - Quit by closing the main window (Q34): sequence in `QuitCoordinator.RequestQuitAsync(reason)`:
   1. Open compose windows (A32): for each, run its close dialog (compose PLAN-2); any 「戻る」 aborts the quit.
-  2. If `IOutboxService.PendingCount() > 0` (both accounts): dialog 「送信待ちのメールがあります。このまま閉じると送信されません」 with large buttons 「送信してから閉じる」, 「このまま閉じる」, 「戻る」 (default).
-     - 送信してから閉じる: busy state, `SendAllPendingAsync`; if all sent -> quit; if any failed -> stay open and show the failure notice (outbox-send).
+  2. If `IOutboxService.PendingCount() > 0` (both accounts): modal dialog [WD-25] (title and text [QT-01] 「送信待ちのメールがあります。このまま閉じると送信されません」) with large buttons left to right [QT-02] 「送信してから閉じる」, [QT-03] 「このまま閉じる」, [QT-04] 「戻る」* (default; Enter = 戻る, Esc = 戻る).
+     - 送信してから閉じる: busy text [QT-06] 「送っています…」, `SendAllPendingAsync`; if all sent -> quit; if any failed -> stay open and show the failure notice (outbox-send).
      - このまま閉じる: quit; unsent mail stays in Outbox.
      - 戻る: abort.
   3. Stop sync and workers, flush settings (window state), dispose DB connections, exit.
-- Windows shutdown/logoff (A48, Q16): handle `SessionEnding`: if compose windows have content or Outbox is non-empty, set `e.Cancel = true` and run the same sequence (shutdown block reason text 「送信待ちのメールがあります」 registered through `ShutdownBlockReasonCreate`); 「このまま閉じる」 (and nothing-to-warn) -> `Application.Shutdown()` and let Windows proceed (no further cancel; Windows is not re-requested); 「戻る」 keeps the app running and the shutdown cancelled. If Windows force-closes the app, nothing more is done (best effort).
+- Windows shutdown/logoff (A48, PQ16): handle `SessionEnding`: if compose windows have content or Outbox is non-empty, set `e.Cancel = true` and run the same sequence (shutdown block reason text [QT-05] 「送信待ちのメールがあります」 registered through `ShutdownBlockReasonCreate`); 「このまま閉じる」 (and nothing-to-warn) -> `Application.Shutdown()` and let Windows proceed (no further cancel; Windows is not re-requested); 「戻る」 keeps the app running and the shutdown cancelled. If Windows force-closes the app, nothing more is done (best effort).
 - Unhandled exception during quit logs only.
 
 ## 3. Functions
