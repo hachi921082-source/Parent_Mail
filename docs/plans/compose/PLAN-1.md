@@ -16,7 +16,7 @@ Separate compose window, recipient fields with autocomplete, attachments (drag a
 
 ## 2. Behavior
 
-- `ComposeWindow` (non-modal, multiple allowed), opened by the compose button, reply/forward (reply-forward), draft Edit (folder-actions), or `mailto:` (To prefilled). Remembers `AccountId` = account displayed when opened (A21); title shows 「作成 - <account display name>」. Text size follows the settings (not preview zoom).
+- `ComposeWindow` (non-modal, multiple allowed), opened by the compose button, reply/forward (reply-forward), draft Edit (folder-actions), or `mailto:` (To prefilled). Remembers `AccountId` = account displayed when opened (A21); title shows 「新しいメール - <account display name>」. Text size follows the settings (not preview zoom).
 - Fields: 宛先 (To), CC, BCC (hidden until the user clicks 「BCCを追加」, D14), 件名, 本文 (plain text `TextBox`, multi-line, AcceptsReturn, spell-check off), attachment list, buttons 送信 (large) and 添付 (Attach).
 - Recipient entry: tokenized text box; separators `,` `;` `、` space, Enter; each token validated (`MailboxAddress.TryParse`); invalid tokens are marked red and block sending with 「宛先のアドレスを確認してください」. At least one recipient in To/CC/BCC is required.
 - Autocomplete (D17, A19): after 1 typed character show up to 8 candidates from the account's address book (name, reading, emails; matched on name/reading/address, case+width-normalized) and previously used recipients (To/CC/BCC addresses of that account's Sent messages in cache, most recent first, distinct). Selecting inserts the address (with name as `Name <addr>` for contacts).
