@@ -25,7 +25,7 @@ Planning status: complete. Spec: detailed-spec 4, 5; A10, A11, A39, A43; Q7, Q23
   4. Mirror: UID missing from folder -> remove that membership; if message has no memberships left and is not in AllMail -> delete message. A message removed from AllMail has been permanently deleted -> delete locally. Gmail trash move appears as membership change (Trash added, Inbox removed).
   5. UIDVALIDITY changed (Q7): `ResetFolderUids(folder)`, list all UID+X-GM-MSGID of the folder, rebuild memberships for known msgids, fetch headers only for unknown msgids; none of these are "new" mail (no rules, no badge inflation); then continue as normal.
 - Read state: remote \Seen changes update `is_read`; local opens/Mark read/unread are written by `SetSeenAsync(gmMsgId, bool)` to all folder memberships (STORE \Seen by UID) immediately when online; when offline queue in `pending_ops` (PLAN-1 schema) and flush at the next sync.
-- Moves (delete, spam, restore, undo) require being online; offline they are refused with 「今はインターネットにつながっていないため操作できません」 (shown by folder-actions).
+- Moves (delete, spam, restore, undo) require being online; offline they are refused with 「今はインターネットにつながっていないため操作できません。つながってからもう一度お試しください。」 (shown by folder-actions).
 
 ## 3. Incoming-mail pipeline
 
