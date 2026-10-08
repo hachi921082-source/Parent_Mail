@@ -15,7 +15,7 @@ List pane: folder view binding, rows, selection, unread count, bottom action-but
 
 ## 2. Behavior
 
-- Pane layout (top to bottom): search box area (owned by `search`), list, bottom buttons in order: 作成 (compose), 検索, 設定, アドレス帳, 受信拒否リスト, 振り分けルール (labels in `Strings`; a click on 検索 focuses the search box, A47).
+- Pane layout (top to bottom): search box area (owned by `search`), list, bottom buttons in order: 新しいメール (compose), 検索, 設定, アドレス帳, 受信拒否リスト, 振り分けルール (labels in `Strings`; a click on 検索 focuses the search box, A47).
 - Row: sender (display name, else address), subject, date/time, attachment icon; unread rows in bold. Row text uses `AppFontSize`. Row height adapts to font size.
 - Data: `ListViewModel.LoadFolder(folderKind)` queries `GetFolderView` (cache) sorted by date DESC; virtualized `ListView` (`VirtualizingStackPanel`), incrementally loaded 200 rows at a time as the user scrolls (keyset paging). Reloads after sync completion and after local actions while keeping the selection when the message still exists.
 - Outbox folder: rows come from the `outbox` table (sender column shows the first recipient; date = created time; failed items show a red marker 「送信できませんでした」).
