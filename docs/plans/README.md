@@ -127,7 +127,7 @@ DB schemas are defined in `sync-cache/PLAN-1.md` (cache.db) and `settings/PLAN.m
 - Namespaces `ParentMail.App.Features.<Feature>` / `ParentMail.Core.Features.<Feature>`; PascalCase types, `_camel` private fields.
 - Code comments in Japanese. Commit messages: Japanese body, one file per commit (mutually dependent new file sets may be committed together).
 - Every per-account row/table is scoped by accountId (settings.db) or lives in the account's cache.db.
-- All UI strings come from `Strings` (Japanese only); notices follow section 17 tone: polite plain Japanese, no technical terms, one sentence on what to do next; problems the parents cannot fix say to ask a knowledgeable person.
+- All UI strings come from `Strings` (Japanese only). `docs/plans/ui-strings.md` is the reviewed list and the source of truth for wording once the user approves it; Japanese wording inside individual PLANs is a draft and the list wins on any difference; notices follow section 17 tone: polite plain Japanese, no technical terms, one sentence on what to do next; problems the parents cannot fix say to ask a knowledgeable person.
 - All dialogs use large buttons; dangerous confirmations have Cancel as default.
 - Never log or store mail content, addresses, subjects, or passwords outside the cache DB/Credential Manager.
 - Dates shown in local time.
