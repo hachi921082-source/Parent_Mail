@@ -35,6 +35,9 @@ public sealed class ShellAccountBinder
         _switch.PropertyChanged += (_, _) => Push();
         shell.SwitchAccountRequested += (_, _) => _switch.SwitchCommand.Execute(null);
         _service.AccountAdded += (_, _) => RunOnUi(_switch.Refresh);
+        // 名前変更・削除でも切替ボタンの名前と、現在のアカウント（削除で残る方へ）を取り直す
+        _service.AccountRenamed += (_, _) => RunOnUi(_switch.Refresh);
+        _service.AccountRemoved += (_, _) => RunOnUi(_switch.Refresh);
 
         // 主窓の表示が済んでから初期化する（初回起動の窓は主窓より前に出す）
         RunOnUi(() =>
