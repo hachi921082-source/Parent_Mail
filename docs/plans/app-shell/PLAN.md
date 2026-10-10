@@ -87,7 +87,7 @@ Rules: the Inbox count badge on the active (blue) folder button is a white pill 
 - `AppLog.Info/Warn/Error(string area, string message, Exception? ex)`; `Rotate()` internal.
 - `INotifier.ShowBanner(BannerKind kind, string text, (string label, Action action)? action)`, `HideBanner(BannerKind)`, `ShowNotice(string text, string? actionLabel, Action? action, int seconds)` (transient). `BannerKind` priority enum: WrongPassword, Offline, OutboxFailure, InitialSync, Other.
 - `BannerHost`: keeps the active set, shows the top 2 by priority, handles dismissal of OutboxFailure.
-- `IDialogService.ShowNotice(string text)` (modal OK), `Choose(...)`, `Confirm(...)`.
+- `IDialogService.ShowNotice(string title, string message)` (modal OK; wave-0 contract, title = window title from window-layouts.md), `Choose(...)`, `Confirm(...)`.
 - `ChromeFontSize.Get(textPt)` = `min(textPt, ChromeTextMaxPt) * 96/72`.
 - `SingleInstanceGuard.TryAcquire()`, `SignalExisting()`.
 - `WindowRules.Apply(Window, defaultButton, cancelButton)`.
