@@ -6,11 +6,12 @@
         Background="{DynamicResource Page}" Foreground="{DynamicResource PageText}"
         UseLayoutRounding="True">
     <!-- 上から: 文字の大きさ（数字欄・pt・スライダー・範囲）、見本、アカウント欄、閉じる。タブ順もこの順。 -->
-    <DockPanel Margin="24">
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button x:Name="CloseButton" Content="{Binding CloseLabel}" Click="OnClose"
-                    Style="{StaticResource PrimaryButton}" TabIndex="100" />
-        </StackPanel>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" IsTabStop="False">
             <StackPanel>
@@ -28,7 +29,7 @@
                     <TextBlock Grid.Column="1" Text="{Binding UnitLabel}" VerticalAlignment="Center" Margin="8,0,16,0" />
                     <Slider x:Name="SizeSlider" Grid.Column="2" VerticalAlignment="Center" MinHeight="48"
                             Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
-                            TickFrequency="1" IsSnapToTickEnabled="True" SmallChange="1" LargeChange="4"
+                            SmallChange="1" LargeChange="4"
                             Value="{Binding TextSizePt, Mode=TwoWay}"
                             AutomationProperties.Name="{Binding SliderName}" TabIndex="1" />
                     <TextBlock Grid.Column="3" Text="{Binding RangeHint}" VerticalAlignment="Center" Margin="16,0,0,0" />
@@ -44,5 +45,11 @@
                 <ContentControl x:Name="AccountSection" IsTabStop="False" KeyboardNavigation.TabNavigation="Continue" />
             </StackPanel>
         </ScrollViewer>
-    </DockPanel>
+
+        <!-- 閉じるは最後に宣言し、タブ順でも最後にする（アカウント欄のボタンは既定の TabIndex のため、宣言順で後ろに置く） -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="CloseButton" Content="{Binding CloseLabel}" Click="OnClose"
+                    Style="{StaticResource PrimaryButton}" />
+        </StackPanel>
+    </Grid>
 </Window>
