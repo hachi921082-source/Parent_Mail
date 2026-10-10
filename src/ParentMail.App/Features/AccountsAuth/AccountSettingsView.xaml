@@ -1,0 +1,35 @@
+<UserControl x:Class="ParentMail.App.Features.AccountsAuth.AccountSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             IsTabStop="False">
+    <!-- 設定窓の「アカウント」欄。各行: 表示名 + アドレス、その下に 名前を変える / パスワードを入れ直す / 削除。最後に アカウントを追加。 -->
+    <StackPanel>
+        <TextBlock Text="{Binding SectionTitle}" FontWeight="Bold" Margin="0,0,0,8" />
+        <ItemsControl ItemsSource="{Binding Accounts}" IsTabStop="False">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="{DynamicResource PageText}" BorderThickness="1" Padding="12" Margin="0,0,0,8">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" Margin="0,0,16,0" />
+                                <TextBlock Text="{Binding Email}" />
+                            </StackPanel>
+                            <WrapPanel>
+                                <Button Content="{Binding DataContext.RenameLabel, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Command="{Binding RenameCommand}" Style="{StaticResource AppButton}" Margin="0,0,12,8" />
+                                <Button Content="{Binding DataContext.ReenterLabel, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Command="{Binding ReenterPasswordCommand}" Style="{StaticResource AppButton}" Margin="0,0,12,8" />
+                                <Button Content="{Binding DataContext.DeleteLabel, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Command="{Binding DeleteCommand}" Style="{StaticResource AppButton}" Margin="0,0,0,8" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+            <Button Content="{Binding AddLabel}" Command="{Binding AddCommand}" Style="{StaticResource AppButton}" Margin="0,0,16,0" />
+            <TextBlock Text="{Binding AddNote}" VerticalAlignment="Center" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>
