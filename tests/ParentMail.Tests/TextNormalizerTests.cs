@@ -20,5 +20,5 @@ public class TextNormalizerTests
     // フェイクがコンパイルでき、契約どおり動くことの確認
     [Fact]
     public void FakeTextScale_既定18ptでHTML倍率は1_5()
-        => Assert.Equal(1.5, new FakeTextScale().WebViewZoomFactor(1.0));
+        => Assert.Equal(1.5, new FakeTextScale().GetWebViewZoom(1.0));
 }
