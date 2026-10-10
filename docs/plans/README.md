@@ -177,32 +177,44 @@ Applied 2026-10-08 (QA.md Q44-Q57); see QA.md. Later decisions (Q58-Q78: layouts
 
 ## 11. Implementation Order & Progress
 
-Tiers group features whose plans have no unmet dependency on a later tier. Features inside one tier can be implemented in parallel worktrees. Dependencies are read from the shared classes each plan calls into.
+Wave-based plan (revised 2026-10-10). A wave = features whose dependencies are all merged in earlier waves; features of one wave run in parallel git worktrees (`feature/<feature-name>`, skill `parallel-plan-worktrees`). Contract-first: wave 0 creates the shared interfaces, models and fakes, so later features code against interfaces and can start before the implementation of the feature they call. At most 4 worktrees are active at once (review and token cost); a wave with more lanes is run in two batches (listed in order).
 
-| Tier | Feature plan | Depends on | Status |
+### Wave 0 - skeleton and contracts (serial, directly on a branch `feature/skeleton`, one worktree)
+
+- `Parent_Mail.sln`, the three projects, `.gitignore`, `Directory.Build.props`, xUnit setup, CI-less `dotnet build/test` quiet commands.
+- All interfaces of section 7 (`ICredentialStore`, `IImapGateway`, `ISmtpGateway`, repositories, `ISyncService`, `IAppState`, `INotifier`, `IDialogService`, `IClock`, `IAppLog`, `ITextScale`, `ISettingsStore`, `IIncomingRule`, `IBodyFetcher`, `IAttachmentService`, `IIdleMonitor`, `IDraftService`, `IOutboxService`, `IComposeWindowFactory`, `IContactLookup`) and the models of section 5, constants of section 6, plus hand-written fakes for tests.
+- `TextNormalizer.NormalizeKey` (used by sync-cache `search_key`, search, filter-rules, address-book) and `Strings.ja.cs` generated once by `tools/gen_strings.py` (never edited by hand; regenerate and commit alone if `ui-strings.md` changes).
+- Extension points so features never edit the same file: each feature adds ONE `Add<Feature>(this IServiceCollection)` extension in its own folder, and `App.xaml.cs` calls them through a single registrar list created here; `MainWindow` exposes named content slots (banner, top bar, list pane, preview, bottom strip) as `ContentControl`s filled by the feature views.
+- Done when: solution builds, fakes compile, one trivial test passes. Merge before wave 1 starts.
+
+### Waves
+
+| Wave | Lanes (parallel) | Depends on | Status |
 |---|---|---|---|
-| T0 | app-shell/PLAN | none | not started |
-| T0 | settings/PLAN | app-shell (solution skeleton) | not started |
-| T1 | accounts-auth/PLAN-1 | settings (settings.db), app-shell | not started |
-| T1 | sync-cache/PLAN-1 | accounts-auth/PLAN-1 (accountId, paths) | not started |
-| T2 | sync-cache/PLAN-2 | sync-cache/PLAN-1 | not started |
-| T2 | address-book/PLAN | settings, accounts-auth/PLAN-1 | not started |
-| T2 | block-list/PLAN | settings, accounts-auth/PLAN-1 | not started |
-| T2 | filter-rules/PLAN | settings, accounts-auth/PLAN-1 | not started |
-| T2 | safety-warnings/PLAN-1, PLAN-2 | app-shell | not started |
-| T3 | mail-list/PLAN | sync-cache/PLAN-1 | not started |
-| T3 | mail-display/PLAN-1, PLAN-2 | sync-cache/PLAN-1, settings, safety-warnings/PLAN-1 | not started |
-| T3 | sync-cache/PLAN-3 | sync-cache/PLAN-2 | not started |
-| T3 | folder-actions/PLAN | mail-list, sync-cache/PLAN-2 | not started |
-| T3 | search/PLAN | mail-list, sync-cache/PLAN-1 | not started |
-| T3 | outbox-send/PLAN | sync-cache/PLAN-2, accounts-auth/PLAN-1 | not started |
-| T4 | mail-display/PLAN-3 | mail-display/PLAN-1, sync-cache/PLAN-3, safety-warnings/PLAN-2 | not started |
-| T4 | compose/PLAN-1 | outbox-send, address-book, safety-warnings/PLAN-2 | not started |
-| T4 | compose/PLAN-2 | compose/PLAN-1, sync-cache/PLAN-2 | not started |
-| T5 | reply-forward/PLAN | compose, mail-display/PLAN-3 | not started |
-| T5 | accounts-auth/PLAN-2 | accounts-auth/PLAN-1, settings | not started |
-| T5 | app-lifecycle/PLAN | outbox-send, compose/PLAN-2, accounts-auth | not started |
+| W1 | app-shell/PLAN (banner/notice host, dialog service, palette, window rules, main window skeleton, log, single instance); settings/PLAN (settings.db + migrations incl. address-book/block/filter tables, `ITextScale`, settings window skeleton); sync-cache/PLAN-1 (cache.db, repositories, attachment store); safety-warnings/PLAN-1 + PLAN-2 (pure logic, no UI dependency) | W0 | not started |
+| W2 | batch A: accounts-auth/PLAN-1 (credential store, account-add, switch, `IAppState`); sync-cache/PLAN-2 (sync engine, MailKit gateway, incoming pipeline); outbox-send/PLAN (outbox, SMTP, retry, `MessageBuilder`); address-book/PLAN. batch B: block-list/PLAN + filter-rules/PLAN (one lane, both are `IIncomingRule` implementations on settings.db) | W1 (app-shell UI hosts, settings.db, cache.db) | not started |
+| W3 | mail-list/PLAN; mail-display/PLAN-1 + PLAN-2; sync-cache/PLAN-3 (on-demand fetch, idle backfill); accounts-auth/PLAN-2 (rename, delete, re-entry, warning gate); compose/PLAN-1 | W2 | not started |
+| W4 | folder-actions/PLAN; search/PLAN; mail-display/PLAN-3 (attachments); compose/PLAN-2 (drafts, close dialog) | W3 (mail-list for folder-actions and search) | not started |
+| W5 | reply-forward/PLAN; app-lifecycle/PLAN; then the integration pass and release build | W4 | not started |
 
-Status values: not started / in progress / review / merged. Update at each feature's merge.
+Notes on lane edges:
+- settings: the settings window UI part needs the dialog service of app-shell, so it is merged after app-shell; settings.db and `ITextScale` are independent and merged first.
+- app-shell consumes `ISettingsStore` / `ITextScale` through the wave-0 interfaces (fakes until settings merges).
+- mail-display/PLAN-1 needs the main window slots (app-shell), `IAppState` (accounts-auth/PLAN-1) and `LinkClickHandler` (safety-warnings/PLAN-1); the HTML Ctrl+wheel spike (mail-display PLAN-2) is the FIRST task of its lane.
+- folder-actions and search use mail-list's checkbox state, so they start after mail-list is merged (W4), not in W3.
+- reply-forward waits for compose/PLAN-1 (W3) and sync-cache/PLAN-3 (attachment fetch); app-lifecycle waits for outbox-send and compose/PLAN-2.
 
-The 2026-10-08 update (multi-select delete, two-row top bar, palette, window layouts) adds work inside existing PLANs only (app-shell, mail-list, folder-actions, mail-display PLAN-1/PLAN-2, search); dependencies between PLANs are unchanged, so the tiers stay as listed. Within T3, mail-list is implemented before folder-actions and search because they use its checkbox state.
+### Conflict hotspots and rules
+
+- One owner per file: `Strings.ja.cs` (generated), DI registrar list, `MainWindow.xaml` slots (app-shell only; features add their own view files), `settings.db` migration chain (settings lane only, tables for all features are created in its v1), `cache.db` migration chain (sync-cache/PLAN-1 only; later lanes ask for schema changes in a separate small commit on the main chain).
+- Other lanes needing a change in a file they do not own: make the smallest additive commit on their own branch and mention it in the review; resolve at merge, never by editing the owner's design.
+- Merge order inside a wave: foundation lanes first (W1: app-shell, settings, sync-cache/PLAN-1, safety-warnings; W2: accounts-auth/PLAN-1, sync-cache/PLAN-2, then the rest).
+- Each lane: PLAN-listed unit tests first, `dotnet build -v q` and `dotnet test --nologo -v q` green, reviewer-lite review, then PR/merge with user confirmation (dev-workflow section 7).
+
+### Integration gates (manual, test Gmail account)
+
+- After W2: add the test account, initial sync, 5-minute cycle, send a mail to itself, block/filter rule on a new Inbox mail.
+- After W3: read mail (plain/HTML, images blocked), compose and send, attachments, offline behaviour.
+- After W5: full flow (delete/undo, multi-select, search, drafts, quit with Outbox, Windows sign-out), 2 accounts, Japanese user-folder path, release build `Parent_Mail_YYYYMMDD-HHMMSS.exe`.
+
+Status values per lane: not started / in progress / review / merged. Update this table at each feature's merge.
