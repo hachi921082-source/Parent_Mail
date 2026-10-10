@@ -8,6 +8,7 @@ using ParentMail.Tests.Fakes;
 namespace ParentMail.Tests.BlockList;
 
 // 受信拒否リストウィンドウの状態（追加・重複・エラー・削除確認）と、ウィンドウ生成の確認。
+[Collection("Wpf")]
 public class BlockListViewModelTests
 {
     private const string Acc = "a1";
