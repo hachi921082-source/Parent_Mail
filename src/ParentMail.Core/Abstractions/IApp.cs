@@ -15,16 +15,16 @@ public interface IAppState
     event EventHandler? SelectedMessageChanged;
 }
 
-/// <summary>帯の優先度。値が大きいほど優先して表示する。</summary>
-public enum BannerPriority { Low = 0, Normal = 1, High = 2 }
+/// <summary>帯の種類。宣言順が優先順（先頭が最優先）。</summary>
+public enum BannerKind { WrongPassword, Offline, OutboxFailure, InitialSync, Other }
 
 public interface INotifier
 {
-    /// <summary>帯を表示する。同じ key は置き換える。</summary>
-    void ShowBanner(string key, string text, BannerPriority priority);
-    void HideBanner(string key);
-    /// <summary>数秒で消える通知。action があれば操作ボタン付き（元に戻す等）。</summary>
-    void ShowTransient(string text, string? actionText = null, Action? action = null);
+    /// <summary>帯を表示する。同じ kind は置き換える。action があれば操作ボタン付き。</summary>
+    void ShowBanner(BannerKind kind, string text, (string Label, Action Action)? action = null);
+    void HideBanner(BannerKind kind);
+    /// <summary>数秒で消える通知（transient）。action があれば操作ボタン付き（元に戻す等）。</summary>
+    void ShowNotice(string text, string? actionLabel = null, Action? action = null, int seconds = Constants.TransientNoticeSeconds);
 }
 
 public interface IDialogService
@@ -37,18 +37,19 @@ public interface IDialogService
     int Choose(string title, string message, IReadOnlyList<string> buttons, int defaultIndex, int safeIndex);
 }
 
-/// <summary>文字サイズ（pt）から画面上の大きさ（DIP）への変換。</summary>
+/// <summary>文字サイズ（pt）から画面上の大きさ（DIP）への変換（settings PLAN 4 章）。</summary>
 public interface ITextScale
 {
     double TextSizePt { get; set; }
-    /// <summary>通常 UI の FontSize (DIP)。</summary>
-    double BodyDip { get; }
+    /// <summary>通常 UI の FontSize (DIP) = pt x 96/72。</summary>
+    double FontSizeDip { get; }
     /// <summary>上部バー・下部帯の FontSize (DIP)。ChromeTextMaxPt で頭打ち。</summary>
-    double ChromeDip { get; }
+    double ChromeFontSizeDip { get; }
     /// <summary>プレビューの実効 pt = min(pt x zoom, PreviewTextMaxPt)。</summary>
-    double EffectivePreviewPt(double zoom);
-    double PreviewDip(double zoom);
+    double GetEffectivePreviewPt(double zoom);
     /// <summary>HTML 表示用 ZoomFactor。範囲に収め小数 2 桁に丸める。</summary>
-    double WebViewZoomFactor(double zoom);
+    double GetWebViewZoom(double zoom);
+    /// <summary>プレーンテキスト表示の FontSize (DIP)。</summary>
+    double GetPlainTextSizeDip(double zoom);
     event EventHandler? Changed;
 }
