@@ -4,6 +4,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>ParentMail.App</RootNamespace>
     <AssemblyName>Parent_Mail</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
