@@ -8,7 +8,7 @@ namespace ParentMail.Core;
 public sealed record ImapFolderStatus(string FolderPath, uint UidValidity, uint UidNext, ulong? HighestModSeq, int MessageCount);
 
 /// <summary>IMAP から取得したヘッダ情報。</summary>
-public sealed record ImapHeader(uint Uid, long GmailMsgId, string MessageIdHeader, string Subject, string FromAddress, string FromName,
+public sealed record ImapHeader(uint Uid, long GmailMsgId, string MessageIdHeader, string? References, string Subject, string FromAddress, string FromName,
     IReadOnlyList<string> To, IReadOnlyList<string> Cc, DateTime DateUtc, bool IsRead, bool HasAttachments);
 
 /// <summary>IMAP から取得した本文。</summary>
@@ -43,8 +43,11 @@ public interface IImapGatewayFactory
     IImapGateway Create(Account account);
 }
 
+/// <summary>SMTP 送信の結果。AuthFailed は失敗回数に数えず、パスワード入れ直しの流れへ回す。</summary>
+public enum SendResult { Ok, AuthFailed, Transient, Permanent }
+
 public interface ISmtpGateway
 {
-    /// <summary>送信する。失敗時は例外を投げる。</summary>
-    Task SendAsync(OutboxItem item, CancellationToken ct = default);
+    /// <summary>組み立て済みのメッセージを accountId のアカウントで送る（outbox-send PLAN 3 章）。</summary>
+    Task<SendResult> SendAsync(MimeKit.MimeMessage message, string accountId, CancellationToken ct = default);
 }
