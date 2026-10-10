@@ -1,0 +1,114 @@
+<Window x:Class="ParentMail.App.Features.Compose.ComposeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ParentMail.App.Features.Compose"
+        Width="960" Height="720" Background="{DynamicResource Page}" Foreground="{DynamicResource PageText}"
+        AllowDrop="True" ShowInTaskbar="True">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisible" />
+        <local:InverseBoolToVisibility x:Key="InvBoolToVisible" />
+    </Window.Resources>
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 宛先 -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static local:ComposeText.LabelTo}"
+                   VerticalAlignment="Center" Margin="0,0,16,12" />
+        <local:RecipientBox x:Name="ToBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,12"
+                            Text="{Binding ToText, Mode=TwoWay}" IsInvalid="{Binding ToInvalid}"
+                            Label="{x:Static local:ComposeText.LabelTo}" />
+
+        <!-- CC -->
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static local:ComposeText.LabelCc}"
+                   VerticalAlignment="Center" Margin="0,0,16,12" />
+        <local:RecipientBox x:Name="CcBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,12"
+                            Text="{Binding CcText, Mode=TwoWay}" IsInvalid="{Binding CcInvalid}"
+                            Label="{x:Static local:ComposeText.LabelCc}" />
+
+        <!-- 「BCCを追加」を押すと、同じ場所に BCC 欄が出る -->
+        <Button x:Name="AddBccButton" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left"
+                Style="{StaticResource AppButton}" Margin="0,0,0,12"
+                Content="{x:Static local:ComposeText.BtnAddBcc}" Click="OnAddBcc"
+                Visibility="{Binding ShowBcc, Converter={StaticResource InvBoolToVisible}}" />
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="{x:Static local:ComposeText.LabelBcc}"
+                   VerticalAlignment="Center" Margin="0,0,16,12"
+                   Visibility="{Binding ShowBcc, Converter={StaticResource BoolToVisible}}" />
+        <local:RecipientBox x:Name="BccBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,12"
+                            Text="{Binding BccText, Mode=TwoWay}" IsInvalid="{Binding BccInvalid}"
+                            Label="{x:Static local:ComposeText.LabelBcc}"
+                            Visibility="{Binding ShowBcc, Converter={StaticResource BoolToVisible}}" />
+
+        <!-- 件名 -->
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static local:ComposeText.LabelSubject}"
+                   VerticalAlignment="Center" Margin="0,0,16,12" />
+        <TextBox x:Name="SubjectBox" Grid.Row="3" Grid.Column="1" Margin="0,0,0,12" Padding="6,4"
+                 SpellCheck.IsEnabled="False" PreviewKeyDown="OnSingleLineKeyDown"
+                 AutomationProperties.Name="{x:Static local:ComposeText.LabelSubject}"
+                 Text="{Binding Subject, UpdateSourceTrigger=PropertyChanged}" />
+
+        <!-- 本文（プレーンテキスト。Tab は文字にせず次へ進む） -->
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="{x:Static local:ComposeText.LabelBody}"
+                   VerticalAlignment="Top" Margin="0,6,16,12" />
+        <TextBox x:Name="BodyBox" Grid.Row="4" Grid.Column="1" Margin="0,0,0,12" Padding="6,4"
+                 AcceptsReturn="True" AcceptsTab="False" TextWrapping="Wrap" SpellCheck.IsEnabled="False"
+                 VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top"
+                 AutomationProperties.Name="{x:Static local:ComposeText.LabelBody}"
+                 Text="{Binding Body, UpdateSourceTrigger=PropertyChanged}" />
+
+        <!-- 添付の一覧（名前・大きさ・削除） -->
+        <TextBlock Grid.Row="5" Grid.Column="0" Text="{x:Static local:ComposeText.AttachLabel}"
+                   VerticalAlignment="Top" Margin="0,8,16,12"
+                   Visibility="{Binding HasAttachments, Converter={StaticResource BoolToVisible}}" />
+        <ItemsControl x:Name="AttachmentList" Grid.Row="5" Grid.Column="1" ItemsSource="{Binding Attachments}"
+                      Margin="0,0,0,12" IsTabStop="False"
+                      Visibility="{Binding HasAttachments, Converter={StaticResource BoolToVisible}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="{DynamicResource ButtonBorder}" BorderThickness="1" Padding="8,4" Margin="0,0,12,8"
+                            Background="{DynamicResource Bar}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" MaxWidth="360"
+                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                            <TextBlock Text="{Binding SizeText}" VerticalAlignment="Center" Margin="12,0,12,0"
+                                       Foreground="{DynamicResource Hint}" />
+                            <Button Style="{StaticResource AppButton}" Content="{x:Static local:ComposeText.BtnRemove}"
+                                    Click="OnRemoveAttachment" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- エラー行 -->
+        <TextBlock x:Name="ErrorLine" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding ErrorText}"
+                   Foreground="{DynamicResource BannerError}" FontWeight="Bold" TextWrapping="Wrap"
+                   MinHeight="32" Margin="0,0,0,12" />
+
+        <!-- 下段: 左に「添付」、右に大きな「送信」（主な操作はこの 1 つだけ。キーボードの近道は付けない） -->
+        <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">
+            <Button x:Name="AttachButton" Style="{StaticResource AppButton}" HorizontalAlignment="Left"
+                    Content="{x:Static local:ComposeText.BtnAttach}" Click="OnAttach" />
+            <Button x:Name="SendButton" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"
+                    MinWidth="200" Content="{x:Static local:ComposeText.BtnSend}" Click="OnSend"
+                    IsEnabled="{Binding IsSendEnabled}" />
+        </Grid>
+    </Grid>
+</Window>
