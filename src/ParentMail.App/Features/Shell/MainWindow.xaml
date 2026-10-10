@@ -1,0 +1,197 @@
+<Window x:Class="ParentMail.App.Features.Shell.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="clr-namespace:ParentMail.App.Resources"
+        xmlns:core="clr-namespace:ParentMail.Core;assembly=ParentMail.Core"
+        Title="{x:Static res:Strings.WD_01}" Width="1280" Height="800" MinWidth="1024" MinHeight="700"
+        FontSize="{Binding AppFontSize}" Background="{DynamicResource Page}" Foreground="{DynamicResource PageText}"
+        UseLayoutRounding="True">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!-- 帯 1 件。色は種類ごと（パレット参照）。閉じるボタンは送信失敗の帯だけ。 -->
+        <DataTemplate x:Key="BannerTemplate">
+            <Border x:Name="BannerBorder" MinHeight="56" Padding="16,6" Background="{DynamicResource BannerError}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="BannerText" Text="{Binding Text}" FontWeight="Bold" TextWrapping="Wrap"
+                               VerticalAlignment="Center" Foreground="{DynamicResource BannerErrorText}" />
+                    <Button Grid.Column="1" Content="{Binding ActionLabel}" Command="{Binding ActionCommand}"
+                            Style="{StaticResource BannerButton}" Margin="16,0,0,0"
+                            Visibility="{Binding HasAction, Converter={StaticResource BoolToVisibility}}" />
+                    <Button Grid.Column="2" Content="×" Command="{Binding CloseCommand}"
+                            Style="{StaticResource BannerButton}" Margin="16,0,0,0" Width="48"
+                            AutomationProperties.Name="{x:Static res:Strings.TB_25}"
+                            Visibility="{Binding CanClose, Converter={StaticResource BoolToVisibility}}" />
+                </Grid>
+            </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Kind}" Value="{x:Static core:BannerKind.Offline}">
+                    <Setter TargetName="BannerBorder" Property="Background" Value="{DynamicResource BannerOffline}" />
+                    <Setter TargetName="BannerText" Property="Foreground" Value="{DynamicResource BannerOfflineText}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Kind}" Value="{x:Static core:BannerKind.InitialSync}">
+                    <Setter TargetName="BannerBorder" Property="Background" Value="{DynamicResource BannerLoading}" />
+                    <Setter TargetName="BannerText" Property="Foreground" Value="{DynamicResource BannerLoadingText}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- 赤い丸バッジ。受信トレイの件数は選択中だけ白地に赤文字 + 赤い枠。 -->
+        <DataTemplate x:Key="FolderButtonTemplate">
+            <Button Command="{Binding DataContext.SelectFolderCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                    CommandParameter="{Binding}" Margin="4,0" MinWidth="0" Padding="8,4"
+                    HorizontalAlignment="Stretch">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource AppButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource Primary}" />
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryActiveBorder}" />
+                                <Setter Property="BorderThickness" Value="4" />
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualOnDark}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center" FontWeight="Bold" />
+                    <Border Margin="6,0,0,0" Padding="6,0" BorderThickness="2"
+                            Visibility="{Binding HasBadge, Converter={StaticResource BoolToVisibility}}">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource BadgePill}">
+                                <Setter Property="BorderBrush" Value="{DynamicResource Badge}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding UseWhiteBadge}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource Page}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding BadgeText}" FontWeight="Bold" VerticalAlignment="Center" TextAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{DynamicResource BadgeText}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UseWhiteBadge}" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource Badge}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Border>
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+    </Window.Resources>
+
+    <!-- 各機能のビューは名前付きスロット（ContentControl）に差し込む。スロット名は変えない。 -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 帯（バナー）: 最大 2 件 -->
+        <ContentControl x:Name="BannerSlot" Grid.Row="0" IsTabStop="False">
+            <ItemsControl ItemsSource="{Binding Notifier.Banners}" ItemTemplate="{StaticResource BannerTemplate}"
+                          IsTabStop="False" />
+        </ContentControl>
+
+        <!-- 上部バー: 2 段（アカウント切替・HTML・更新 / 6 つのフォルダ） -->
+        <ContentControl x:Name="TopBarSlot" Grid.Row="1" IsTabStop="False">
+            <Border Background="{DynamicResource Bar}" BorderBrush="{DynamicResource BarBorder}"
+                    BorderThickness="0,0,0,2" Padding="16,8" TextElement.FontSize="{Binding ChromeFontSize}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Style="{StaticResource AppButton}" Command="{Binding SwitchAccountCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding AccountName}" VerticalAlignment="Center" FontWeight="Bold" />
+                                <Border Style="{StaticResource BadgePill}"
+                                        Visibility="{Binding HasOtherAccountBadge, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{Binding OtherAccountBadge}" FontWeight="Bold" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource BadgeText}" />
+                                </Border>
+                            </StackPanel>
+                        </Button>
+                        <CheckBox Grid.Column="2" Content="{x:Static res:Strings.TB_11}" IsChecked="{Binding HtmlMode}"
+                                  VerticalAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,24,0" MinHeight="48">
+                            <CheckBox.LayoutTransform>
+                                <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
+                            </CheckBox.LayoutTransform>
+                        </CheckBox>
+                        <Button Grid.Column="3" Content="{Binding RefreshLabel}" Command="{Binding RefreshCommand}"
+                                Style="{StaticResource AppButton}" />
+                    </Grid>
+
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Folders}" ItemTemplate="{StaticResource FolderButtonTemplate}"
+                                  Margin="-4,8,-4,0" IsTabStop="False">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </ContentControl>
+
+        <Grid Grid.Row="2" x:Name="ContentGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="ListColumn" Width="0.35*" MinWidth="200" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="0.65*" MinWidth="300" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <!-- 一覧ペイン -->
+                <ContentControl x:Name="ListPaneSlot" Grid.Row="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+                <!-- 一覧ペイン下部の帯 -->
+                <ContentControl x:Name="BottomStripSlot" Grid.Row="1" HorizontalContentAlignment="Stretch" />
+            </Grid>
+
+            <GridSplitter x:Name="Splitter" Grid.Column="1" Width="6" HorizontalAlignment="Stretch"
+                          ResizeBehavior="PreviousAndNext" Background="{DynamicResource BarBorder}" />
+
+            <Grid Grid.Column="2">
+                <!-- プレビュー -->
+                <ContentControl x:Name="PreviewSlot" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+
+                <!-- 一時通知（プレビュー下端） -->
+                <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24" Padding="16,8"
+                        CornerRadius="6" Background="{DynamicResource NoticeOk}"
+                        Visibility="{Binding Notifier.IsNoticeVisible, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Notifier.NoticeText}" FontWeight="Bold" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource NoticeOkText}" TextWrapping="Wrap" MaxWidth="600" />
+                        <Button Content="{Binding Notifier.NoticeActionLabel}" Command="{Binding Notifier.NoticeActionCommand}"
+                                Style="{StaticResource BannerButton}" Margin="16,0,0,0"
+                                Visibility="{Binding Notifier.HasNoticeAction, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
