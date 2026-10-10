@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ParentMail.App.Features.Settings;
 using ParentMail.App.Features.Shell;
+using ParentMail.Core.Data;
 
 namespace ParentMail.App;
 
@@ -13,6 +14,6 @@ public static class FeatureRegistrars
     {
         s => s.AddAppShell(),
         s => s.AddSettings(),
-        // 例: s => s.AddSyncCache(),
+        s => s.AddSyncCache(),
     };
 }
