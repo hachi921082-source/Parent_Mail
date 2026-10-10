@@ -14,9 +14,9 @@ public sealed class FakeClock : IClock
 public sealed class FakeAppLog : IAppLog
 {
     public List<string> Entries { get; } = new();
-    public void Info(string message) => Entries.Add("I:" + message);
-    public void Warn(string message) => Entries.Add("W:" + message);
-    public void Error(string message, Exception? ex = null) => Entries.Add("E:" + message);
+    public void Info(string area, string message) => Entries.Add($"I:{area}:{message}");
+    public void Warn(string area, string message) => Entries.Add($"W:{area}:{message}");
+    public void Error(string area, string message, Exception? ex = null) => Entries.Add($"E:{area}:{message}");
 }
 
 public sealed class FakeCredentialStore : ICredentialStore
