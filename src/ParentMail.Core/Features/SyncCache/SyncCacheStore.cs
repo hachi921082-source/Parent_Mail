@@ -17,6 +17,10 @@ public interface ISyncCacheStore
     Dictionary<long, bool> GetReadStates(string accountId);
     /// <summary>そのフォルダに所属し本文が未取得で、sinceUtc 以降のメール（新しい順）。AllMail は他フォルダに属さないものだけ。</summary>
     IReadOnlyList<(long GmailMsgId, uint Uid)> GetBodylessInFolder(string accountId, Models.FolderKind folder, DateTime sinceUtc);
+    /// <summary>本文が未取得でどこかのフォルダに属するメールの ID（新しい順、最大 limit 件）。アイドル時の先読み用。</summary>
+    IReadOnlyList<long> GetBodylessMessageIds(string accountId, int limit);
+    /// <summary>添付 1 件の情報。無ければ null。</summary>
+    Models.AttachmentInfo? GetAttachment(string accountId, long attachmentId);
     /// <summary>既読・未読の変更を後で反映するために積む（同じメールの古い操作は置き換える）。</summary>
     void EnqueueSeen(string accountId, long gmailMsgId, bool seen);
     IReadOnlyList<PendingOp> GetPending(string accountId);
@@ -81,6 +85,36 @@ public sealed class SyncCacheStore : ISyncCacheStore
         var list = new List<(long, uint)>();
         while (r.Read()) list.Add((r.GetInt64(0), (uint)r.GetInt64(1)));
         return list;
+    }
+
+    public IReadOnlyList<long> GetBodylessMessageIds(string accountId, int limit)
+    {
+        if (limit <= 0) return Array.Empty<long>();
+        using var c = _db.Open(accountId);
+        using var cmd = Cmd(c,
+            "SELECT m.gm_msgid FROM messages m WHERE m.body_state = 0 " +
+            "AND EXISTS (SELECT 1 FROM message_folders mf WHERE mf.gm_msgid = m.gm_msgid) " +
+            "ORDER BY m.date_utc DESC, m.gm_msgid DESC LIMIT @n", ("@n", limit));
+        using var r = cmd.ExecuteReader();
+        var list = new List<long>();
+        while (r.Read()) list.Add(r.GetInt64(0));
+        return list;
+    }
+
+    public Models.AttachmentInfo? GetAttachment(string accountId, long attachmentId)
+    {
+        using var c = _db.Open(accountId);
+        using var cmd = Cmd(c,
+            "SELECT id, gm_msgid, part_id, file_name, content_type, size, is_inline, content_id, local_path " +
+            "FROM attachments WHERE id = @id", ("@id", attachmentId));
+        using var r = cmd.ExecuteReader();
+        if (!r.Read()) return null;
+        return new Models.AttachmentInfo
+        {
+            Id = r.GetInt64(0), GmailMsgId = r.GetInt64(1), PartId = r.GetString(2), FileName = r.GetString(3),
+            ContentType = r.GetString(4), Size = r.GetInt64(5), IsInline = r.GetInt32(6) != 0,
+            ContentId = r.IsDBNull(7) ? null : r.GetString(7), LocalPath = r.IsDBNull(8) ? null : r.GetString(8),
+        };
     }
 
     public void EnqueueSeen(string accountId, long gmailMsgId, bool seen)
