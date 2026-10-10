@@ -1,0 +1,70 @@
+<Window x:Class="ParentMail.App.Features.AddressBook.AddressBookWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ParentMail.App.Features.AddressBook"
+        Width="900" Height="600" Background="{DynamicResource Page}"
+        Foreground="{DynamicResource PageText}" Title="{Binding Title}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ListView x:Name="List" Grid.Row="0" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}"
+                  SelectionMode="Single" PreviewKeyDown="OnListKeyDown" MouseDoubleClick="OnListDoubleClick"
+                  HorizontalContentAlignment="Stretch">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="4,8" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Foreground" Value="{DynamicResource PageText}" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource RowSelected}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="{x:Static local:AddressBookText.ColName}" Width="190"
+                                    DisplayMemberBinding="{Binding Name}" />
+                    <GridViewColumn Header="{x:Static local:AddressBookText.ColReading}" Width="190"
+                                    DisplayMemberBinding="{Binding Reading}" />
+                    <GridViewColumn Header="{x:Static local:AddressBookText.ColEmail}" Width="290"
+                                    DisplayMemberBinding="{Binding EmailsText}" />
+                    <GridViewColumn Header="{x:Static local:AddressBookText.ColMemo}" Width="160"
+                                    DisplayMemberBinding="{Binding Memo}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <!-- 0 件のときの案内 -->
+        <TextBlock Grid.Row="0" Text="{x:Static local:AddressBookText.EmptyList}" Foreground="{DynamicResource Hint}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <Grid Grid.Row="1" Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button Style="{StaticResource AppButton}" Content="{x:Static local:AddressBookText.BtnAdd}"
+                        Command="{Binding AddCommand}" />
+                <Button Style="{StaticResource AppButton}" Content="{x:Static local:AddressBookText.BtnEdit}"
+                        Command="{Binding EditCommand}" Margin="16,0,0,0" />
+                <Button Style="{StaticResource AppButton}" Content="{x:Static local:AddressBookText.BtnDelete}"
+                        Command="{Binding DeleteCommand}" Margin="16,0,0,0" />
+            </StackPanel>
+            <Button x:Name="CloseButton" Style="{StaticResource AppButton}" HorizontalAlignment="Right"
+                    Content="{x:Static local:AddressBookText.BtnClose}" />
+        </Grid>
+    </Grid>
+</Window>
