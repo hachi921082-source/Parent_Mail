@@ -11,11 +11,16 @@ public enum FolderKind { Inbox, Outbox, Sent, Trash, Drafts, Spam, AllMail }
 /// <summary>本文の取得状態。</summary>
 public enum BodyState { None, Fetched }
 
+/// <summary>返信・転送のスレッド用ヘッダ（In-Reply-To と References）。</summary>
+public sealed record ReplyHeaders(string? InReplyTo, string? References);
+
 /// <summary>メール 1 通。GmailMsgId は X-GM-MSGID。</summary>
 public sealed record MailMessage
 {
     public long GmailMsgId { get; init; }
     public string MessageIdHeader { get; init; } = "";
+    /// <summary>References ヘッダの値（返信時に引き継ぐ）。</summary>
+    public string? References { get; init; }
     public string Subject { get; init; } = "";
     public string FromAddress { get; init; } = "";
     public string FromName { get; init; } = "";
@@ -62,6 +67,7 @@ public sealed record OutboxItem
     public bool FailureNotified { get; init; }
     public DateTime CreatedUtc { get; init; }
     public long? SourceDraftId { get; init; }
+    public ReplyHeaders? ReplyHeaders { get; init; }
 }
 
 /// <summary>下書き。項目は OutboxItem と同じ。</summary>
@@ -77,7 +83,26 @@ public sealed record DraftItem
     public IReadOnlyList<AttachmentInfo> Attachments { get; init; } = Array.Empty<AttachmentInfo>();
     public uint? GmailUid { get; init; }
     public bool Dirty { get; init; }
+    public ReplyHeaders? ReplyHeaders { get; init; }
 }
+
+/// <summary>作成ウィンドウの内容の写し。下書き保存と送信箱への積み込みで共通に使う。</summary>
+public sealed record DraftSnapshot
+{
+    /// <summary>ローカル下書き行の ID（新規なら null）。</summary>
+    public long? DraftId { get; init; }
+    public string AccountId { get; init; } = "";
+    public IReadOnlyList<string> To { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Cc { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Bcc { get; init; } = Array.Empty<string>();
+    public string Subject { get; init; } = "";
+    public string Body { get; init; } = "";
+    public IReadOnlyList<AttachmentInfo> Attachments { get; init; } = Array.Empty<AttachmentInfo>();
+    public ReplyHeaders? ReplyHeaders { get; init; }
+}
+
+/// <summary>フォルダごとの同期状態（UIDVALIDITY など）。</summary>
+public sealed record FolderSyncState(FolderKind Folder, uint UidValidity, uint UidNext, ulong? HighestModSeq);
 
 /// <summary>アドレス帳の連絡先。</summary>
 public sealed record Contact(long Id, string AccountId, string Name, string Reading, IReadOnlyList<string> Emails, string Memo);
