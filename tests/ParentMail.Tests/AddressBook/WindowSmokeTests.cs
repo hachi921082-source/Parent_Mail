@@ -7,6 +7,7 @@ using ParentMail.Tests.Fakes;
 namespace ParentMail.Tests.AddressBook;
 
 // 2 つのウィンドウを実際に作り、XAML の参照ミス・初期フォーカス・既定ボタンを確かめる（表示はしない）。
+[Collection("Wpf")]
 public class WindowSmokeTests
 {
     private static void RunSta(Action body)
