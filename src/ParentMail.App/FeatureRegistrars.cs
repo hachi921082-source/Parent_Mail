@@ -26,5 +26,6 @@ public static class FeatureRegistrars
         s => Features.FilterRules.FilterRulesRegistration.AddFilterRules(s),
         s => Features.MailList.MailListRegistration.AddMailList(s),
         s => Features.MailDisplay.MailDisplayRegistration.AddMailDisplay(s),
+        s => s.AddOnDemandFetch(),
     };
 }
