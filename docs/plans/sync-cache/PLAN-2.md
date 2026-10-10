@@ -33,7 +33,7 @@ New mail = message first seen in the INBOX after the account's initial sync (and
 
 ## 4. Functions
 
-- `ISyncService { Task SyncNowAsync(accountId, SyncTrigger, ct); SyncState State; event StateChanged; event SyncCompleted }`.
+- `ISyncService { Task SyncNowAsync(accountId, SyncTrigger, ct); SyncState GetState(accountId); event StateChanged; event SyncCompleted }`.
 - `SyncCoordinator.Start()/Stop()`, `RequestRefresh(accountId)`.
 - `ImapGateway : IImapGateway` (MailKit): the wave-0 contract methods `TestLoginAsync`, `ListFoldersAsync` (special-use), `GetFolderStatusAsync`, `SearchUidsAsync`, `FetchHeadersAsync(folder, uids)`, `FetchBodyAsync`, `FetchPartAsync`, `SetSeenAsync`, `MoveAsync`, `AppendAsync`, `DeleteAsync` (names are the contract; the MailKit class adds private helpers as needed).
 - `IIncomingRule { Task<bool> ApplyAsync(MailMessage msg, RuleContext ctx) }` (returns true when the message was handled and later rules must stop).
