@@ -108,14 +108,13 @@ public sealed class FakeImapGatewayFactory : IImapGatewayFactory
 
 public sealed class FakeSmtpGateway : ISmtpGateway
 {
-    public List<OutboxItem> Sent { get; } = new();
-    /// <summary>設定すると送信時にその例外を投げる。</summary>
-    public Exception? FailWith { get; set; }
+    public List<(MimeKit.MimeMessage Message, string AccountId)> Sent { get; } = new();
+    /// <summary>次回以降の送信結果。Ok 以外なら Sent には記録しない。</summary>
+    public SendResult Result { get; set; } = SendResult.Ok;
 
-    public Task SendAsync(OutboxItem item, CancellationToken ct = default)
+    public Task<SendResult> SendAsync(MimeKit.MimeMessage message, string accountId, CancellationToken ct = default)
     {
-        if (FailWith is not null) throw FailWith;
-        Sent.Add(item);
-        return Task.CompletedTask;
+        if (Result == SendResult.Ok) Sent.Add((message, accountId));
+        return Task.FromResult(Result);
     }
 }
