@@ -17,10 +17,13 @@ public interface IClock
     DateTime LocalNow { get; }
 }
 
-/// <summary>ログ出力。メール本文・宛先・件名・パスワードは渡さない。</summary>
+/// <summary>
+/// ログ出力（app-shell PLAN 3.5）。area は発生元の部品名。
+/// メール本文・宛先・件名・添付名・パスワードは渡さない。
+/// </summary>
 public interface IAppLog
 {
-    void Info(string message);
-    void Warn(string message);
-    void Error(string message, Exception? ex = null);
+    void Info(string area, string message);
+    void Warn(string area, string message);
+    void Error(string area, string message, Exception? ex = null);
 }
