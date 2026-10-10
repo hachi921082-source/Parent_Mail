@@ -98,7 +98,7 @@ public class PassThroughGateway(FakeImapGateway inner) : IImapGateway
     public virtual Task<ImapFolderStatus> GetFolderStatusAsync(string p, CancellationToken ct = default) => inner.GetFolderStatusAsync(p, ct);
     public Task<IReadOnlyList<uint>> SearchUidsAsync(string p, DateTime? s, CancellationToken ct = default) => inner.SearchUidsAsync(p, s, ct);
     public Task<IReadOnlyList<ImapHeader>> FetchHeadersAsync(string p, IReadOnlyList<uint> u, CancellationToken ct = default) => inner.FetchHeadersAsync(p, u, ct);
-    public Task<ImapBody?> FetchBodyAsync(string p, uint u, CancellationToken ct = default) => inner.FetchBodyAsync(p, u, ct);
+    public virtual Task<ImapBody?> FetchBodyAsync(string p, uint u, CancellationToken ct = default) => inner.FetchBodyAsync(p, u, ct);
     public Task<Stream?> FetchPartAsync(string p, uint u, string part, CancellationToken ct = default) => inner.FetchPartAsync(p, u, part, ct);
     public Task SetSeenAsync(string p, IReadOnlyList<uint> u, bool seen, CancellationToken ct = default) => inner.SetSeenAsync(p, u, seen, ct);
     public Task<uint?> MoveAsync(string f, uint u, string t, CancellationToken ct = default) => inner.MoveAsync(f, u, t, ct);
@@ -127,4 +127,14 @@ public sealed class ThrowingGateway(FakeImapGateway inner) : PassThroughGateway(
 {
     public override Task<ImapFolderStatus> GetFolderStatusAsync(string p, CancellationToken ct = default)
         => throw new InvalidOperationException("件名: 秘密の件名");
+}
+
+/// <summary>本文取得が通信断で失敗するゲートウェイ（FailBodies が true の間）。</summary>
+public sealed class FlakyBodyGateway(FakeImapGateway inner) : PassThroughGateway(inner)
+{
+    private readonly FakeImapGateway _inner = inner;
+    public bool FailBodies { get; set; }
+
+    public override Task<ImapBody?> FetchBodyAsync(string p, uint u, CancellationToken ct = default)
+        => FailBodies ? throw new IOException("lost") : _inner.FetchBodyAsync(p, u, ct);
 }
