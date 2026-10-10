@@ -17,7 +17,7 @@ Session-handoff file. Read this first in a fresh conversation, then open only th
 - Repository: `main`, private GitHub repo `hachi921082-source/Parent_Mail`.
 - Specs updated 2026-10-08 with the planning decisions (QA.md Q44-Q57); commit state: see `git status`.
 - Session of 2026-10-08/10: PLAN self-review and consistency fixes done; wave plan (W0-W5) written into `docs/plans/README.md` section 11; branch/merge rules decided (section 8) and also written as the global default in `~/.claude/shared/dev-workflow.md` section 7, with a pointer (no `@` import) in `~/.claude/CLAUDE.md`; `tools/gen_strings.py` added. No application code exists yet (`src/`, `tests/` absent). .NET SDK 10.0.401 is installed.
-- Git: local `main` is ahead of `origin/main` by 7 commits (docs only) - not pushed; push only after the user confirms.
+- Git: `main` already pushed. W0 implemented on branch `feature/skeleton` (solution, 3 projects, models, constants, interfaces, fakes, NormalizeKey, generated Strings.ja.cs, FeatureRegistrars, MainWindow slots; build/test green); reviewer-lite contract mismatches (ITextScale names, ReplyHeaders, BannerKind, SendResult, single ISyncService, IIncomingRule.ApplyAsync, repository methods, fakes) fixed on the branch; awaiting re-review, then `--no-ff` merge into `main`.
 - Immediate next action: W0 (`feature/skeleton`, serial, developer-lite) as described in `docs/plans/README.md` section 11. Needed from the user before W2: test Gmail account + app password (env vars `PARENTMAIL_TEST_USER` / `PARENTMAIL_TEST_APPPASSWORD`).
 - Agent set: lite (`designer-lite`, `developer-lite`, `reviewer-lite`); do not mix with the full set (see `CLAUDE.md`).
 

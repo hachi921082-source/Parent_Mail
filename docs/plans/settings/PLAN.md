@@ -37,7 +37,7 @@ Tables for address-book/block-list/filter-rules are created by this migration (v
 
 ## 4. Functions
 
-- `SettingsDb.Open(path)`, `Migrate()`; `ISettingsStore.Get<T>(key, default)`, `Set(key, value)`.
+- `SettingsDb.Open(path)`, `Migrate()`; `ISettingsStore.Get()` returns `AppSettings`, `Save(AppSettings)` (wave-0 contract; typed record instead of key/value).
 - `ITextScale { double TextSizePt; double FontSizeDip; double ChromeFontSizeDip (min(TextSizePt, 20) * 96/72); event Changed; double GetEffectivePreviewPt(double zoom); double GetWebViewZoom(double zoom); double GetPlainTextSizeDip(double zoom); }`.
 - `SettingsViewModel { TextSizePt (clamped), SampleText }`.
 

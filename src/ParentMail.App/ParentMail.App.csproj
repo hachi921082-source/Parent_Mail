@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>ParentMail.App</RootNamespace>
+    <AssemblyName>Parent_Mail</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ParentMail.Core\ParentMail.Core.csproj" />
+  </ItemGroup>
+</Project>

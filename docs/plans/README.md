@@ -131,6 +131,11 @@ DB schemas are defined in `sync-cache/PLAN-1.md` (cache.db) and `settings/PLAN.m
 - `INotifier` (banner show/hide with priority, transient notice with action), `IDialogService` (`ShowNotice` = modal with one 「OK」 button, `Choose`/`Confirm` with large buttons, default and safe button), `IClock`, `IAppLog`.
 - `ITextScale` (Text size pt -> DIP, chrome size capped at 20 pt, effective preview size, zoom factors; see settings, mail-display PLAN-2).
 
+Contract notes (wave 0, the code in `src/ParentMail.Core/Abstractions/` and `Models/` is authoritative; PLAN wording that differs is a draft):
+- New contract types: `ReplyHeaders(InReplyTo, References)`, `DraftSnapshot`, `FolderSyncState`, `ComposeInit`, `SendResult`, `SendAllResult`, `BodyFetchResult`, `AttachmentFetchResult`, `RuleContext` + `IRuleActions`, `SyncState`, `SyncTrigger`, `AccountEventArgs`, `NewMailEventArgs`, `BannerKind` (priority = declaration order), `ImapHeader`/`ImapBody`/`ImapFolderStatus`/`ImapFolderInfo`/`LoginResult`, `IImapGatewayFactory`.
+- `ISyncService` is ONE service taking `accountId` (no per-account provider). `IIncomingRule.ApplyAsync(MailMessage, RuleContext)` returns true when handled. `ISmtpGateway.SendAsync(MimeMessage, accountId)` returns `SendResult`. `IIdleMonitor` exposes `IdleFor` and `UserActivity` (the backfill worker lives in sync-cache PLAN-3). `IAppLog` methods take `area` first. `INotifier.ShowNotice` = transient notice; `IDialogService.ShowNotice(title, message)` = modal.
+- Test fakes for every contract are in `tests/ParentMail.Tests/Fakes/`.
+
 ## 8. Naming and coding rules
 
 - Namespaces `ParentMail.App.Features.<Feature>` / `ParentMail.Core.Features.<Feature>`; PascalCase types, `_camel` private fields.
@@ -186,6 +191,7 @@ Wave-based plan (revised 2026-10-10). A wave = features whose dependencies are a
 - `TextNormalizer.NormalizeKey` (used by sync-cache `search_key`, search, filter-rules, address-book) and `Strings.ja.cs` generated once by `tools/gen_strings.py` (never edited by hand; regenerate and commit alone if `ui-strings.md` changes).
 - Extension points so features never edit the same file: each feature adds ONE `Add<Feature>(this IServiceCollection)` extension in its own folder, and `App.xaml.cs` calls them through a single registrar list created here; `MainWindow` exposes named content slots (banner, top bar, list pane, preview, bottom strip) as `ContentControl`s filled by the feature views.
 - Done when: solution builds, fakes compile, one trivial test passes. Merge before wave 1 starts.
+- Status (2026-10-10): implemented on `feature/skeleton`; `dotnet build` and `dotnet test` green (8 tests); awaiting reviewer-lite, then merge into `main`.
 
 ### Waves
 
@@ -206,7 +212,7 @@ Notes on lane edges:
 
 ### Conflict hotspots and rules
 
-- One owner per file: `Strings.ja.cs` (generated), DI registrar list, `MainWindow.xaml` slots (app-shell only; features add their own view files), `settings.db` migration chain (settings lane only, tables for all features are created in its v1), `cache.db` migration chain (sync-cache/PLAN-1 only; later lanes ask for schema changes in a separate small commit on the main chain).
+- One owner per file: `Strings.ja.cs` (generated), DI registrar list (`FeatureRegistrars.All`: each lane only appends ONE line for its own `Add<Feature>`, never reorders or edits other lines), `MainWindow.xaml` slots (app-shell only; features add their own view files), `settings.db` migration chain (settings lane only, tables for all features are created in its v1), `cache.db` migration chain (sync-cache/PLAN-1 only; later lanes ask for schema changes in a separate small commit on the main chain).
 - Other lanes needing a change in a file they do not own: make the smallest additive commit on their own branch and mention it in the review; resolve at merge, never by editing the owner's design.
 - Merge order inside a wave: foundation lanes first (W1: app-shell, settings, sync-cache/PLAN-1, safety-warnings; W2: accounts-auth/PLAN-1, sync-cache/PLAN-2, then the rest).
 - Each lane: PLAN-listed unit tests first, `dotnet build -v q` and `dotnet test --nologo -v q` green, reviewer-lite review, then PR/merge with user confirmation (dev-workflow section 7).

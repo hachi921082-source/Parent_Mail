@@ -1,0 +1,42 @@
+<Window x:Class="ParentMail.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Parent_Mail" Width="1280" Height="800" MinWidth="1024" MinHeight="700">
+    <!-- 各機能のビューは名前付きスロット（ContentControl）に差し込む。 -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 帯（バナー） -->
+        <ContentControl x:Name="BannerSlot" Grid.Row="0" />
+        <!-- 上部バー（アカウント切替・フォルダ） -->
+        <ContentControl x:Name="TopBarSlot" Grid.Row="1" />
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.35*" MinWidth="200" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="0.65*" MinWidth="300" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <!-- 一覧ペイン -->
+                <ContentControl x:Name="ListPaneSlot" Grid.Row="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+                <!-- 一覧ペイン下部の帯 -->
+                <ContentControl x:Name="BottomStripSlot" Grid.Row="1" HorizontalContentAlignment="Stretch" />
+            </Grid>
+
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" />
+
+            <!-- プレビュー -->
+            <ContentControl x:Name="PreviewSlot" Grid.Column="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        </Grid>
+    </Grid>
+</Window>
