@@ -1,0 +1,93 @@
+<Window x:Class="ParentMail.App.Features.BlockList.BlockListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ParentMail.App.Features.BlockList"
+        Width="720" Height="560" Background="{DynamicResource Page}"
+        Foreground="{DynamicResource PageText}" Title="{Binding Title}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ListView x:Name="List" Grid.Row="0" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}"
+                  SelectionMode="Single" HorizontalContentAlignment="Stretch">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="4,8" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Foreground" Value="{DynamicResource PageText}" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource RowSelected}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="{x:Static local:BlockListText.ColKind}" Width="160"
+                                    DisplayMemberBinding="{Binding KindText}" />
+                    <GridViewColumn Header="{x:Static local:BlockListText.ColValue}" Width="480"
+                                    DisplayMemberBinding="{Binding Value}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <!-- 0 件のときの案内 -->
+        <TextBlock Grid.Row="0" Text="{x:Static local:BlockListText.EmptyList}" Foreground="{DynamicResource Hint}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- 追加フォーム: 種類、値、追加、案内、エラー -->
+        <StackPanel Grid.Row="1" Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton x:Name="AddressRadio" GroupName="Kind" IsChecked="{Binding IsAddress}"
+                             Content="{x:Static local:BlockListText.RadioAddress}" Margin="0,0,24,0" />
+                <RadioButton x:Name="DomainRadio" GroupName="Kind" IsChecked="{Binding IsDomain}"
+                             Content="{x:Static local:BlockListText.RadioDomain}" />
+            </StackPanel>
+            <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{x:Static local:BlockListText.ValueLabel}"
+                           VerticalAlignment="Center" Margin="0,0,12,0" />
+                <TextBox x:Name="ValueBox" Grid.Column="1" Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="6,4" VerticalAlignment="Center">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding AddCommand}" />
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Grid.Column="2" Style="{StaticResource AppButton}" Margin="12,0,0,0"
+                        Content="{x:Static local:BlockListText.BtnAdd}" Command="{Binding AddCommand}" />
+            </Grid>
+            <TextBlock Text="{x:Static local:BlockListText.Hint}" Foreground="{DynamicResource Hint}"
+                       TextWrapping="Wrap" Margin="0,8,0,0" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Text="{Binding ErrorText}" Foreground="{DynamicResource BannerError}"
+                   FontWeight="Bold" TextWrapping="Wrap" MinHeight="32" Margin="0,8,0,0" />
+
+        <Grid Grid.Row="3" Margin="0,8,0,0">
+            <Button Style="{StaticResource AppButton}" HorizontalAlignment="Left"
+                    Content="{x:Static local:BlockListText.BtnDelete}" Command="{Binding DeleteCommand}" />
+            <Button x:Name="CloseButton" Style="{StaticResource AppButton}" HorizontalAlignment="Right"
+                    Content="{x:Static local:BlockListText.BtnClose}" />
+        </Grid>
+    </Grid>
+</Window>
