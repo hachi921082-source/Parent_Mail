@@ -340,9 +340,12 @@ public sealed class SyncService : ISyncService, IReadStateSync
                     _mail.AddMembership(acc, membership);
                     continue;
                 }
+                // 新着は必ず本文まで取る（Q17）。本文の取得に失敗（通信断）したら何も保存せず中断し、
+                // 次回の同期で新着として最初から処理し直す（保存済みにして規則や通知を取りこぼさない）
+                var body = await run.Gateway.FetchBodyAsync(path, h.Uid, run.Ct).ConfigureAwait(false);
                 _mail.Upsert(acc, ToMessage(h), new[] { membership });
                 run.Known.Add(h.GmailMsgId);
-                await FetchAndStoreBodyAsync(run, path, h.Uid, h.GmailMsgId).ConfigureAwait(false); // 新着は必ず本文まで取る（Q17）
+                if (body is not null) StoreBody(acc, h.GmailMsgId, body);
                 if (kind == FolderKind.Inbox && run.InitialDone) await ProcessIncomingAsync(run, h.GmailMsgId).ConfigureAwait(false);
             }
             Raise(acc);
@@ -361,13 +364,13 @@ public sealed class SyncService : ISyncService, IReadStateSync
             .OrderByDescending(u => u).Take(FlagRefreshMax).ToList();
         if (targets.Count == 0) return;
 
-        var local = _store.GetReadStates(run.AccountId);
-        // 同期中に画面から積まれた操作も守るため、積んだ一覧はここで毎回読む
-        var pending = _store.GetPendingMessageIds(run.AccountId);
         foreach (var batch in targets.Chunk(BatchSize))
         {
             run.Ct.ThrowIfCancellationRequested();
             var headers = await run.Gateway.FetchHeadersAsync(path, batch, run.Ct).ConfigureAwait(false);
+            // 取得中に画面から積まれた操作や既読化を守るため、比較に使う状態は取得の直後に読む
+            var local = _store.GetReadStates(run.AccountId);
+            var pending = _store.GetPendingMessageIds(run.AccountId);
             foreach (var h in headers)
             {
                 if (pending.Contains(h.GmailMsgId)) continue;
@@ -381,10 +384,15 @@ public sealed class SyncService : ISyncService, IReadStateSync
     {
         var body = await run.Gateway.FetchBodyAsync(path, uid, run.Ct).ConfigureAwait(false);
         if (body is null) return false;
-        var derived = body.Html is null ? null : BodyParser.HtmlToText(body.Html);
-        _mail.SetBody(run.AccountId, gmailMsgId, body.Text, body.Html, derived);
-        if (body.Attachments.Count > 0) _mail.SaveAttachments(run.AccountId, gmailMsgId, body.Attachments);
+        StoreBody(run.AccountId, gmailMsgId, body);
         return true;
+    }
+
+    private void StoreBody(string accountId, long gmailMsgId, ImapBody body)
+    {
+        var derived = body.Html is null ? null : BodyParser.HtmlToText(body.Html);
+        _mail.SetBody(accountId, gmailMsgId, body.Text, body.Html, derived);
+        if (body.Attachments.Count > 0) _mail.SaveAttachments(accountId, gmailMsgId, body.Attachments);
     }
 
     // ---- 受信パイプライン ----
@@ -411,7 +419,9 @@ public sealed class SyncService : ISyncService, IReadStateSync
         // 規則で受信トレイから出たメールは新着として通知しない
         if (_mail.GetMemberships(acc, gmailMsgId).All(m => m.Folder != FolderKind.Inbox)) return;
         var latest = _mail.Get(acc, gmailMsgId);
-        if (latest is not null) NewMailProcessed?.Invoke(this, new NewMailEventArgs(acc, latest));
+        if (latest is null) return;
+        try { NewMailProcessed?.Invoke(this, new NewMailEventArgs(acc, latest)); }
+        catch (Exception ex) { _log.Warn("Sync", "NewMailProcessed handler failed: " + ex.GetType().Name); }
     }
 
     private sealed class RuleActions : IRuleActions
