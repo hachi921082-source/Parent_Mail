@@ -24,5 +24,6 @@ public static class FeatureRegistrars
         s => s.AddSyncEngine(),
         s => Features.BlockList.BlockListRegistration.AddBlockList(s),
         s => Features.FilterRules.FilterRulesRegistration.AddFilterRules(s),
+        s => Features.MailDisplay.MailDisplayRegistration.AddMailDisplay(s),
     };
 }
