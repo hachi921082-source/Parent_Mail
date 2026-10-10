@@ -20,5 +20,6 @@ public static class FeatureRegistrars
         s => s.AddSafetyWarnings(),
         s => s.AddAccountsAuth(),
         s => ParentMail.App.Features.OutboxSend.OutboxSendRegistration.AddOutboxSend(s),
+        s => Features.AddressBook.AddressBookRegistration.AddAddressBook(s),
     };
 }

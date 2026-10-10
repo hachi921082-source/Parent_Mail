@@ -1,0 +1,84 @@
+<Window x:Class="ParentMail.App.Features.AddressBook.ContactEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ParentMail.App.Features.AddressBook"
+        Width="820" SizeToContent="Height" Background="{DynamicResource Page}"
+        Foreground="{DynamicResource PageText}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- 名前 -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static local:AddressBookText.ColName}"
+                       VerticalAlignment="Center" Margin="0,0,16,12" />
+            <TextBox x:Name="NameBox" Grid.Row="0" Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,0,12" Padding="6,4" />
+
+            <!-- ふりがな（並べ替えに使う、の案内つき） -->
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static local:AddressBookText.ColReading}"
+                       VerticalAlignment="Top" Margin="0,6,16,12" />
+            <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,12">
+                <TextBox Text="{Binding Reading, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" />
+                <TextBlock Text="{x:Static local:AddressBookText.ReadingHint}" Foreground="{DynamicResource Hint}"
+                           Margin="0,4,0,0" />
+            </StackPanel>
+
+            <!-- メールアドレス（行を増やす・はずす） -->
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="{x:Static local:AddressBookText.ColEmail}"
+                       VerticalAlignment="Top" Margin="0,6,16,12" />
+            <ItemsControl x:Name="EmailList" Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Emails}"
+                          Margin="0,0,0,12" IsTabStop="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="6,4" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Style="{StaticResource AppButton}" Margin="12,0,0,0"
+                                    Content="{x:Static local:AddressBookText.RemoveAddress}"
+                                    Click="OnRemoveEmail" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" Style="{StaticResource AppButton}"
+                    Content="{x:Static local:AddressBookText.AddAddress}" Click="OnAddEmail" Margin="0,0,0,12" />
+
+            <!-- メモ（複数行。Enter は改行になる） -->
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="{x:Static local:AddressBookText.ColMemo}"
+                       VerticalAlignment="Top" Margin="0,6,16,12" />
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Memo, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="110" VerticalScrollBarVisibility="Auto"
+                     Padding="6,4" Margin="0,0,0,12" />
+
+            <!-- エラー行（その場に表示） -->
+            <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding ErrorText}"
+                       Foreground="{DynamicResource BannerError}" FontWeight="Bold" TextWrapping="Wrap"
+                       MinHeight="32" Margin="0,0,0,12" />
+
+            <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}"
+                        Content="{x:Static local:AddressBookText.Save}" Click="OnSave" />
+                <Button x:Name="CancelButton" Style="{StaticResource AppButton}" Margin="16,0,0,0"
+                        Content="{x:Static local:AddressBookText.Cancel}" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Window>
