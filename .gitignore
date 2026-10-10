@@ -1,0 +1,12 @@
+bin/
+obj/
+.vs/
+*.user
+.env
+.env.*
+!.env.example
+tests/local.secrets.json
+*.db
+*.db-wal
+*.db-shm
+publish/
