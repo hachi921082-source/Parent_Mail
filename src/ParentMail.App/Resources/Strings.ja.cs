@@ -103,8 +103,8 @@ public static class Strings
     public const string BN_24 = "メールの一覧を表示できませんでした。詳しい方に相談してください。";
     /// <summary>Gmailのアプリパスワードが必要です。</summary>
     public const string AC_01 = "Gmailのアプリパスワードが必要です。";
-    /// <summary>メールアドレス / アプリパスワード / 表示名</summary>
-    public const string AC_02 = "メールアドレス / アプリパスワード / 表示名";
+    /// <summary>メールアドレス / アプリパスワード（スペースなし） / 表示名</summary>
+    public const string AC_02 = "メールアドレス / アプリパスワード（スペースなし） / 表示名";
     /// <summary>登録する / やめる</summary>
     public const string AC_03 = "登録する / やめる";
     /// <summary>アカウントは2つまでです</summary>
@@ -133,8 +133,8 @@ public static class Strings
     public const string AC_16 = "パスワードが使えなくなりました。詳しい方にパスワードの入れ直しを頼んでください。";
     /// <summary>入れ直す</summary>
     public const string AC_17 = "入れ直す";
-    /// <summary>パスワードの入れ直し / アプリパスワード</summary>
-    public const string AC_18 = "パスワードの入れ直し / アプリパスワード";
+    /// <summary>パスワードの入れ直し / アプリパスワード（スペースなし）</summary>
+    public const string AC_18 = "パスワードの入れ直し / アプリパスワード（スペースなし）";
     /// <summary>このまま閉じるとアプリは終わります。よろしいですか? [終わる] [戻る]</summary>
     public const string AC_19 = "このまま閉じるとアプリは終わります。よろしいですか? [終わる] [戻る]";
     /// <summary>送信待ちのメールが残っているため、このアカウントは削除できません。先にメールを送るか、下書きに戻してから、もう一度お試しください。</summary>
