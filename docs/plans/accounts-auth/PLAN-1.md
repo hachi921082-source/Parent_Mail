@@ -30,7 +30,7 @@ Planning status: complete. Spec: detailed-spec 2; A4, A6, A31, A44, A56; Q53, Q5
 - `IAccountRepository { GetAll(); Add(Account); Rename(id, name); Delete(id); }`
 - `CredentialStore.Save/Get/Delete(accountId)` over P/Invoke (`CredWriteW`, `CredReadW`, `CredDeleteW`; blob = UTF-16 password; handle non-ASCII).
 - `AccountService.ValidateAndAddAsync(email, password, displayName, ct)` returns `AddAccountResult { Ok, Duplicate, AuthFailed, NetworkError }`.
-- `IAppState { Account? Current; SwitchTo(accountId); event CurrentChanged }`.
+- `IAppState { string? CurrentAccountId (get/set); FolderKind CurrentFolder; long? SelectedMessageId; events CurrentAccountChanged, CurrentFolderChanged, SelectedMessageChanged }` (wave-0 contract; the `Account` object is resolved through `IAccountRepository.Get(id)`; switching = setting `CurrentAccountId`).
 - `AccountSwitchViewModel { Label, OtherUnread, SwitchCommand }`.
 
 ## 4. Tests and done criteria
