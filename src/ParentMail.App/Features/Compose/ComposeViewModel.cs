@@ -77,6 +77,7 @@ public sealed partial class ComposeViewModel : ObservableObject
         _paths = paths;
         _log = log;
         AccountId = init.AccountId;
+        Attachments.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasAttachments));
         Kind = DetectKind(init);
         WindowTitle = Kind switch
         {
@@ -92,6 +93,13 @@ public sealed partial class ComposeViewModel : ObservableObject
         // 引き継いだ添付（転送・下書きの編集）も作業フォルダに取り込む
         foreach (var a in init.Attachments) ImportExisting(a);
     }
+
+    public bool HasAttachments => Attachments.Count > 0;
+
+    /// <summary>送信中は送信ボタンを押せなくする（二重送信の防止）。</summary>
+    public bool IsSendEnabled => !IsSending;
+
+    partial void OnIsSendingChanged(bool value) => OnPropertyChanged(nameof(IsSendEnabled));
 
     public string AccountId { get; }
     public ComposeKind Kind { get; }
