@@ -19,5 +19,6 @@ public static class FeatureRegistrars
         s => s.AddSyncCache(),
         s => s.AddSafetyWarnings(),
         s => s.AddAccountsAuth(),
+        s => ParentMail.App.Features.OutboxSend.OutboxSendRegistration.AddOutboxSend(s),
     };
 }
