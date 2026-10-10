@@ -94,7 +94,7 @@ Kind of each message (banner / modal OK / transient / in-place): detailed-spec s
 | ID | Where shown | Japanese text | Status | Origin | Notes |
 |---|---|---|---|---|---|
 | AC-01 | Account-add window, notice line | Gmailのアプリパスワードが必要です。 | APPROVED | NEW | spec: must state a Gmail app password is required; term アプリパスワード approved (N8) |
-| AC-02 | Account-add window, field labels | メールアドレス / アプリパスワード / 表示名 | APPROVED | NEW | A6 |
+| AC-02 | Account-add window, field labels | メールアドレス / アプリパスワード（スペースなし） / 表示名 | APPROVED | NEW | A6 |
 | AC-03 | Account-add window, buttons | 登録する / やめる | APPROVED | NEW | |
 | AC-04 | Settings, add button when 2 accounts exist | アカウントは2つまでです | APPROVED | PROPOSED | A4 |
 | AC-05 | Account-add window, error line, duplicate address | このメールアドレスは登録済みです | APPROVED | PROPOSED | Q53 |
@@ -110,7 +110,7 @@ Kind of each message (banner / modal OK / transient / in-place): detailed-spec s
 | AC-15 | Delete-account dialog extra line | 送信待ちのメールも消えます | SUPERSEDED | PROPOSED | replaced by AC-20 (Q68: deletion is stopped) |
 | AC-16 | Banner, wrong/revoked password (red) | パスワードが使えなくなりました。詳しい方にパスワードの入れ直しを頼んでください。 | APPROVED | PROPOSED | spec requires plain notice + ask a knowledgeable person |
 | AC-17 | Wrong-password banner, action button | 入れ直す | APPROVED | PROPOSED | |
-| AC-18 | Password re-entry window, title and field | パスワードの入れ直し / アプリパスワード | APPROVED | NEW | |
+| AC-18 | Password re-entry window, title and field | パスワードの入れ直し / アプリパスワード（スペースなし） | APPROVED | NEW | |
 | AC-19 | Confirm dialog, first account-add screen closed without adding | このまま閉じるとアプリは終わります。よろしいですか? [終わる] [戻る] | APPROVED | NEW | text given by the user, default 戻る; wording kept as given after review (Q76) |
 | AC-20 | Modal OK, deleting an account that has Outbox mail | 送信待ちのメールが残っているため、このアカウントは削除できません。先にメールを送るか、下書きに戻してから、もう一度お試しください。 | APPROVED | NEW | Q68; one next-step sentence |
 | AC-21 | Account-add window, error line | メールアドレスを正しく入れてください。 | APPROVED | NEW | empty or wrong format |
