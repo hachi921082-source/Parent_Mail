@@ -186,6 +186,7 @@ Wave-based plan (revised 2026-10-10). A wave = features whose dependencies are a
 - `TextNormalizer.NormalizeKey` (used by sync-cache `search_key`, search, filter-rules, address-book) and `Strings.ja.cs` generated once by `tools/gen_strings.py` (never edited by hand; regenerate and commit alone if `ui-strings.md` changes).
 - Extension points so features never edit the same file: each feature adds ONE `Add<Feature>(this IServiceCollection)` extension in its own folder, and `App.xaml.cs` calls them through a single registrar list created here; `MainWindow` exposes named content slots (banner, top bar, list pane, preview, bottom strip) as `ContentControl`s filled by the feature views.
 - Done when: solution builds, fakes compile, one trivial test passes. Merge before wave 1 starts.
+- Status (2026-10-10): implemented on `feature/skeleton`; `dotnet build` and `dotnet test` green (8 tests); awaiting reviewer-lite, then merge into `main`.
 
 ### Waves
 
