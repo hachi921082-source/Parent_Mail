@@ -140,7 +140,7 @@ DB schemas are defined in `sync-cache/PLAN-1.md` (cache.db) and `settings/PLAN.m
 - All dialogs use large buttons; dangerous confirmations have Cancel as default. Window rules (modal, Enter/Esc, button order, tab order, initial focus, shortcuts), sizes and the palette come from `window-layouts.md` and app-shell PLAN 3.1-3.4; each window PLAN lists its own field/tab order.
 - Never log or store mail content, addresses, subjects, or passwords outside the cache DB/Credential Manager.
 - Dates shown in local time.
-- Feature branches `feature/<feature-name>` (confirm with the user before first use, per dev-workflow section 7).
+- Branch and merge cycle (decided 2026-10-10, user): one feature = one branch. Name `feature/<feature-name>` = the PLAN folder name; a feature with several PLAN files uses `feature/<feature-name>-<n>` per PLAN (e.g. `feature/compose-1`, `feature/sync-cache-2`); wave 0 = `feature/skeleton`; later bug fixes = `fix/<short-slug>`; lowercase ASCII and hyphens only. Cut from the latest `main` after the previous wave is merged. Worktrees live outside the repo at `../Parent_Mail-wt/<feature-name>`. Cycle: tests first -> `dotnet build/test` green -> reviewer-lite review -> fixes -> merge into `main` with `git merge --no-ff` (merge commit body in Japanese: feature name + what was completed) -> delete the branch/worktree -> update the Status column of section 11. After reviewer-lite passes, the LOCAL merge and branch deletion are done without asking again; `git push` always needs the user's confirmation. Commits stay one file per commit, Japanese body (mutually dependent new file sets may be one commit).
 
 ## 9. Decisions log (user answers during planning)
 
