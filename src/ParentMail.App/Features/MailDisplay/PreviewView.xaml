@@ -1,0 +1,124 @@
+<UserControl x:Class="ParentMail.App.Features.MailDisplay.PreviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:md="clr-namespace:ParentMail.App.Features.MailDisplay"
+             Background="{DynamicResource Page}" Foreground="{DynamicResource PageText}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style x:Key="HeaderLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Hint}" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,2,16,2" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        <Style x:Key="HeaderValue" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,2" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- メールを選んでいないとき・複数選択のときの案内（中央） -->
+        <Grid>
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsMail}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <TextBlock Text="{Binding GuideText}" Foreground="{DynamicResource Hint}" TextWrapping="Wrap"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Margin="32" />
+        </Grid>
+
+        <Grid x:Name="MailPane" Visibility="{Binding IsMail, Converter={StaticResource BoolToVisibility}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- 上段: 左 = 返信・転送などのボタン（folder-actions が入れる）、中央 = 拡大縮小、右端 = 削除（同上） -->
+            <Grid Grid.Row="0" Margin="16,12,16,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ContentControl x:Name="HeaderButtonsSlot" Grid.Column="0" IsTabStop="False" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
+                    <Button x:Name="ZoomInButton" Content="{x:Static md:PreviewText.ZoomIn}" Command="{Binding ZoomInCommand}"
+                            Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
+                    <Button x:Name="ZoomOutButton" Content="{x:Static md:PreviewText.ZoomOut}" Command="{Binding ZoomOutCommand}"
+                            Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
+                    <Button x:Name="ZoomResetButton" Content="{x:Static md:PreviewText.ZoomReset}" Command="{Binding ZoomResetCommand}"
+                            Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,12,0" />
+                    <TextBlock x:Name="ZoomLabel" Text="{Binding ZoomLabel}" FontWeight="Bold" VerticalAlignment="Center" MinWidth="64" />
+                </StackPanel>
+                <ContentControl x:Name="DeleteSlot" Grid.Column="2" IsTabStop="False" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- ヘッダ -->
+            <Grid Grid.Row="1" Margin="16,0,16,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static md:PreviewText.From}" Style="{StaticResource HeaderLabel}" />
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FromText}" Style="{StaticResource HeaderValue}" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static md:PreviewText.To}" Style="{StaticResource HeaderLabel}" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ToText}" Style="{StaticResource HeaderValue}" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{x:Static md:PreviewText.Cc}" Style="{StaticResource HeaderLabel}"
+                           Visibility="{Binding HasCc, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CcText}" Style="{StaticResource HeaderValue}"
+                           Visibility="{Binding HasCc, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static md:PreviewText.Subject}" Style="{StaticResource HeaderLabel}" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SubjectText}" Style="{StaticResource HeaderValue}" FontWeight="Bold" />
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="{x:Static md:PreviewText.Date}" Style="{StaticResource HeaderLabel}" />
+                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding DateText}" Style="{StaticResource HeaderValue}" />
+
+                <!-- アドレス帳の案内・画像の案内 -->
+                <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                    <TextBlock Text="{Binding NotInAddressBookText}" Foreground="{DynamicResource Hint}" FontWeight="Bold"
+                               Visibility="{Binding NotInAddressBook, Converter={StaticResource BoolToVisibility}}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0"
+                                Visibility="{Binding CanShowImages, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding ImageHintText}" Foreground="{DynamicResource Hint}" VerticalAlignment="Center" Margin="0,0,16,0" />
+                        <Button x:Name="ShowImagesButton" Content="{Binding ShowImagesLabel}" Command="{Binding ShowImagesCommand}"
+                                Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- あやしいリンクの赤い帯 -->
+            <Border Grid.Row="2" Background="{DynamicResource BannerError}" MinHeight="56" Padding="16,6" Margin="0,0,0,4"
+                    Visibility="{Binding SuspiciousLinkBanner, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding SuspiciousLinkBannerText}" Foreground="{DynamicResource BannerErrorText}"
+                           FontWeight="Bold" TextWrapping="Wrap" VerticalAlignment="Center" />
+            </Border>
+
+            <!-- 本文 -->
+            <Grid Grid.Row="3">
+                <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource Hint}" TextWrapping="Wrap" Margin="16,8"
+                           Visibility="{Binding IsStatus, Converter={StaticResource BoolToVisibility}}" />
+                <RichTextBox x:Name="PlainBox" IsReadOnly="True" IsDocumentEnabled="True" BorderThickness="0" Padding="12,8"
+                             Background="{DynamicResource Page}" Foreground="{DynamicResource PageText}"
+                             VerticalScrollBarVisibility="Auto" FontSize="{Binding PlainFontSize}"
+                             Visibility="{Binding IsPlain, Converter={StaticResource BoolToVisibility}}" />
+                <Grid x:Name="HtmlHost" Visibility="{Binding IsHtml, Converter={StaticResource BoolToVisibility}}" />
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
