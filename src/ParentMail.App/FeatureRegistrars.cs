@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using ParentMail.App.Features.Shell;
 
 namespace ParentMail.App;
 
@@ -9,7 +10,7 @@ public static class FeatureRegistrars
 {
     public static IReadOnlyList<Action<IServiceCollection>> All { get; } = new List<Action<IServiceCollection>>
     {
-        // 例: s => s.AddAppShell(),
+        s => s.AddAppShell(),
         // 例: s => s.AddSyncCache(),
     };
 }
