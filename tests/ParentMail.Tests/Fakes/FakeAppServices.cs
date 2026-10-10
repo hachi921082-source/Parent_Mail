@@ -36,21 +36,23 @@ public sealed class FakeAppState : IAppState
 
 public sealed class FakeNotifier : INotifier
 {
-    public Dictionary<string, (string Text, BannerPriority Priority)> Banners { get; } = new();
-    public List<string> Transients { get; } = new();
+    public Dictionary<BannerKind, (string Text, (string Label, Action Action)? Action)> Banners { get; } = new();
+    public List<string> Notices { get; } = new();
 
-    public void ShowBanner(string key, string text, BannerPriority priority) => Banners[key] = (text, priority);
-    public void HideBanner(string key) => Banners.Remove(key);
-    public void ShowTransient(string text, string? actionText = null, Action? action = null) => Transients.Add(text);
+    public void ShowBanner(BannerKind kind, string text, (string Label, Action Action)? action = null) => Banners[kind] = (text, action);
+    public void HideBanner(BannerKind kind) => Banners.Remove(kind);
+    public void ShowNotice(string text, string? actionLabel = null, Action? action = null, int seconds = Constants.TransientNoticeSeconds)
+        => Notices.Add(text);
 }
 
 public sealed class FakeDialogService : IDialogService
 {
-    public List<string> Notices { get; } = new();
+    /// <summary>ShowNotice の呼び出し記録（題名と本文）。</summary>
+    public List<(string Title, string Message)> Notices { get; } = new();
     public bool ConfirmAnswer { get; set; }
     public int ChooseAnswer { get; set; } = -1;
 
-    public void ShowNotice(string title, string message) => Notices.Add(message);
+    public void ShowNotice(string title, string message) => Notices.Add((title, message));
     public bool Confirm(string title, string message, string yesText, string noText, bool safeIsDefault = true) => ConfirmAnswer;
     public int Choose(string title, string message, IReadOnlyList<string> buttons, int defaultIndex, int safeIndex) => ChooseAnswer;
 }
@@ -58,14 +60,14 @@ public sealed class FakeDialogService : IDialogService
 public sealed class FakeTextScale : ITextScale
 {
     public double TextSizePt { get; set; } = Constants.DefaultTextSizePt;
-    public double BodyDip => TextSizePt * Constants.PointToDip;
-    public double ChromeDip => Math.Min(TextSizePt, Constants.ChromeTextMaxPt) * Constants.PointToDip;
-    public double EffectivePreviewPt(double zoom) => Math.Min(TextSizePt * zoom, Constants.PreviewTextMaxPt);
-    public double PreviewDip(double zoom) => EffectivePreviewPt(zoom) * Constants.PointToDip;
+    public double FontSizeDip => TextSizePt * Constants.PointToDip;
+    public double ChromeFontSizeDip => Math.Min(TextSizePt, Constants.ChromeTextMaxPt) * Constants.PointToDip;
+    public double GetEffectivePreviewPt(double zoom) => Math.Min(TextSizePt * zoom, Constants.PreviewTextMaxPt);
+    public double GetPlainTextSizeDip(double zoom) => GetEffectivePreviewPt(zoom) * Constants.PointToDip;
 
-    public double WebViewZoomFactor(double zoom)
+    public double GetWebViewZoom(double zoom)
     {
-        var f = Math.Round(EffectivePreviewPt(zoom) / Constants.ZoomReferencePt, 2);
+        var f = Math.Round(GetEffectivePreviewPt(zoom) / Constants.ZoomReferencePt, 2);
         return Math.Clamp(f, Constants.WebViewZoomMin, Constants.WebViewZoomMax);
     }
 
