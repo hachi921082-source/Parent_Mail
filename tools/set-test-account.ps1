@@ -1,4 +1,4 @@
-# テスト用 Gmail アカウントの情報を、ユーザー環境変数に登録する。
+﻿# テスト用 Gmail アカウントの情報を、ユーザー環境変数に登録する。
 # 値は画面に表示せず、ファイルにも書かない（パスワードは入力時に伏せ字になる）。
 # 使い方: PowerShell で `.\tools\set-test-account.ps1` を実行する。
 # 解除: `.\tools\set-test-account.ps1 -Clear`
