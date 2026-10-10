@@ -66,6 +66,24 @@ public class SyncCoordinatorTests
         Assert.Contains(log.Entries, e => e.StartsWith("E:Sync"));
     }
 
+    [Fact]
+    public async Task SyncAll_AccountListFailure_IsLoggedNotThrown()
+    {
+        var log = new FakeAppLog();
+        var c = new SyncCoordinator(new FakeSyncService(), new ThrowingAccounts(), log);
+        await c.SyncAllAsync(SyncTrigger.Timer);
+        Assert.Contains(log.Entries, e => e.StartsWith("E:Sync"));
+    }
+
+    private sealed class ThrowingAccounts : IAccountRepository
+    {
+        public IReadOnlyList<Account> GetAll() => throw new IOException();
+        public Account? Get(string accountId) => null;
+        public Account Add(Account account) => account;
+        public void Rename(string accountId, string displayName) { }
+        public void Delete(string accountId) { }
+    }
+
     private sealed class ThrowingSync : ISyncService
     {
         public SyncState GetState(string accountId) => SyncState.Idle;
