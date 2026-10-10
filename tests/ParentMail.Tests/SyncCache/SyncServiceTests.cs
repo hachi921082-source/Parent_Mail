@@ -418,4 +418,52 @@ public class SyncServiceTests
         await h.RunAsync();
         Assert.Equal(1, raised);
     }
+
+    [Fact]
+    public async Task NewMail_BodyFetchFails_IsNotSkipped_ButProcessedOnNextSync()
+    {
+        var inner = new FakeImapGateway();
+        var flaky = new FlakyBodyGateway(inner);
+        using var h = new SyncHarness(new DelegateGatewayFactory(_ => flaky));
+        inner.Folders.AddRange(h.Gateway.Folders);
+        PutInner(inner, h, 1, 101);
+        await h.RunAsync();
+
+        PutInner(inner, h, 2, 102);
+        flaky.FailBodies = true;
+        await h.RunAsync();
+        Assert.Equal(SyncState.Offline, h.Sync.GetState(h.AccountId));
+        Assert.Null(h.Cache.Mail.Get(h.AccountId, 102));      // 中途半端に保存しない
+        Assert.Empty(h.Rule.Applied);
+
+        flaky.FailBodies = false;
+        await h.RunAsync();
+        Assert.Single(h.Rule.Applied);                         // 次回に規則と通知が漏れなく動く
+        Assert.Equal("本文102", h.Cache.Mail.Get(h.AccountId, 102)!.BodyText);
+        Assert.Single(h.NewMails);
+    }
+
+    [Fact]
+    public async Task NewMailHandlerThrowing_DoesNotFailSync()
+    {
+        using var h = new SyncHarness();
+        h.Put(Inbox, 1, 101);
+        await h.RunAsync();
+        h.Sync.NewMailProcessed += (_, _) => throw new InvalidOperationException();
+        h.Put(Inbox, 2, 102);
+
+        await h.RunAsync();
+
+        Assert.Equal(SyncState.Idle, h.Sync.GetState(h.AccountId));
+        Assert.Contains(h.Log.Entries, e => e.StartsWith("W:Sync"));
+    }
+
+    private static void PutInner(FakeImapGateway gw, SyncHarness h, uint uid, long id)
+    {
+        var hd = new ImapHeader(uid, id, $"<{id}@example.com>", null, "件名", "a@example.com", "山田", new[] { "me@example.com" },
+            Array.Empty<string>(), h.Now.AddDays(-1), false, false);
+        if (!gw.Headers.TryGetValue(Inbox, out var list)) gw.Headers[Inbox] = list = new List<ImapHeader>();
+        list.Add(hd);
+        gw.Bodies[(Inbox, uid)] = new ImapBody(uid, "本文" + id, null, Array.Empty<AttachmentInfo>());
+    }
 }
