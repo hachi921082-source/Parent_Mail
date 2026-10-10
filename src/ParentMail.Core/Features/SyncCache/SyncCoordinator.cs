@@ -46,8 +46,18 @@ public sealed class SyncCoordinator : IDisposable
     public void RequestRefresh(string accountId) => _ = SyncOneAsync(accountId, SyncTrigger.Manual);
 
     /// <summary>全アカウントを同期する（タイマーの 1 回分）。</summary>
-    public Task SyncAllAsync(SyncTrigger trigger)
-        => Task.WhenAll(_accounts.GetAll().Select(a => SyncOneAsync(a.Id, trigger)));
+    public async Task SyncAllAsync(SyncTrigger trigger)
+    {
+        try
+        {
+            await Task.WhenAll(_accounts.GetAll().Select(a => SyncOneAsync(a.Id, trigger))).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // タイマーやネットワーク通知から呼ばれるため、例外でプロセスを落とさない
+            _log.Error("Sync", "Sync all failed", ex);
+        }
+    }
 
     private async Task SyncOneAsync(string accountId, SyncTrigger trigger)
     {
