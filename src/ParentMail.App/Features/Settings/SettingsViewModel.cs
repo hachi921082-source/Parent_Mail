@@ -45,7 +45,9 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
         get => _scale.TextSizePt;
         set
         {
-            _scale.TextSizePt = value; // 範囲への丸めと保存は文字サービスが行う
+            // スライダーは整数の刻みで扱う（入力欄から入れた小数は入力欄の経路で受け、ここでは丸めない）。
+            // 範囲への丸めと保存は文字サービスが行う
+            _scale.TextSizePt = Math.Round(value);
             SyncFromScale();
             ErrorText = string.Empty;
         }
