@@ -207,7 +207,7 @@ Notes on lane edges:
 
 ### Conflict hotspots and rules
 
-- One owner per file: `Strings.ja.cs` (generated), DI registrar list, `MainWindow.xaml` slots (app-shell only; features add their own view files), `settings.db` migration chain (settings lane only, tables for all features are created in its v1), `cache.db` migration chain (sync-cache/PLAN-1 only; later lanes ask for schema changes in a separate small commit on the main chain).
+- One owner per file: `Strings.ja.cs` (generated), DI registrar list (`FeatureRegistrars.All`: each lane only appends ONE line for its own `Add<Feature>`, never reorders or edits other lines), `MainWindow.xaml` slots (app-shell only; features add their own view files), `settings.db` migration chain (settings lane only, tables for all features are created in its v1), `cache.db` migration chain (sync-cache/PLAN-1 only; later lanes ask for schema changes in a separate small commit on the main chain).
 - Other lanes needing a change in a file they do not own: make the smallest additive commit on their own branch and mention it in the review; resolve at merge, never by editing the owner's design.
 - Merge order inside a wave: foundation lanes first (W1: app-shell, settings, sync-cache/PLAN-1, safety-warnings; W2: accounts-auth/PLAN-1, sync-cache/PLAN-2, then the rest).
 - Each lane: PLAN-listed unit tests first, `dotnet build -v q` and `dotnet test --nologo -v q` green, reviewer-lite review, then PR/merge with user confirmation (dev-workflow section 7).
