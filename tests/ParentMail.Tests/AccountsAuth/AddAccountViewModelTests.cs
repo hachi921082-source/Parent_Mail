@@ -152,7 +152,7 @@ public sealed class AddAccountViewModelTests
     {
         var vm = Vm();
         Assert.Equal("メールアドレス", vm.EmailLabel);
-        Assert.Equal("アプリパスワード", vm.PasswordLabel);
+        Assert.Equal("アプリパスワード（スペースなし）", vm.PasswordLabel);
         Assert.Equal("表示名", vm.NameLabel);
         Assert.Equal("登録する", vm.SubmitLabel);
         Assert.Equal("やめる", vm.CancelLabel);
