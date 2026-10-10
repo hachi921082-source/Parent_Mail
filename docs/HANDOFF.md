@@ -13,7 +13,7 @@ Session-handoff file. Read this first in a fresh conversation, then open only th
 
 ## 1. Status
 
-- Phase: specification, window layouts, colour palette and ALL UI strings are fully approved by the user (2026-10-08, QA.md Q58-Q78); no proposals remain. Implementation plans (`docs/plans/README.md` + per-feature PLANs) have `docs/plans/pending-plan-edits.md` Parts A, B and C applied and were self-reviewed on 2026-10-08 (consistency fixes: incoming rules apply to new Inbox mail only, local drafts in the Drafts folder, SessionEnding handling, HTML Ctrl+wheel spike). Next: designer-lite aligns spec A43 (Inbox-only incoming rules), then implementation per `docs/plans/README.md` section 11 (tier order). `docs/plans/ui-strings.md` is the source of truth for wording. The user can supply a test Gmail account for manual verification.
+- Phase: specification, window layouts, colour palette and ALL UI strings are fully approved by the user (2026-10-08, QA.md Q58-Q78); no proposals remain. Implementation plans (`docs/plans/README.md` + per-feature PLANs) have `docs/plans/pending-plan-edits.md` Parts A, B and C applied and were self-reviewed on 2026-10-08 (consistency fixes: incoming rules apply to new Inbox mail only, local drafts in the Drafts folder, SessionEnding handling, HTML Ctrl+wheel spike). Spec A43 (Inbox-only incoming rules) is aligned. Next: wave 0 of `docs/plans/README.md` section 11 (wave plan with parallel worktrees). `docs/plans/ui-strings.md` is the source of truth for wording. The user can supply a test Gmail account for manual verification.
 - Repository: `main`, private GitHub repo `hachi921082-source/Parent_Mail`.
 - Specs updated 2026-10-08 with the planning decisions (QA.md Q44-Q57); commit state: see `git status`.
 - Agent set: lite (`designer-lite`, `developer-lite`, `reviewer-lite`); do not mix with the full set (see `CLAUDE.md`).
@@ -46,10 +46,9 @@ Nothing pending from the 2026-10-08 review round (Q73-Q78). Two changes made by 
 
 ## 5. Recommended next steps
 
-1. designer-lite updates `detailed-spec.md` A43 / `spec.md`: block list and filter rules apply to new INBOX mail only.
-2. Spike first: Ctrl+wheel capture over the WebView2 HTML view (mail-display PLAN-2); if it fails, HTML mode keeps buttons only and the spec is updated.
-3. Implement features per `docs/plans/README.md` section 11 (T0 app-shell and settings first), using the user's test Gmail account for manual checks.
-4. Implement in feature branches per `~/.claude/shared/dev-workflow.md` section 7; confirm with the user before merge/push/branch delete.
+1. Spike first: Ctrl+wheel capture over the WebView2 HTML view (mail-display PLAN-2); if it fails, HTML mode keeps buttons only and the spec is updated.
+2. Implement per the wave plan in `docs/plans/README.md` section 11 (revised 2026-10-10; details there): W0 skeleton + contracts (interfaces, models, fakes, generated `Strings.ja.cs`, DI registrar and MainWindow slots; serial, one worktree) -> W1 app-shell / settings / sync-cache PLAN-1 / safety-warnings (4 lanes) -> W2 accounts-auth PLAN-1, sync-cache PLAN-2, outbox-send, address-book, then block-list + filter-rules -> W3 mail-list, mail-display PLAN-1+2, sync-cache PLAN-3, accounts-auth PLAN-2, compose PLAN-1 -> W4 folder-actions, search, mail-display PLAN-3, compose PLAN-2 -> W5 reply-forward, app-lifecycle, integration pass. Max 4 active worktrees; one owner per hotspot file; manual integration gates after W2, W3, W5 with the user's test Gmail account. .NET SDK 10.0.401 is installed; the test account/app password is still needed by W2.
+3. Implement in feature branches per `~/.claude/shared/dev-workflow.md` section 7; confirm with the user before merge/push/branch delete.
 
 ## 6. Working notes
 
