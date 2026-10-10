@@ -48,7 +48,7 @@ Nothing pending from the 2026-10-08 review round (Q73-Q78). Two changes made by 
 
 1. Spike (first task of the mail-display lane, W3): Ctrl+wheel capture over the WebView2 HTML view (mail-display PLAN-2); if it fails, HTML mode keeps buttons only and the spec is updated.
 2. Implement per the wave plan in `docs/plans/README.md` section 11 (revised 2026-10-10; details there): W0 skeleton + contracts (interfaces, models, fakes, generated `Strings.ja.cs`, DI registrar and MainWindow slots; serial, one worktree) -> W1 app-shell / settings / sync-cache PLAN-1 / safety-warnings (4 lanes) -> W2 accounts-auth PLAN-1, sync-cache PLAN-2, outbox-send, address-book, then block-list + filter-rules -> W3 mail-list, mail-display PLAN-1+2, sync-cache PLAN-3, accounts-auth PLAN-2, compose PLAN-1 -> W4 folder-actions, search, mail-display PLAN-3, compose PLAN-2 -> W5 reply-forward, app-lifecycle, integration pass. Max 4 active worktrees; one owner per hotspot file; manual integration gates after W2, W3, W5 with the user's test Gmail account. .NET SDK 10.0.401 is installed; the test account/app password is still needed by W2.
-3. Implement in feature branches per `~/.claude/shared/dev-workflow.md` section 7; confirm with the user before merge/push/branch delete.
+3. Branch cycle (user decision 2026-10-10; full rule in `docs/plans/README.md` section 8): `feature/<feature-name>[-n]` per PLAN, `git merge --no-ff` into `main` after reviewer-lite passes, local merge and branch deletion without asking again, `git push` only after the user confirms.
 
 ## 6. Working notes
 
