@@ -22,5 +22,6 @@ public static class FeatureRegistrars
         s => ParentMail.App.Features.OutboxSend.OutboxSendRegistration.AddOutboxSend(s),
         s => Features.AddressBook.AddressBookRegistration.AddAddressBook(s),
         s => s.AddSyncEngine(),
+        s => Features.BlockList.BlockListRegistration.AddBlockList(s),
     };
 }
