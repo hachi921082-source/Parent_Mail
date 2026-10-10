@@ -21,6 +21,12 @@ public static class AccountsAuthRegistration
         services.AddSingleton<AccountAddLauncher>();
         services.AddSingleton<AccountSwitchViewModel>();
         services.AddSingleton<ShellAccountBinder>();
+        // PLAN-2: 名前変更・削除・入れ直し・注意ダイアログ・パスワード不正への対応
+        services.AddSingleton<WarningGate>();
+        services.AddSingleton<IAccountDialogs, AccountDialogs>();
+        services.AddSingleton<AccountSettingsViewModel>();
+        services.AddSingleton<IAuthFailureProbe, SyncServiceAuthProbe>();
+        services.AddSingleton<AuthFailureCoordinator>();
 
         // 上部バーのスロットは app-shell が持つ既定の表示を使い、MainViewModel が作られた時点で切替ボタンをつなぐ。
         // 後から登録した MainViewModel が優先される。コンストラクタ引数は DI に任せる。
@@ -28,6 +34,7 @@ public static class AccountsAuthRegistration
         {
             var shell = ActivatorUtilities.CreateInstance<MainViewModel>(sp);
             sp.GetRequiredService<ShellAccountBinder>().Attach(shell);
+            sp.GetRequiredService<AuthFailureCoordinator>().Attach();
             return shell;
         });
         return services;
