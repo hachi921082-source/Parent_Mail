@@ -32,6 +32,7 @@ drafts(id INTEGER PK, payload_json TEXT, attachment_dir TEXT, gmail_uid INTEGER 
 cache_meta(key TEXT PK, value TEXT)             -- initial_sync_done, etc.
 pending_ops(id INTEGER PK, op TEXT, gm_msgid INTEGER, arg TEXT)   -- offline \Seen changes
 ```
+- Implemented deviations (contract wins): `folders.highest_uid` is `uid_next` (FolderSyncState.UidNext); `messages.references_hdr` added (MailMessage.References); `folders.imap_name` is NULL until `SaveImapName`; `GetFolderState` returns null when `uid_validity` is 0 (never synced / after `ResetFolderUids`).
 - `uid_validity` stored per folder in `folders`; `message_folders.uid` is valid only for the stored validity (PQ7: on change the rows of that folder are deleted and re-resolved, messages/bodies/attachments kept).
 - Attachment files: `attachments\<attachments.id>.bin`; `local_path` relative to the account dir. Original file name only in DB. Outbox/draft attachment copies: `outbox\<id>\<n>.bin`, `drafts\<id>\<n>.bin` (original names in payload_json).
 - Body text/HTML are stored in DB (PQ8). Derived text computed once when the body is stored.
@@ -49,7 +50,9 @@ pending_ops(id INTEGER PK, op TEXT, gm_msgid INTEGER, arg TEXT)   -- offline \Se
 - `IAttachmentStore`: `SaveFile(attachmentId, Stream)`, `OpenRead(attachmentId)`, `Delete(...)`.
 - `IOutboxRepository`, `IDraftRepository`: CRUD with payload (de)serialization.
 - `CacheDb.Open(accountId)` with `Migrate()`.
-- Sort: date_utc DESC; paging via keyset (`date_utc, gm_msgid`).
+- Implemented beyond the contract (the contract has no way to do these): `MailRepository.SaveAttachments(accountId, gmMsgId, attachments)` (insert/update attachment rows, returns rows with IDs), `SaveImapName/GetImapName`. `Upsert` merges memberships (never removes others) and overwrites the body only when `BodyState` is Fetched. `GetList` leaves body fields null (headers only); `Get` returns bodies.
+- Outbox/draft IDs embed a 20-bit account hash in the upper bits (`LocalIds`) because `Remove(long id)` has no accountId.
+- Sort: date_utc DESC, gm_msgid DESC; paging via limit/offset (contract), not keyset.
 
 ## 5. Tests and done criteria
 
