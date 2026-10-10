@@ -1,0 +1,45 @@
+<UserControl x:Class="ParentMail.App.Features.Compose.RecipientBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root" IsTabStop="False" Focusable="False">
+    <Grid>
+        <TextBox x:Name="Box" Padding="6,4" SpellCheck.IsEnabled="False"
+                 AutomationProperties.Name="{Binding Label, ElementName=Root}"
+                 Text="{Binding Text, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 TextChanged="OnTextChanged" PreviewKeyDown="OnPreviewKeyDown"
+                 LostKeyboardFocus="OnLostFocus">
+            <TextBox.Style>
+                <Style TargetType="TextBox">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorder}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Style.Triggers>
+                        <!-- 宛先の読み間違いは赤い太枠で示す（文字のエラー行も併せて出る） -->
+                        <DataTrigger Binding="{Binding IsInvalid, ElementName=Root}" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource BannerError}" />
+                            <Setter Property="BorderThickness" Value="3" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
+
+        <!-- 入力補完の候補。フォーカスは入力欄に残したまま、矢印キーかマウスで選ぶ -->
+        <Popup x:Name="SuggestPopup" PlacementTarget="{Binding ElementName=Box}" Placement="Bottom"
+               StaysOpen="True" AllowsTransparency="False" Focusable="False">
+            <Border Background="{DynamicResource Page}" BorderBrush="{DynamicResource ButtonBorder}" BorderThickness="2"
+                    Width="{Binding ActualWidth, ElementName=Box}">
+                <ListBox x:Name="List" Focusable="False" IsTabStop="False" FontSize="{Binding FontSize, ElementName=Box}"
+                         BorderThickness="0" PreviewMouseLeftButtonUp="OnListClick">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="4,4">
+                                <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" Margin="0,0,16,0" />
+                                <TextBlock Text="{Binding Address}" Foreground="{DynamicResource Hint}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>
