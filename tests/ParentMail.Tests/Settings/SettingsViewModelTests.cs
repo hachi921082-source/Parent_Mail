@@ -105,4 +105,14 @@ public sealed class SettingsViewModelTests
         _vm.TextSizePt = 24;
         Assert.Equal(32, _vm.AppFontSize);
     }
+
+    [Fact]
+    public void FractionTypedInBox_IsKept_SliderValueIsRounded()
+    {
+        _vm.TextSizeText = "18.5";
+        Assert.Equal(18.5, _vm.TextSizePt);
+        Assert.Equal("18.5", _vm.TextSizeText);
+        _vm.TextSizePt = 20.4;
+        Assert.Equal(20, _scale.TextSizePt);
+    }
 }
