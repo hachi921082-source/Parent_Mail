@@ -273,6 +273,16 @@ public static class Strings
     public const string CP_16 = "ファイルを選ぶ";
     /// <summary>添付:</summary>
     public const string CP_17 = "添付:";
+    /// <summary>アドレス帳から選ぶ</summary>
+    public const string CP_18 = "アドレス帳から選ぶ";
+    /// <summary>入れたい人にチェックを付けてください</summary>
+    public const string CP_19 = "入れたい人にチェックを付けてください";
+    /// <summary>入れたい人を選んでください。</summary>
+    public const string CP_20 = "入れたい人を選んでください。";
+    /// <summary>入力ずみ</summary>
+    public const string CP_21 = "入力ずみ";
+    /// <summary>アドレス帳にまだ登録されていません。先にアドレス帳で登録してください。</summary>
+    public const string CP_22 = "アドレス帳にまだ登録されていません。先にアドレス帳で登録してください。";
     /// <summary>Re:</summary>
     public const string RF_01 = "Re:";
     /// <summary>Fwd:</summary>
@@ -483,4 +493,6 @@ public static class Strings
     public const string WD_29 = "名前を付けて保存";
     /// <summary>問題が発生しました</summary>
     public const string WD_30 = "問題が発生しました";
+    /// <summary>アドレス帳から選ぶ - &lt;name&gt;</summary>
+    public const string WD_31 = "アドレス帳から選ぶ - <name>";
 }
