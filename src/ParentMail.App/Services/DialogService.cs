@@ -29,7 +29,11 @@ public sealed class DialogService : IDialogService
         {
             if (sender is Window w)
             {
+                // 読み込みより前にすでに前面になっている窓（作成窓など）も記録する。
+                if (w.IsActive) _lastActive = new WeakReference<Window>(w);
                 w.Activated += (_, _) => _lastActive = new WeakReference<Window>(w);
+                // 他のアプリ（Explorer など）へ前面が移った瞬間にも記録する。
+                w.Deactivated += (_, _) => _lastActive = new WeakReference<Window>(w);
             }
         }));
     }
