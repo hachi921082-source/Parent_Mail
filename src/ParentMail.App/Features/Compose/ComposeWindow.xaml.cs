@@ -36,6 +36,10 @@ public partial class ComposeWindow : Window
         CcBox.SuggestProvider = vm.Suggest;
         BccBox.SuggestProvider = vm.Suggest;
 
+        // アドレス帳から選ぶ画面は、この窓にだけモーダル。入れ終わったら、その欄へフォーカスを戻す
+        vm.OwnerWindow = this;
+        vm.FocusRequested += (_, field) => GetBox(field).FocusAtEnd();
+
         vm.CloseRequested += (_, _) => Close();
         Closed += (_, _) =>
         {
@@ -90,6 +94,16 @@ public partial class ComposeWindow : Window
     public TextBox BodyField => BodyBox;
     public Button SendField => SendButton;
     public Button AttachField => AttachButton;
+    public Button ToPickField => ToPickButton;
+    public Button CcPickField => CcPickButton;
+    public Button BccPickField => BccPickButton;
+
+    private RecipientBox GetBox(RecipientField field) => field switch
+    {
+        RecipientField.To => ToBox,
+        RecipientField.Cc => CcBox,
+        _ => BccBox,
+    };
 
     // 新規と転送は宛先、返信は本文（引用の上）から始める
     private void FocusFirst()
