@@ -117,6 +117,12 @@
 - Q77 (2026-10-08) Multi-select delete details APPROVED as proposed (A59-A65, A76; detailed-spec 22).
 - Q78 (2026-10-08) APPROVED: CC line in the preview header (A66); Sent/Drafts 「宛先: 〇〇 ほか N 人」 (A67); INTERNALDATE for sort and display (A68); over-limit amount in raw-file terms (A69); consistent plain-text/HTML scaling clamp (A70); clearing all text after an auto-save deletes that draft (A71); draft upload failure handling (A74); wording of AC-19/AC-20 (A72, A73).
 - Q79 (2026-10-08) Renaming an account's display name (e.g. 「お母さん」, the label on the account switch button) does NOT show the Q31 warning dialog. The warning stays only for add account, delete account and password re-entry (Q31 as originally specified). Reflected in window-layouts.md section 4/6, ui-strings.md AC-13 and WD-06, detailed-spec section 15.
+- Q80 (2026-10-11) NEW FEATURE: address-book picker in compose. One button 「アドレス帳から選ぶ」 beside EACH of 宛先 / CC / BCC (the BCC one appears with the BCC row). Chosen over one button for the focused field and one button that asks which field.
+- Q81 (2026-10-11) Picker: modal to the owning compose window only, about 720 x 560 DIP, the compose window's own account's address book (A21, Q28), sorted by ふりがな, one row per email address with a large checkbox (row height at least 56 DIP), multi-select, NO search box; buttons [ 入れる ] [ やめる ], Enter = 入れる, Esc = やめる, initial focus = the list; 入れる with nothing checked = error line and the dialog stays open; empty address book = a modal notice with one OK button instead of the picker.
+- Q82 (2026-10-11) Picked addresses are appended to the end of the field as `Name <address>` (same as autocomplete selection); existing text is untouched; focus returns to that field.
+- Q83 (2026-10-11) Addresses already in THAT field are shown in the picker checked and disabled with 「入力ずみ」. The same address in 宛先 and CC is not blocked.
+- Q84 (2026-10-11) Tab order: each picker button directly follows its field (宛先, button, CC, button, BCCを追加, then BCC and its button when shown, 件名, ...). No new shortcut key; Enter in a field still moves to the next field's text box.
+- Q85 (2026-10-11) Carried by a new `docs/plans/compose/PLAN-3.md`, implemented in W4 in the compose lane after compose PLAN-2. Reflected in spec.md section 5, detailed-spec sections 7, 10, 21, window-layouts.md section 10/10.1, DECISIONS.md section 17, plans/README.md, pending-plan-edits.md. The Japanese wording (ui-strings CP-18 to CP-22, WD-31) is PENDING: the user has not yet seen it.
 
 ## Open
 
