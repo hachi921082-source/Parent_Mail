@@ -18,8 +18,43 @@
     </UserControl.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <!-- 上段: 左 = 返信・転送などのボタン（folder-actions が入れる）、中央 = 拡大縮小、右端 = 削除（同上）。
+             複数選択の案内のときも出す（「選んだN通を削除」を押せるように）。何も選んでいないときだけ隠す。 -->
+        <Grid Grid.Row="0" Margin="16,12,16,8">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsGuide}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ContentControl x:Name="HeaderButtonsSlot" Grid.Column="0" IsTabStop="False" VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
+                <Button x:Name="ZoomInButton" Content="{x:Static md:PreviewText.ZoomIn}" Command="{Binding ZoomInCommand}"
+                        Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
+                <Button x:Name="ZoomOutButton" Content="{x:Static md:PreviewText.ZoomOut}" Command="{Binding ZoomOutCommand}"
+                        Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
+                <Button x:Name="ZoomResetButton" Content="{x:Static md:PreviewText.ZoomReset}" Command="{Binding ZoomResetCommand}"
+                        Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,12,0" />
+                <TextBlock x:Name="ZoomLabel" Text="{Binding ZoomLabel}" FontWeight="Bold" VerticalAlignment="Center" MinWidth="64" />
+            </StackPanel>
+            <ContentControl x:Name="DeleteSlot" Grid.Column="2" IsTabStop="False" VerticalAlignment="Center" />
+        </Grid>
+
         <!-- メールを選んでいないとき・複数選択のときの案内（中央） -->
-        <Grid>
+        <Grid Grid.Row="1">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Setter Property="Visibility" Value="Visible" />
@@ -34,36 +69,15 @@
                        HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Margin="32" />
         </Grid>
 
-        <Grid x:Name="MailPane" Visibility="{Binding IsMail, Converter={StaticResource BoolToVisibility}}">
+        <Grid x:Name="MailPane" Grid.Row="1" Visibility="{Binding IsMail, Converter={StaticResource BoolToVisibility}}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- 上段: 左 = 返信・転送などのボタン（folder-actions が入れる）、中央 = 拡大縮小、右端 = 削除（同上） -->
-            <Grid Grid.Row="0" Margin="16,12,16,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ContentControl x:Name="HeaderButtonsSlot" Grid.Column="0" IsTabStop="False" VerticalAlignment="Center" />
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
-                    <Button x:Name="ZoomInButton" Content="{x:Static md:PreviewText.ZoomIn}" Command="{Binding ZoomInCommand}"
-                            Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
-                    <Button x:Name="ZoomOutButton" Content="{x:Static md:PreviewText.ZoomOut}" Command="{Binding ZoomOutCommand}"
-                            Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
-                    <Button x:Name="ZoomResetButton" Content="{x:Static md:PreviewText.ZoomReset}" Command="{Binding ZoomResetCommand}"
-                            Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,12,0" />
-                    <TextBlock x:Name="ZoomLabel" Text="{Binding ZoomLabel}" FontWeight="Bold" VerticalAlignment="Center" MinWidth="64" />
-                </StackPanel>
-                <ContentControl x:Name="DeleteSlot" Grid.Column="2" IsTabStop="False" VerticalAlignment="Center" />
-            </Grid>
-
             <!-- ヘッダ -->
-            <Grid Grid.Row="1" Margin="16,0,16,8">
+            <Grid Grid.Row="0" Margin="16,0,16,8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -103,14 +117,14 @@
             </Grid>
 
             <!-- あやしいリンクの赤い帯 -->
-            <Border Grid.Row="2" Background="{DynamicResource BannerError}" MinHeight="56" Padding="16,6" Margin="0,0,0,4"
+            <Border Grid.Row="1" Background="{DynamicResource BannerError}" MinHeight="56" Padding="16,6" Margin="0,0,0,4"
                     Visibility="{Binding SuspiciousLinkBanner, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Text="{Binding SuspiciousLinkBannerText}" Foreground="{DynamicResource BannerErrorText}"
                            FontWeight="Bold" TextWrapping="Wrap" VerticalAlignment="Center" />
             </Border>
 
             <!-- 本文 -->
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="2">
                 <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource Hint}" TextWrapping="Wrap" Margin="16,8"
                            Visibility="{Binding IsStatus, Converter={StaticResource BoolToVisibility}}" />
                 <RichTextBox x:Name="PlainBox" IsReadOnly="True" IsDocumentEnabled="True" BorderThickness="0" Padding="12,8"

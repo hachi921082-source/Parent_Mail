@@ -1,0 +1,22 @@
+<UserControl x:Class="ParentMail.App.Features.FolderActions.HeaderActionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fa="clr-namespace:ParentMail.App.Features.FolderActions">
+    <!-- プレビュー見出しの左側: 返信 / 全員に返信 / 転送（下書きフォルダでは 編集）。見ているフォルダと選択で有効・無効が変わる。 -->
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </UserControl.Resources>
+    <StackPanel Orientation="Horizontal">
+        <StackPanel Orientation="Horizontal" Visibility="{Binding ShowReplyGroup, Converter={StaticResource BoolToVisibility}}">
+            <Button x:Name="ReplyButton" Content="{x:Static fa:FolderActionText.Reply}" Command="{Binding ReplyCommand}"
+                    Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
+            <Button x:Name="ReplyAllButton" Content="{x:Static fa:FolderActionText.ReplyAll}" Command="{Binding ReplyAllCommand}"
+                    Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
+            <Button x:Name="ForwardButton" Content="{x:Static fa:FolderActionText.Forward}" Command="{Binding ForwardCommand}"
+                    Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0" />
+        </StackPanel>
+        <Button x:Name="EditButton" Content="{x:Static fa:FolderActionText.Edit}" Command="{Binding EditCommand}"
+                Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0"
+                Visibility="{Binding ShowEdit, Converter={StaticResource BoolToVisibility}}" />
+    </StackPanel>
+</UserControl>

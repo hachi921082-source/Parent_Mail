@@ -1,0 +1,7 @@
+<UserControl x:Class="ParentMail.App.Features.FolderActions.DeleteActionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- プレビュー見出しの右端: 削除ボタン（他のボタンから離し、赤い枠）。複数選択中の文言は「選んだN通を削除」。 -->
+    <Button x:Name="DeleteButton" Content="{Binding DeleteLabel}" Command="{Binding DeleteCommand}"
+            Style="{StaticResource DeleteOutlineButton}" MinWidth="0" Padding="16,8" />
+</UserControl>

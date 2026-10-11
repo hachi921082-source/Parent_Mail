@@ -4,6 +4,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ParentMail.App.Resources;
 using ParentMail.Core;
+using ParentMail.Core.Features.MailDisplay;
 using ParentMail.Core.Features.SyncCache;
 using ParentMail.Core.Models;
 
@@ -65,6 +66,12 @@ public sealed partial class ListViewModel : ObservableObject
     }
 
     public ObservableCollection<MailListItem> Items { get; } = new();
+
+    /// <summary>
+    /// プレビュー（mail-display）への補助情報の受け口。設定されていれば、アプリの自動選択のあいだは「自動」を伝え（既読にしない、A58）、
+    /// チェックの数も伝える。folder-actions の組み込みで設定する。
+    /// </summary>
+    public IPreviewSelectionHints? Hints { get; set; }
 
     public FolderKind Folder => _folder;
 
@@ -341,6 +348,8 @@ public sealed partial class ListViewModel : ObservableObject
         if (ReferenceEquals(_selected, item)) return;
         _selected = item;
         OnPropertyChanged(nameof(SelectedItem));
+        // 自動選択のあいだだけプレビューに「自動」を伝える（SelectedMessageId の変更通知の中で読まれる）
+        using var auto = source == SelectionSource.Auto ? Hints?.BeginAutoSelection() : null;
         _state.SelectedMessageId = item?.GmMsgId;
         SelectionChanged?.Invoke(this, new SelectionChangedArgs(item, source, _folder));
     }
@@ -448,6 +457,7 @@ public sealed partial class ListViewModel : ObservableObject
         OnPropertyChanged(nameof(HasChecked));
         OnPropertyChanged(nameof(CheckedSummary));
         OnPropertyChanged(nameof(SelectAllChecked));
+        if (Hints is not null) Hints.CheckedCount = _checked.Count;
         ChecksChanged?.Invoke(this, EventArgs.Empty);
     }
 
