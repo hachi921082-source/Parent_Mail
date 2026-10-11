@@ -15,7 +15,7 @@ ASCII sketches are schematic: Japanese characters are wider than the drawing gri
 7. Address book and edit dialog
 8. Block list and add form
 9. Filter rules and edit dialog
-10. Compose (new mail)
+10. Compose (new mail), incl. 10.1 address-book picker
 11. Open points for the user
 
 ## 1. Common rules
@@ -292,9 +292,9 @@ Field order: 差出人に含む文字, 件名に含む文字, 本文に含む文
 ```
 +----------------------------------------------------------------------+
 | 新しいメール - 母のメール                                              |
-|  宛先   [___________________________________________]  (autocomplete)|
-|  CC     [___________________________________________]                |
-|  [BCCを追加]      (BCC [____] appears here after the click)           |
+|  宛先   [______________________________] [アドレス帳から選ぶ]          |
+|  CC     [______________________________] [アドレス帳から選ぶ]          |
+|  [BCCを追加]   (BCC [____] [アドレス帳から選ぶ] appears after click)    |
 |  件名   [___________________________________________]                |
 |  本文   +--------------------------------------------------+         |
 |         |                                                  |         |
@@ -305,12 +305,33 @@ Field order: 差出人に含む文字, 件名に含む文字, 本文に含む文
 |  [ 添付 ]                                             [   送信   ]   |
 +----------------------------------------------------------------------+
 ```
-- Field order and tab order: 宛先, CC, BCCを追加 (then BCC when shown), 件名, 本文, 添付 files' 削除 buttons, 添付, 送信. Tab inside 本文 leaves the field (Tab is not inserted as text).
+- Field order and tab order (Q84): 宛先, its アドレス帳から選ぶ, CC, its アドレス帳から選ぶ, BCCを追加 (then BCC and its アドレス帳から選ぶ when shown), 件名, 本文, 添付 files' 削除 buttons, 添付, 送信. Tab inside 本文 leaves the field (Tab is not inserted as text).
 - Initial focus = 宛先 (for reply/forward also 宛先 is skipped only when pre-filled? approved: initial focus stays 宛先 for new mail; for reply the cursor goes to 本文 above the quote; for forward 宛先).
 - 送信 is a large button at the bottom right (the only primary action). NO keyboard shortcut for Send; Enter in a single-line field moves to the next field (does not send). Esc is not bound (closing goes through the close dialog).
 - Drag and drop of files onto any part of the window adds attachments.
 - Closing with content: three-button dialog [ 下書きに保存(既定) ] [ 保存しないで閉じる(前に自動保存された下書きは残ります) ] [ 戻る ]. No content: closes without a dialog.
 - Empty subject at send: [ このまま送る ] [ 戻る(既定) ].
+
+### 10.1 Address-book picker (Q80-Q85; layout APPROVED with the decision, wording PENDING)
+
+Modal to the compose window that opened it only; centered on that compose window; about 720 x 560 DIP at 18pt.
+```
++------------------------------------------------------+
+| アドレス帳から選ぶ - 母のメール                        |
+|  入れたい人にチェックを付けてください                  |
+| +--------------------------------------------------+ |
+| | [x] 山田 太郎   taro@example.com                   | |
+| | [ ] 佐藤 花子   hanako@example.jp                  | |
+| | [x] 佐藤 花子   hanako@work.example   入力ずみ(灰色) | |
+| +--------------------------------------------------+ |
+|  (error line)                                         |
+|                              [ 入れる ] [ やめる ]    |
++------------------------------------------------------+
+```
+- One row per email address, sorted by ふりがな; large checkbox, row height at least 56 DIP; Space or click toggles. No search box. Rows whose address is already in that field are checked and disabled with 「入力ずみ」.
+- Tab order: list, 入れる, やめる. Initial focus = the list. Enter = 入れる; Esc = やめる. 入れる with nothing newly checked shows the error line and stays open.
+- Empty address book: the picker does not open; a notice (title お知らせ, one OK button) is shown.
+- Result: picked addresses appended to the end of the field as `Name <address>`; focus returns to the field.
 
 ## 11. Open points
 
