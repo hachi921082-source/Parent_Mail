@@ -201,4 +201,55 @@ public class ComposeWindowSmokeTests
         Assert.Equal("ご挨拶", s.Subject);
         Assert.Equal(new[] { "母 <mother@example.com>" }, s.To);
     }
+
+    [Fact]
+    public void Closing_with_content_asks_first_and_back_keeps_the_window_then_discard_closes_it()
+    {
+        RunSta(() =>
+        {
+            EnsureApp();
+            var root = Path.Combine(Path.GetTempPath(), "ParentMail_窓_" + Guid.NewGuid().ToString("N"));
+            var dialogs = new FakeDialogService { ChooseAnswer = -1 };
+            var vm = MakeVm(root, new ComposeInit { AccountId = "a", Subject = "書きかけ" }, new FakeOutboxService(), dialogs, new InMemoryContactRepository());
+            var closed = false;
+            var w = new ComposeWindow(vm, new FakeTextScale());
+            w.Closed += (_, _) => closed = true;
+            w.Show();
+            vm.Subject = "書きかけの件名";
+
+            void Pump()
+            {
+                var frame = new System.Windows.Threading.DispatcherFrame();
+                w.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ContextIdle, new Action(() => frame.Continue = false));
+                System.Windows.Threading.Dispatcher.PushFrame(frame);
+            }
+
+            w.Close(); // 「戻る」: 窓は残る
+            Pump();
+            Assert.False(closed);
+
+            dialogs.ChooseAnswer = 1; // 「保存しないで閉じる」
+            w.Close();
+            Pump();
+            Assert.True(closed);
+        });
+    }
+
+    [Fact]
+    public void Closing_an_empty_window_needs_no_question()
+    {
+        RunSta(() =>
+        {
+            EnsureApp();
+            var root = Path.Combine(Path.GetTempPath(), "ParentMail_窓_" + Guid.NewGuid().ToString("N"));
+            var dialogs = new FakeDialogService { ChooseAnswer = -1 };
+            var vm = MakeVm(root, new ComposeInit { AccountId = "a" }, new FakeOutboxService(), dialogs, new InMemoryContactRepository());
+            var closed = false;
+            var w = new ComposeWindow(vm, new FakeTextScale());
+            w.Closed += (_, _) => closed = true;
+            w.Show();
+            w.Close();
+            Assert.True(closed);
+        });
+    }
 }
