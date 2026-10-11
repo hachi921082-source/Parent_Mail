@@ -20,6 +20,7 @@
 14. Chrome text cap (spec.md section 4; 2026-10-08)
 15. Modal OK for failures, transient notices for successes (spec.md section 5; 2026-10-08)
 16. Idle backfill included; mark-read only in Inbox and Spam (spec.md sections 5, 8; 2026-10-08)
+17. Address-book picker in compose: one button per recipient field, no search box (detailed-spec section 7; 2026-10-11)
 
 ## Top-bar folder layout (spec.md section 4)
 
@@ -107,3 +108,11 @@
 
 - Decision: in the compose close dialog (下書きに保存 / 保存しないで閉じる(...) / 戻る) the default button is 下書きに保存.
 - Rationale: user decision; reason is the assistant's summary: saving loses nothing and the parent most likely wants the text kept, whereas 戻る would force another step. Exception to the general rule that Enter hits the cancel-type button.
+
+## Address-book picker in compose: one button per recipient field, no search box (detailed-spec section 7; 2026-10-11)
+
+- Decision (Q80-Q85): a button 「アドレス帳から選ぶ」 beside each of 宛先 / CC / BCC opens a modal multi-select picker (one row per email address, checkboxes, no search box) of the compose window's own account's address book. Picked addresses are appended as `Name <address>`; addresses already in the field are shown checked and disabled with 「入力ずみ」. Implemented by compose PLAN-3 after PLAN-2.
+- Why a button beside each field: the result is predictable (the button next to a field fills that field); nothing depends on which field happens to have focus, and there is no extra "which field?" question for the parent. Rejected: one button adding to the focused field (hidden state, easy to fill the wrong field); one button that asks 宛先 / CC / BCC (extra step and dialog).
+- Why no search box: the parents' address books are small, a sorted list with big checkboxes is enough, and fewer controls is simpler. Revisit if books grow.
+- Why the compose window's account (not the displayed one): consistent with A21 (the compose window sends from the account displayed when it opened) and with the per-account address book (Q28).
+- Why a separate PLAN-3 after PLAN-2 in the same lane: both edit the compose window XAML and ViewModel, so parallel worktrees would conflict; folding it into PLAN-2 would mix drafts with recipient entry.
