@@ -21,6 +21,8 @@ public static class ComposeRegistration
             sp.GetRequiredService<IBodyFetcher>(), sp.GetRequiredService<IAttachmentService>(),
             sp.GetRequiredService<CachePaths>(), sp.GetRequiredService<IAppLog>()));
         services.AddSingleton<DraftSyncHook>();
+        // アドレス帳から選ぶ画面（PLAN-3）
+        services.AddSingleton<IAddressPickerService, AddressPickerService>();
         // mail-display が置いた暫定の「何もしない」実装より後に登録するので、こちらが使われる
         services.AddSingleton<IComposeWindowFactory, ComposeWindowFactory>();
         return services;
