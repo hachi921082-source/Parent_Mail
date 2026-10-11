@@ -104,6 +104,9 @@
 
         <!-- 下段: 左に「添付」、右に大きな「送信」（主な操作はこの 1 つだけ。キーボードの近道は付けない） -->
         <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">
+            <!-- 下書きを Gmail へ上げられていないときの状態行 [BN-18] -->
+            <TextBlock x:Name="DraftStatusLine" Text="{Binding DraftStatusText}" TextWrapping="Wrap"
+                       Foreground="{DynamicResource Hint}" VerticalAlignment="Center" Margin="140,0,230,0" />
             <Button x:Name="AttachButton" Style="{StaticResource AppButton}" HorizontalAlignment="Left"
                     Content="{x:Static local:ComposeText.BtnAttach}" Click="OnAttach" />
             <Button x:Name="SendButton" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"
