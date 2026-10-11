@@ -57,8 +57,10 @@ public sealed class PreviewViewModel : ObservableObject
         IReadStateSync readState, IContactLookup contacts, ITextScale scale, IHtmlModeSwitch htmlSwitch,
         IPreviewSelectionHints hints, IOutboxRepository outbox, IDraftRepository drafts, IAccountRepository accounts,
         IDialogService dialogs, IAppLog log, LinkClickHandler links,
-        Func<bool>? webViewAvailable = null, Func<string, Task<byte[]>>? readFile = null)
+        Func<bool>? webViewAvailable = null, Func<string, Task<byte[]>>? readFile = null,
+        AttachmentListViewModel? attachmentList = null)
     {
+        Attachments = attachmentList;
         _state = state;
         _mails = mails;
         _bodyFetcher = bodyFetcher;
@@ -91,6 +93,9 @@ public sealed class PreviewViewModel : ObservableObject
 
         LastLoad = LoadCurrentAsync(auto: true);
     }
+
+    /// <summary>本文の下の添付一覧（PLAN-3）。未接続のときは null。</summary>
+    public AttachmentListViewModel? Attachments { get; }
 
     /// <summary>直近の読み込み（テストと呼び出し側が完了を待つため）。</summary>
     public Task LastLoad { get; private set; } = Task.CompletedTask;
@@ -320,6 +325,7 @@ public sealed class PreviewViewModel : ObservableObject
     {
         _hasMail = false;
         _current = null;
+        Attachments?.Clear();
         HtmlAvailable = false;
         SuspiciousLinkBanner = false;
         PlainContent = "";
@@ -332,6 +338,7 @@ public sealed class PreviewViewModel : ObservableObject
     private void ApplyHeader(MailMessage msg, string accountId, FolderKind folder)
     {
         _hasMail = true;
+        Attachments?.Load(accountId, msg.GmailMsgId);
         FromText = PreviewHeaderFormatter.FormatFrom(msg.FromName, msg.FromAddress);
         ToText = PreviewHeaderFormatter.FormatList(msg.To);
         CcText = PreviewHeaderFormatter.FormatList(msg.Cc);
@@ -353,6 +360,8 @@ public sealed class PreviewViewModel : ObservableObject
 
     private async Task ApplyBodyAsync(MailMessage msg, string accountId, int version, CancellationToken ct)
     {
+        // 本文を取得したあとに添付の情報が入るので、一覧を読み直す
+        Attachments?.Load(accountId, msg.GmailMsgId);
         var hasHtml = !string.IsNullOrWhiteSpace(msg.BodyHtml);
         // 本文（text）がなければ HTML から作った文章を使う
         var plain = !string.IsNullOrWhiteSpace(msg.BodyText) ? msg.BodyText
@@ -446,6 +455,7 @@ public sealed class PreviewViewModel : ObservableObject
     private void ShowLocal(string accountId, IReadOnlyList<string> to, IReadOnlyList<string> cc, string subject, DateTime dateUtc, string body)
     {
         _hasMail = true;
+        Attachments?.Clear();
         FromText = _accounts.Get(accountId)?.Email ?? "";
         ToText = PreviewHeaderFormatter.FormatList(to);
         CcText = PreviewHeaderFormatter.FormatList(cc);

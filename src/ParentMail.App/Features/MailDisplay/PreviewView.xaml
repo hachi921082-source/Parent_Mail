@@ -74,6 +74,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!-- ヘッダ -->
@@ -133,6 +134,47 @@
                              Visibility="{Binding IsPlain, Converter={StaticResource BoolToVisibility}}" />
                 <Grid x:Name="HtmlHost" Visibility="{Binding IsHtml, Converter={StaticResource BoolToVisibility}}" />
             </Grid>
+
+            <!-- 添付の一覧（本文の下）。危険なファイルは「開く」を押せず、赤い印を出す -->
+            <Border Grid.Row="4" BorderBrush="{DynamicResource Hint}" BorderThickness="0,1,0,0" Padding="16,8" MaxHeight="260"
+                    DataContext="{Binding Attachments}"
+                    Visibility="{Binding HasItems, Converter={StaticResource BoolToVisibility}, FallbackValue=Collapsed}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="AttachmentList" ItemsSource="{Binding Items}" FontSize="{Binding FontSize}" IsTabStop="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding FileName}" TextWrapping="Wrap" FontWeight="Bold" />
+                                            <TextBlock Text="{Binding SizeText}" Foreground="{DynamicResource Hint}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <Border Background="{DynamicResource BannerError}" Padding="8,2" Margin="0,4,0,0" HorizontalAlignment="Left"
+                                                Visibility="{Binding IsDangerous, Converter={StaticResource BoolToVisibility}}">
+                                            <TextBlock Text="{Binding DangerText}" Foreground="{DynamicResource BannerErrorText}" FontWeight="Bold" />
+                                        </Border>
+                                        <TextBlock Text="{Binding ReasonText}" Foreground="{DynamicResource Hint}" TextWrapping="Wrap"
+                                                   Visibility="{Binding HasReason, Converter={StaticResource BoolToVisibility}}" />
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Content="{x:Static md:PreviewText.Open}" Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8" Margin="0,0,8,0"
+                                            Command="{Binding DataContext.OpenCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Grid.Column="3" Content="{x:Static md:PreviewText.Save}" Style="{StaticResource AppButton}" MinWidth="0" Padding="16,8"
+                                            Command="{Binding DataContext.SaveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>

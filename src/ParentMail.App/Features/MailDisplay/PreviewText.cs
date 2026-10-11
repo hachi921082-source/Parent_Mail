@@ -7,6 +7,8 @@ public static class PreviewText
 {
     private static readonly string[] HeaderLabels = Strings.PV_01.Split(" / ");
     private static readonly string[] ZoomLabels = Strings.TB_21.Split(" / ");
+    private static readonly string[] AttachmentButtons = Strings.PV_07.Split(" / ");
+    private static readonly string[] SaveConfirmButtons = Strings.PV_10.Split(" / ");
 
     /// <summary>差出人</summary>
     public static string From => HeaderLabels[0];
@@ -25,6 +27,15 @@ public static class PreviewText
     public static string ZoomOut => ZoomLabels[1];
     /// <summary>100%に戻す</summary>
     public static string ZoomReset => ZoomLabels[2];
+
+    /// <summary>開く（添付の行）</summary>
+    public static string Open => AttachmentButtons[0];
+    /// <summary>保存（添付の行）</summary>
+    public static string Save => AttachmentButtons[1];
+    /// <summary>保存する（危険な添付の確認）</summary>
+    public static string SaveConfirmYes => SaveConfirmButtons[0];
+    /// <summary>キャンセル（危険な添付の確認。既定）</summary>
+    public static string SaveConfirmNo => SaveConfirmButtons[1];
 
     /// <summary>複数選択の案内（N を実際の数に置き換える）。</summary>
     public static string MultiSelect(int count) => Strings.PV_13.Replace("N通", $"{count}通");

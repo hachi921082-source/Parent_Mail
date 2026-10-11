@@ -17,6 +17,20 @@ public static class MailDisplayRegistration
 
         services.AddSingleton<IPreviewSelectionHints, PreviewSelectionHints>();
         services.AddSingleton<IHtmlModeSwitch, MainViewModelHtmlSwitch>();
+        services.AddSingleton<IAttachmentFileUi, WindowsAttachmentFileUi>();
+        services.AddSingleton<AttachmentActions>(sp =>
+        {
+            var actions = new AttachmentActions(
+                sp.GetRequiredService<ParentMail.Core.IAttachmentService>(),
+                sp.GetRequiredService<ParentMail.Core.IDialogService>(),
+                sp.GetRequiredService<IAttachmentFileUi>(),
+                sp.GetRequiredService<ParentMail.Core.IAppLog>(),
+                System.IO.Path.Combine(new ParentMail.Core.Platform.AppPaths().DataRoot, "temp"));
+            // アプリの起動時に、前回の「開く」で作った一時ファイルを消す
+            actions.CleanTemp();
+            return actions;
+        });
+        services.AddSingleton<AttachmentListViewModel>();
         services.AddSingleton<PreviewViewModel>(sp => new PreviewViewModel(
             sp.GetRequiredService<ParentMail.Core.IAppState>(),
             sp.GetRequiredService<ParentMail.Core.IMailRepository>(),
@@ -33,7 +47,9 @@ public static class MailDisplayRegistration
             sp.GetRequiredService<ParentMail.Core.IDialogService>(),
             sp.GetRequiredService<ParentMail.Core.IAppLog>(),
             sp.GetRequiredService<ParentMail.App.SafetyWarnings.LinkClickHandler>(),
-            WebViewRuntime.IsAvailable));
+            WebViewRuntime.IsAvailable,
+            null,
+            sp.GetRequiredService<AttachmentListViewModel>()));
         services.AddSingleton<PreviewView>();
 
         PreviewSlotAttacher.Install(() => App.Services);
