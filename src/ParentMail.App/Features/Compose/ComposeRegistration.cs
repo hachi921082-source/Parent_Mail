@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ParentMail.Core;
+using ParentMail.Core.Data;
 using ParentMail.Core.Features.Compose;
 
 namespace ParentMail.App.Features.Compose;
@@ -12,6 +14,13 @@ public static class ComposeRegistration
     {
         services.AddSingleton<RecipientSuggester>();
         services.AddSingleton<ComposeWindowRegistry>();
+        // 下書きサービス（PLAN-2）。送信箱は使うときに取得するので、循環にならない
+        services.TryAddSingleton<IDraftService>(sp => new DraftService(
+            sp.GetRequiredService<IDraftRepository>(), sp.GetRequiredService<IMailRepository>(),
+            sp.GetRequiredService<IAccountRepository>(), sp.GetRequiredService<IImapGatewayFactory>(),
+            sp.GetRequiredService<IBodyFetcher>(), sp.GetRequiredService<IAttachmentService>(),
+            sp.GetRequiredService<CachePaths>(), sp.GetRequiredService<IAppLog>()));
+        services.AddSingleton<DraftSyncHook>();
         // mail-display が置いた暫定の「何もしない」実装より後に登録するので、こちらが使われる
         services.AddSingleton<IComposeWindowFactory, ComposeWindowFactory>();
         return services;
