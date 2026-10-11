@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using ParentMail.Core.Models;
 
 namespace ParentMail.App.Features.MailList;
 
@@ -24,6 +25,8 @@ public sealed partial class MailListItem : ObservableObject
     public DateTime SortUtc { get; init; }
     /// <summary>横断表示（検索結果）用のフォルダ名。通常の一覧では null。</summary>
     public string? FolderLabel { get; init; }
+    /// <summary>横断表示（検索結果）で、この行を代表するフォルダ。通常の一覧では null（一覧のフォルダに従う）。</summary>
+    public FolderKind? Folder { get; init; }
     /// <summary>チェック欄を出すか（ゴミ箱と送信箱は出さない、A62）。</summary>
     public bool ShowCheckbox { get; init; }
 
