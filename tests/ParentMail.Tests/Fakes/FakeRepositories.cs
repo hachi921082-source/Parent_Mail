@@ -130,7 +130,8 @@ public sealed class InMemoryMailRepository : IMailRepository
 
     public IReadOnlyList<MailMessage> Search(string accountId, string normalizedKey, int limit)
         => Msgs(accountId).Values
-            .Where(m => TextNormalizer.NormalizeKey(m.Subject + " " + m.FromName + " " + m.FromAddress + " " + m.BodyText).Contains(normalizedKey))
+            .Where(m => normalizedKey.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+                .All(w => TextNormalizer.NormalizeKey(m.Subject + " " + m.FromName + " " + m.FromAddress + " " + m.BodyText).Contains(w)))
             .OrderByDescending(m => m.DateUtc).Take(limit).ToList();
 }
 
