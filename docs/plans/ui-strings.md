@@ -2,6 +2,8 @@
 
 Status (2026-10-08): FULLY APPROVED by the user (section 17 decisions on 2026-10-08, all remaining rows on 2026-10-08 in the follow-up review, Q76). This file is the source of truth for UI wording; `Strings.ja.cs` is generated from it. The earlier note that only part of the file was approved is obsolete. Exception already applied: FA-08 is 「迷惑メールではない」 (suffix dropped by the user).
 
+Addendum (2026-10-11): rows CP-18 to CP-22 and WD-31 (address-book picker in compose, Q80-Q85) are PENDING: the layout was decided but the user has not yet seen the Japanese wording. Do not treat them as approved; everything else above stays APPROVED.
+
 Single list of every user-visible Japanese string referenced by `docs/plans/**/PLAN*.md` plus the strings the UI needs but no PLAN contains yet. When a row is APPROVED it is the source of truth (PLANs keep inline wording as drafts; on any difference this file wins). 
 
 Columns: **Status** = APPROVED (user decided or approved in review, 2026-10-08) / SUPERSEDED. **Where shown** = the exact place on screen. **Origin**: SPEC = quoted in spec/detailed-spec/QA; A2 = folder names of assumption A2; PROPOSED = written by developer-lite; NEW = written by designer-lite (2026-10-08, or earlier where needed).
@@ -205,6 +207,11 @@ Kind of each message (banner / modal OK / transient / in-place): detailed-spec s
 | CP-15 | Close dialog, message | 書きかけのメールがあります。 | APPROVED | NEW | |
 | CP-16 | File picker title | ファイルを選ぶ | APPROVED | NEW | |
 | CP-17 | Compose, attachment list label | 添付: | APPROVED | NEW | |
+| CP-18 | Compose, button beside each of 宛先 / CC / BCC | アドレス帳から選ぶ | PENDING (wording not yet seen by the user) | NEW | Q80-Q85 |
+| CP-19 | Address-book picker, hint line | 入れたい人にチェックを付けてください | PENDING | NEW | Q81 |
+| CP-20 | Address-book picker, error line when nothing is checked | 入れたい人を選んでください。 | PENDING | NEW | Q81 |
+| CP-21 | Address-book picker, tag on a row whose address is already in the field | 入力ずみ | PENDING | NEW | Q83 |
+| CP-22 | Notice (modal, one OK) when the address book is empty | アドレス帳にまだ登録されていません。先にアドレス帳で登録してください。 | PENDING | NEW | Q81; title via WD-10 |
 
 ## 9. Reply and forward
 
@@ -381,3 +388,4 @@ Buttons are listed left to right as drawn (safe choice last). "Enter" = the key 
 | WD-28 | File picker for attachments | ファイルを選ぶ | (Windows standard) | APPROVED | |
 | WD-29 | Save attachment | 名前を付けて保存 | (Windows standard) | APPROVED | |
 | WD-30 | Unhandled error | 問題が発生しました | OK* | APPROVED | text BN-04 |
+| WD-31 | Compose, address-book picker | アドレス帳から選ぶ - <name> | 入れる*, やめる | PENDING | modal to the compose window; Enter = 入れる (Q81); buttons reuse AB-12-style wording |
