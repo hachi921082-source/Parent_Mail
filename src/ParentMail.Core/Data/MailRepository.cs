@@ -274,16 +274,29 @@ public sealed class MailRepository : IMailRepository
         return Convert.ToInt32(Scalar(c, $"SELECT COUNT(*) FROM messages m WHERE m.is_read = 0 AND {ViewWhere}", ("@folder", (int)folder)));
     }
 
-    /// <summary>検索キー（NormalizeKey 済み）の部分一致。所属に関係なくキャッシュ内の全メールが対象（AllMail のみのものも含む）。</summary>
+    /// <summary>
+    /// 検索キー（NormalizeKey 済み）の部分一致。所属に関係なくキャッシュ内の全メールが対象（AllMail のみのものも含む）。
+    /// 空白で区切った語はすべて満たすものだけを返す（AND）。各語は差出人・件名または取得済みの本文のどれかに含まれればよい。
+    /// </summary>
     public IReadOnlyList<MailMessage> Search(string accountId, string normalizedKey, int limit)
     {
-        if (string.IsNullOrEmpty(normalizedKey) || limit <= 0) return Array.Empty<MailMessage>();
-        var pattern = "%" + normalizedKey.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+        var words = (normalizedKey ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 0 || limit <= 0) return Array.Empty<MailMessage>();
         using var c = _db.Open(accountId);
+        var where = new List<string>();
+        var args = new List<(string, object?)>();
+        for (var i = 0; i < words.Length; i++)
+        {
+            // \ % _ は文字として扱う
+            var pattern = "%" + words[i].Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+            where.Add($"(m.search_key LIKE @q{i} ESCAPE '\\' OR m.body_key LIKE @q{i} ESCAPE '\\')");
+            args.Add(($"@q{i}", pattern));
+        }
+        args.Add(("@limit", limit));
         using var cmd = Cmd(c,
-            $"SELECT {HeaderCols} FROM messages m WHERE m.search_key LIKE @q ESCAPE '\\' OR m.body_key LIKE @q ESCAPE '\\' " +
+            $"SELECT {HeaderCols} FROM messages m WHERE {string.Join(" AND ", where)} " +
             "ORDER BY m.date_utc DESC, m.gm_msgid DESC LIMIT @limit",
-            ("@q", pattern), ("@limit", limit));
+            args.ToArray());
         return ReadMessages(cmd, withBody: false);
     }
 
