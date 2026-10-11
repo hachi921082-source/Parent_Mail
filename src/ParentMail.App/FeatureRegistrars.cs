@@ -28,5 +28,6 @@ public static class FeatureRegistrars
         s => Features.MailDisplay.MailDisplayRegistration.AddMailDisplay(s),
         s => s.AddOnDemandFetch(),
         s => Features.Compose.ComposeRegistration.AddCompose(s),
+        s => Features.FolderActions.FolderActionsRegistration.AddFolderActions(s),
     };
 }
