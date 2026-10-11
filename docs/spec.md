@@ -68,7 +68,7 @@ All features below are in the first release (no phasing), including the local ma
 - HTML mail display plus plain-text mode.
 - Mail content preview, including images.
 - Search: local cache `LIKE` substring match, normalizing case and full/half width only (no hiragana/katakana folding).
-- Compose with To, CC, BCC. Compose body is plain text only (text/plain, UTF-8). The From header carries the address only (the account display name is never sent). Only one app instance runs; a second launch brings the existing window to front.
+- Compose with To, CC, BCC. Besides autocomplete, a button beside each of To, CC and BCC opens an address-book picker (modal to that compose window, multi-select, the compose window's own account's address book; Q80-Q85). Compose body is plain text only (text/plain, UTF-8). The From header carries the address only (the account display name is never sent). Only one app instance runs; a second launch brings the existing window to front.
 - Reply / reply all / forward (open in a separate window, same as compose).
 - Attachment save / open.
 - Text-size setting (large by default, changeable by free numeric input or slider).
