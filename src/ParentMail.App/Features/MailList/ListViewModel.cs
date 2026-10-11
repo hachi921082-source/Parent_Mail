@@ -38,6 +38,7 @@ public sealed partial class ListViewModel : ObservableObject
     private bool _loadFailed;
     private bool _failureShown;
     private MailListItem? _selected;
+    private bool _searchActive;
 
     public ListViewModel(IMailRepository mail, IOutboxRepository outbox, IDraftRepository drafts, IAppState state,
         IClock clock, ISyncService? sync = null, ISyncCacheStore? syncStore = null, IAppLog? log = null,
@@ -81,16 +82,22 @@ public sealed partial class ListViewModel : ObservableObject
     /// <summary>一覧を読み込み直した（上部バーのバッジ更新に使う）。</summary>
     public event EventHandler? Reloaded;
 
+    /// <summary>検索結果の表示中に同期の完了などで再読み込みが要るとき（search が結果を取り直して UpdateSearchResults を呼ぶ）。</summary>
+    public event EventHandler? SearchRefreshRequested;
+
     /// <summary>チェックの増減（mail-display のプレビュー切替に使う）。</summary>
     public event EventHandler? ChecksChanged;
 
     // ---- 表示状態 ----
 
     /// <summary>チェック欄・「すべて選ぶ」を出すフォルダか（ゴミ箱と送信箱は出さない、A62）。</summary>
-    public bool ShowCheckboxColumn => ShowCheckboxFor(_folder);
+    public bool ShowCheckboxColumn => _searchActive || ShowCheckboxFor(_folder);
 
     /// <summary>「メールはありません」を出すか。初回同期の最中と読み込み失敗のときは出さない（Q62）。</summary>
-    public bool ShowEmptyMessage => Items.Count == 0 && !_loadFailed && !IsFirstSyncRunning();
+    public bool ShowEmptyMessage => !_searchActive && Items.Count == 0 && !_loadFailed && !IsFirstSyncRunning();
+
+    /// <summary>検索結果を表示中か（フォルダの切替・アカウントの切替・クリアで false に戻る）。</summary>
+    public bool IsSearchActive => _searchActive;
 
     public int CheckedCount => _checked.Count;
     public bool HasChecked => _checked.Count > 0;
@@ -119,6 +126,9 @@ public sealed partial class ListViewModel : ObservableObject
     /// <summary>フォルダを切り替えて先頭 200 通を読む。チェックは解除し、選択も外す（Auto）。</summary>
     public void LoadFolder(FolderKind kind)
     {
+        var wasSearch = _searchActive;
+        _searchActive = false;
+        if (wasSearch) OnPropertyChanged(nameof(IsSearchActive));
         _folder = kind;
         _accountId = _state.CurrentAccountId;
         ClearChecks();
@@ -159,6 +169,11 @@ public sealed partial class ListViewModel : ObservableObject
             LoadFolder(_state.CurrentFolder);
             return;
         }
+        if (_searchActive)
+        {
+            SearchRefreshRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
         try
         {
             var count = Math.Max(PageSize, _mailLoaded);
@@ -179,6 +194,37 @@ public sealed partial class ListViewModel : ObservableObject
         }
         RaiseEmptyChanged();
         RaiseReloaded();
+    }
+
+    /// <summary>
+    /// 検索結果で一覧を置き換える（search が呼ぶ）。チェックと選択は解除する（Q71）。
+    /// 結果の行は検索側が作る（フォルダ名つき、チェック欄あり）。ページ送りはしない。
+    /// </summary>
+    public void ShowSearchResults(IReadOnlyList<MailListItem> rows)
+    {
+        _accountId = _state.CurrentAccountId;
+        ClearChecks();
+        SelectAuto(null);
+        Items.Clear();
+        _searchActive = true;
+        _hasMore = false;
+        _mailLoaded = 0;
+        _loadFailed = false;
+        foreach (var r in rows) AddRow(r);
+        OnPropertyChanged(nameof(IsSearchActive));
+        OnPropertyChanged(nameof(ShowCheckboxColumn));
+        RaiseEmptyChanged();
+    }
+
+    /// <summary>検索結果の取り直し。既存の行を使い回して、選択・チェック・スクロール位置を保つ。</summary>
+    public void UpdateSearchResults(IReadOnlyList<MailListItem> rows)
+    {
+        if (!_searchActive) return;
+        MergeRows(rows);
+        var keys = Items.Select(i => i.Key).ToHashSet();
+        if (_checked.RemoveWhere(k => !keys.Contains(k)) > 0) RaiseChecksChanged();
+        if (_selected is not null && !Items.Contains(_selected)) SelectAuto(null);
+        RaiseEmptyChanged();
     }
 
     /// <summary>下へスクロールして終わりに近づいたとき、次の 200 通を足す。</summary>
@@ -342,7 +388,7 @@ public sealed partial class ListViewModel : ObservableObject
         _selected = item;
         OnPropertyChanged(nameof(SelectedItem));
         _state.SelectedMessageId = item?.GmMsgId;
-        SelectionChanged?.Invoke(this, new SelectionChangedArgs(item, source, _folder));
+        SelectionChanged?.Invoke(this, new SelectionChangedArgs(item, source, item?.Folder ?? _folder));
     }
 
     /// <summary>アプリが自動で選ぶ（既読にはしない、A58）。</summary>
