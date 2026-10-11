@@ -19,10 +19,20 @@ public sealed class ComposeWindowFactory : IComposeWindowFactory
     private readonly IAppLog _log;
     private readonly ITextScale _scale;
     private readonly ComposeWindowRegistry _registry;
+    private readonly IDraftService? _draftService;
+    private readonly IDraftRepository? _draftRows;
+    private readonly DraftSyncHook? _draftHook;
+    private readonly IAddressPickerService? _picker;
 
     public ComposeWindowFactory(IOutboxService outbox, IDialogService dialogs, IAccountRepository accounts,
-        RecipientSuggester suggester, CachePaths paths, IAppLog log, ITextScale scale, ComposeWindowRegistry registry)
+        RecipientSuggester suggester, CachePaths paths, IAppLog log, ITextScale scale, ComposeWindowRegistry registry,
+        IDraftService? draftService = null, IDraftRepository? draftRows = null, DraftSyncHook? draftHook = null,
+        IAddressPickerService? picker = null)
     {
+        _draftService = draftService;
+        _draftRows = draftRows;
+        _draftHook = draftHook;
+        _picker = picker;
         _outbox = outbox;
         _dialogs = dialogs;
         _accounts = accounts;
@@ -49,7 +59,10 @@ public sealed class ComposeWindowFactory : IComposeWindowFactory
             return;
         }
 
-        var vm = new ComposeViewModel(init, account.DisplayName, _outbox, _dialogs, _suggester, _paths, _log);
+        // 未アップロードの下書きを同期のたびに送る仕組みが、まだ結ばれていなければここで結ぶ
+        _draftHook?.Attach();
+
+        var vm = new ComposeViewModel(init, account.DisplayName, _outbox, _dialogs, _suggester, _paths, _log, _draftService, _draftRows, _picker);
         var window = new ComposeWindow(vm, _scale);
         _registry.Register(window);
         window.Show();

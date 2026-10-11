@@ -31,6 +31,11 @@ public static class ComposeText
     public static string AttachLabel => Strings.CP_17;
     public static string FilePickerTitle => Strings.CP_16;
 
+    // アドレス帳から選ぶ画面（PLAN-3）。ボタン [CP-18]、画面のボタンは WD-31（入れる / やめる。やめるは AB-12 と同じ語）
+    public static string BtnPick => Strings.CP_18;
+    public static string PickerConfirm => "入れる";
+    public static string PickerCancel => Split(Strings.AB_12)[1];
+
     public static string SendAnyway => SendAnywayButtons[0];
     public static string SendBack => SendAnywayButtons[1];
 

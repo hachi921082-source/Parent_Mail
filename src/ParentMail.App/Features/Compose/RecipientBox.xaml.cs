@@ -36,6 +36,13 @@ public partial class RecipientBox : UserControl
     /// <summary>入力欄そのものへフォーカスを移す。</summary>
     public new bool Focus() => Box.Focus();
 
+    /// <summary>入力欄へフォーカスを移し、文字の末尾にカーソルを置く（アドレス帳から入れたあと）。</summary>
+    public void FocusAtEnd()
+    {
+        Box.Focus();
+        Box.CaretIndex = Box.Text.Length;
+    }
+
     public int SuggestCount => List.Items.Count;
 
     private bool _inserting;
@@ -94,9 +101,17 @@ public partial class RecipientBox : UserControl
         if (e.Key == Key.Enter)
         {
             CloseSuggest();
-            Box.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            MoveToNextField();
             e.Handled = true;
         }
+    }
+
+    // 次の「欄」へ移る。間にあるボタン（アドレス帳から選ぶ、BCCを追加）は飛ばす
+    private void MoveToNextField()
+    {
+        Box.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+        for (var i = 0; i < 4 && Keyboard.FocusedElement is System.Windows.Controls.Button button; i++)
+            button.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
     }
 
     private void OnListClick(object sender, MouseButtonEventArgs e)

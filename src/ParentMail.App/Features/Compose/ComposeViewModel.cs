@@ -14,12 +14,15 @@ using ParentMail.Core.SafetyWarnings;
 
 namespace ParentMail.App.Features.Compose;
 
+/// <summary>宛先の 3 つの欄。</summary>
+public enum RecipientField { To, Cc, Bcc }
+
 /// <summary>作成画面の種類（題名と最初のフォーカスが変わる）。</summary>
 public enum ComposeKind { New, Reply, Forward }
 
 /// <summary>
-/// 作成画面の状態と動作（compose PLAN-1）。宛先欄・件名・本文・添付・送信を受け持つ。
-/// 下書き・自動保存・閉じるときの確認は PLAN-2 の担当で、ここでは扱わない。
+/// 作成画面の状態と動作（compose PLAN-1, PLAN-2）。宛先欄・件名・本文・添付・送信に加え、
+/// 下書きの自動保存と、閉じるときの確認（書きかけなら 3 択）を受け持つ。
 /// 送信は送信箱へ積むところまで（待たずに窓を閉じる）。
 /// </summary>
 public sealed partial class ComposeViewModel : ObservableObject
@@ -30,6 +33,18 @@ public sealed partial class ComposeViewModel : ObservableObject
     private readonly CachePaths _paths;
     private readonly IAppLog _log;
     private readonly ComposeInit _init;
+    private readonly IDraftService? _draftService;
+    private readonly IAddressPickerService? _picker;
+    // 自動保存と明示保存・送信が重ならないよう直列にする
+    private readonly SemaphoreSlim _saveGate = new(1, 1);
+    // この窓が持つローカル下書き行の ID（まだ保存していなければ null）
+    private long? _draftId;
+    // 最後に保存した（または開いた）時点の内容の指紋。違えば「変更あり」
+    private string _lastSavedSignature = "";
+    // 最後の保存で Gmail へ上げられなかった（次の周期で再び試す）
+    private bool _uploadPending;
+    // 閉じてよいと決まったあと（送信後・確認済み）は確認も自動保存も行わない
+    private bool _closeApproved;
     private readonly string _workDirName = Guid.NewGuid().ToString("N");
     private int _fileSeq;
 
@@ -67,10 +82,18 @@ public sealed partial class ComposeViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSending;
 
+    /// <summary>下書きの状態行（Gmail へ上げられていないとき [BN-18]。通常は空）。</summary>
+    [ObservableProperty]
+    private string _draftStatusText = "";
+
     public ComposeViewModel(ComposeInit init, string accountName, IOutboxService outbox, IDialogService dialogs,
-        RecipientSuggester suggester, CachePaths paths, IAppLog log)
+        RecipientSuggester suggester, CachePaths paths, IAppLog log,
+        IDraftService? draftService = null, IDraftRepository? draftRows = null, IAddressPickerService? picker = null)
     {
         _init = init;
+        _draftService = draftService;
+        _picker = picker;
+        _draftId = init.SourceDraftId;
         _outbox = outbox;
         _dialogs = dialogs;
         _suggester = suggester;
@@ -92,6 +115,19 @@ public sealed partial class ComposeViewModel : ObservableObject
         Body = init.Body;
         // 引き継いだ添付（転送・下書きの編集）も作業フォルダに取り込む
         foreach (var a in init.Attachments) ImportExisting(a);
+
+        // 下書きを開いたときは BCC も戻す（ComposeInit には BCC が無いので、下書き行から読む）
+        if (init.SourceDraftId is { } sd && draftRows is not null)
+        {
+            var bcc = draftRows.GetAll(init.AccountId).FirstOrDefault(d => d.LocalId == sd)?.Bcc;
+            if (bcc is { Count: > 0 })
+            {
+                BccText = JoinAddresses(bcc);
+                ShowBcc = true;
+            }
+        }
+        // 開いた直後は「変更なし」（返信の引用だけで自動保存が走らないように）
+        _lastSavedSignature = Signature();
     }
 
     public bool HasAttachments => Attachments.Count > 0;
@@ -144,6 +180,65 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     /// <summary>入力補完の候補（宛先欄から呼ばれる）。</summary>
     public IReadOnlyList<Suggestion> Suggest(string prefix) => _suggester.Suggest(AccountId, prefix);
+
+    // ---- アドレス帳から選ぶ（PLAN-3） ----
+
+    /// <summary>アドレス帳の画面の持ち主にする窓（作成窓が自分を入れる）。この窓にだけモーダルになる。</summary>
+    public System.Windows.Window? OwnerWindow { get; set; }
+
+    /// <summary>入れ終わったあと、その欄へフォーカスを戻してほしいとき。</summary>
+    public event EventHandler<RecipientField>? FocusRequested;
+
+    [RelayCommand]
+    private void PickTo() => PickInto(RecipientField.To);
+
+    [RelayCommand]
+    private void PickCc() => PickInto(RecipientField.Cc);
+
+    [RelayCommand]
+    private void PickBcc() => PickInto(RecipientField.Bcc);
+
+    /// <summary>
+    /// アドレス帳から選ぶ画面を出し、選ばれた人を欄の末尾へ「名前 &lt;アドレス&gt;」で足す。
+    /// 対象は作成窓のアカウントのアドレス帳（主窓に出ているアカウントではない）。
+    /// </summary>
+    public void PickInto(RecipientField field)
+    {
+        if (_picker is null) return;
+        var existing = RecipientParser.Parse(GetField(field))
+            .Where(t => t.IsValid && t.Address is not null).Select(t => t.Address!).ToList();
+        var chosen = _picker.Pick(OwnerWindow, AccountId, existing);
+        if (chosen is { Count: > 0 }) AppendRecipients(field, chosen);
+        FocusRequested?.Invoke(this, field);
+    }
+
+    /// <summary>欄の既存の文字はそのまま、末尾に「名前 &lt;アドレス&gt;, 」の形で足す（入力補完と同じ形）。</summary>
+    public void AppendRecipients(RecipientField field, IEnumerable<MimeKit.MailboxAddress> addresses)
+    {
+        var added = string.Join(", ", addresses.Select(a => RecipientParser.Format(a.Name, a.Address)));
+        if (added.Length == 0) return;
+
+        var current = GetField(field).TrimEnd();
+        var separator = current.Length == 0 ? "" : (current[^1] is ',' or ';' or '、' ? " " : ", ");
+        SetField(field, current + separator + added + ", ");
+    }
+
+    private string GetField(RecipientField field) => field switch
+    {
+        RecipientField.To => ToText ?? "",
+        RecipientField.Cc => CcText ?? "",
+        _ => BccText ?? "",
+    };
+
+    private void SetField(RecipientField field, string value)
+    {
+        switch (field)
+        {
+            case RecipientField.To: ToText = value; break;
+            case RecipientField.Cc: CcText = value; break;
+            default: BccText = value; break;
+        }
+    }
 
     // ---- 添付 ----
 
@@ -281,7 +376,6 @@ public sealed partial class ComposeViewModel : ObservableObject
 
         var snapshot = new DraftSnapshot
         {
-            DraftId = _init.SourceDraftId,
             AccountId = AccountId,
             To = RecipientParser.ValidTexts(to),
             Cc = RecipientParser.ValidTexts(cc),
@@ -295,6 +389,11 @@ public sealed partial class ComposeViewModel : ObservableObject
         IsSending = true;
         try
         {
+            // 実行中の自動保存が終わるのを待ってから、この窓の下書き行を送信箱に結びつける（送信成功で消える）
+            await _saveGate.WaitAsync().ConfigureAwait(true);
+            try { snapshot = snapshot with { DraftId = _draftId }; }
+            finally { _saveGate.Release(); }
+
             // 添付の複製までここで終わり、SMTP は待たない
             await _outbox.EnqueueAndSendAsync(snapshot).ConfigureAwait(true);
         }
@@ -306,6 +405,7 @@ public sealed partial class ComposeViewModel : ObservableObject
             return false;
         }
 
+        _closeApproved = true;
         CleanupWorkFolder();
         CloseRequested?.Invoke(this, EventArgs.Empty);
         return true;
@@ -313,4 +413,173 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     [RelayCommand]
     private Task Send() => SendAsync();
+
+    // ---- 下書き（compose PLAN-2） ----
+
+    /// <summary>書きかけの内容があるか（全欄が空で添付も無ければ false）。</summary>
+    /// <summary>閉じてよいと決まったか（送信後、または確認で了承されたあと）。</summary>
+    public bool CloseApproved => _closeApproved;
+
+    /// <summary>内容が無く消す下書きも無いとき、確認なしで閉じてよいことにする。閉じてよければ true。</summary>
+    public bool TryApproveSilentClose()
+    {
+        if (_closeApproved) return true;
+        if (IsSending) return false;
+        if (HasContent || (_draftId is not null && _draftService is not null)) return false;
+        _closeApproved = true;
+        return true;
+    }
+
+    public bool HasContent
+        => !string.IsNullOrWhiteSpace(ToText) || !string.IsNullOrWhiteSpace(CcText) || !string.IsNullOrWhiteSpace(BccText)
+           || !string.IsNullOrWhiteSpace(Subject) || !string.IsNullOrWhiteSpace(Body) || Attachments.Count > 0;
+
+    /// <summary>最後に保存した（または開いた）時点から内容が変わったか。</summary>
+    public bool IsDirtySinceLastSave => Signature() != _lastSavedSignature;
+
+    /// <summary>この窓の下書き行の ID。まだ保存していなければ null。</summary>
+    public long? DraftId => _draftId;
+
+    /// <summary>前回の保存で Gmail へ上げられていないか。</summary>
+    public bool UploadPending => _uploadPending;
+
+    private string Signature()
+    {
+        var sb = new StringBuilder();
+        sb.Append(ToText).Append('\u0001').Append(CcText).Append('\u0001').Append(BccText).Append('\u0001')
+          .Append(Subject).Append('\u0001').Append(Body);
+        foreach (var a in Attachments) sb.Append('\u0001').Append(a.Info.FileName).Append(':').Append(a.Info.Size);
+        return sb.ToString();
+    }
+
+    private DraftSnapshot BuildDraftSnapshot() => new()
+    {
+        DraftId = _draftId,
+        AccountId = AccountId,
+        // 書きかけの宛先も失わないよう、読めないものも文字のまま残す
+        To = RecipientParser.Parse(ToText).Select(t => t.Text).ToList(),
+        Cc = RecipientParser.Parse(CcText).Select(t => t.Text).ToList(),
+        Bcc = RecipientParser.Parse(BccText).Select(t => t.Text).ToList(),
+        Subject = Subject ?? "",
+        Body = Body ?? "",
+        Attachments = Attachments.Select(a => a.Info).ToList(),
+        ReplyHeaders = _init.ReplyHeaders,
+    };
+
+    /// <summary>
+    /// 30 秒ごとの自動保存（窓のタイマーから呼ぶ）。内容があり、前回から変わったときだけ保存する。
+    /// 失敗しても利用者には知らせない（Gmail へ上げられないときは状態行だけ出す）。
+    /// 全部消されたあとは、自動保存済みの下書きを消す（A71）。
+    /// </summary>
+    public async Task AutoSaveTickAsync()
+    {
+        if (_draftService is null || _closeApproved || IsSending) return;
+        await _saveGate.WaitAsync().ConfigureAwait(true);
+        try
+        {
+            if (_closeApproved || IsSending) return;
+            if (!HasContent)
+            {
+                await DiscardSavedDraftLockedAsync().ConfigureAwait(true);
+                return;
+            }
+            if (!IsDirtySinceLastSave && !_uploadPending) return;
+            await SaveLockedAsync().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Compose", "下書きの自動保存に失敗", ex);
+        }
+        finally { _saveGate.Release(); }
+    }
+
+    // _saveGate を持った状態で呼ぶ。保存結果に応じて状態行を更新する
+    private async Task SaveLockedAsync()
+    {
+        var signature = Signature();
+        var item = await _draftService!.SaveAsync(BuildDraftSnapshot(), uploadNow: true).ConfigureAwait(true);
+        _draftId = item.LocalId;
+        _lastSavedSignature = signature;
+        _uploadPending = item.Dirty;
+        DraftStatusText = item.Dirty ? Strings.BN_18 : "";
+    }
+
+    // _saveGate を持った状態で呼ぶ。保存済みの下書きがあれば消し、窓の記録も初期化する
+    private async Task DiscardSavedDraftLockedAsync()
+    {
+        if (_draftId is { } id)
+        {
+            await _draftService!.DeleteAsync(id).ConfigureAwait(true);
+            _draftId = null;
+        }
+        _uploadPending = false;
+        DraftStatusText = "";
+        _lastSavedSignature = Signature();
+    }
+
+    /// <summary>閉じるときの選択。</summary>
+    public enum CloseChoice { Save, DiscardEdits, Back }
+
+    /// <summary>閉じるときの 3 択の確認 [WD-23]。既定は「下書きに保存」、Esc・× は「戻る」。</summary>
+    public CloseChoice ShowCloseDialog()
+    {
+        var answer = _dialogs.Choose(Strings.WD_23, Strings.CP_15,
+            new[] { Strings.CP_12, Strings.CP_13, Strings.CP_14 }, defaultIndex: 0, safeIndex: 2);
+        return answer switch { 0 => CloseChoice.Save, 1 => CloseChoice.DiscardEdits, _ => CloseChoice.Back };
+    }
+
+    /// <summary>
+    /// 窓を閉じてよいかを決める（× / Alt+F4 / 終了時）。true なら閉じてよい。
+    /// 内容が無ければ黙って閉じ、自動保存済みの下書きも消す。あれば 3 択を出す。
+    /// </summary>
+    public async Task<bool> ConfirmCloseAsync()
+    {
+        if (_closeApproved) return true;
+        // 送信の積み込み中は閉じない（積み込みが終われば窓は自分で閉じる）
+        if (IsSending) return false;
+
+        if (!HasContent)
+        {
+            if (_draftService is not null)
+            {
+                await _saveGate.WaitAsync().ConfigureAwait(true);
+                try { await DiscardSavedDraftLockedAsync().ConfigureAwait(true); }
+                catch (Exception ex) { _log.Error("Compose", "自動保存済みの下書きの削除に失敗", ex); }
+                finally { _saveGate.Release(); }
+            }
+            _closeApproved = true;
+            return true;
+        }
+
+        switch (ShowCloseDialog())
+        {
+            case CloseChoice.Back:
+                return false;
+            case CloseChoice.DiscardEdits:
+                // 前に自動保存された下書きはそのまま残す
+                _closeApproved = true;
+                return true;
+        }
+
+        if (_draftService is null)
+        {
+            _closeApproved = true;
+            return true;
+        }
+        await _saveGate.WaitAsync().ConfigureAwait(true);
+        try
+        {
+            await SaveLockedAsync().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            // 明示的に保存を選んだのに保存できなかったときだけ知らせ、窓は開けたままにする（A74）
+            _log.Error("Compose", "下書きの保存に失敗", ex);
+            _dialogs.ShowNotice(Strings.WD_10, Strings.BN_17);
+            return false;
+        }
+        finally { _saveGate.Release(); }
+        _closeApproved = true;
+        return true;
+    }
 }

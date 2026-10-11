@@ -12,6 +12,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -27,16 +28,23 @@
         <!-- 宛先 -->
         <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static local:ComposeText.LabelTo}"
                    VerticalAlignment="Center" Margin="0,0,16,12" />
-        <local:RecipientBox x:Name="ToBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,12"
+        <local:RecipientBox x:Name="ToBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,12" VerticalAlignment="Center"
                             Text="{Binding ToText, Mode=TwoWay}" IsInvalid="{Binding ToInvalid}"
                             Label="{x:Static local:ComposeText.LabelTo}" />
+        <!-- 欄のすぐ次に置く（Tab の順は 宛先 → このボタン → CC） -->
+        <Button x:Name="ToPickButton" Grid.Row="0" Grid.Column="2" Style="{StaticResource AppButton}"
+                Margin="12,0,0,12" Content="{x:Static local:ComposeText.BtnPick}" Command="{Binding PickToCommand}"
+                AutomationProperties.Name="{x:Static local:ComposeText.BtnPick}" />
 
         <!-- CC -->
         <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static local:ComposeText.LabelCc}"
                    VerticalAlignment="Center" Margin="0,0,16,12" />
-        <local:RecipientBox x:Name="CcBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,12"
+        <local:RecipientBox x:Name="CcBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,12" VerticalAlignment="Center"
                             Text="{Binding CcText, Mode=TwoWay}" IsInvalid="{Binding CcInvalid}"
                             Label="{x:Static local:ComposeText.LabelCc}" />
+        <Button x:Name="CcPickButton" Grid.Row="1" Grid.Column="2" Style="{StaticResource AppButton}"
+                Margin="12,0,0,12" Content="{x:Static local:ComposeText.BtnPick}" Command="{Binding PickCcCommand}"
+                AutomationProperties.Name="{x:Static local:ComposeText.BtnPick}" />
 
         <!-- 「BCCを追加」を押すと、同じ場所に BCC 欄が出る -->
         <Button x:Name="AddBccButton" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left"
@@ -46,15 +54,19 @@
         <TextBlock Grid.Row="2" Grid.Column="0" Text="{x:Static local:ComposeText.LabelBcc}"
                    VerticalAlignment="Center" Margin="0,0,16,12"
                    Visibility="{Binding ShowBcc, Converter={StaticResource BoolToVisible}}" />
-        <local:RecipientBox x:Name="BccBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,12"
+        <local:RecipientBox x:Name="BccBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,12" VerticalAlignment="Center"
                             Text="{Binding BccText, Mode=TwoWay}" IsInvalid="{Binding BccInvalid}"
                             Label="{x:Static local:ComposeText.LabelBcc}"
                             Visibility="{Binding ShowBcc, Converter={StaticResource BoolToVisible}}" />
+        <Button x:Name="BccPickButton" Grid.Row="2" Grid.Column="2" Style="{StaticResource AppButton}"
+                Margin="12,0,0,12" Content="{x:Static local:ComposeText.BtnPick}" Command="{Binding PickBccCommand}"
+                AutomationProperties.Name="{x:Static local:ComposeText.BtnPick}"
+                Visibility="{Binding ShowBcc, Converter={StaticResource BoolToVisible}}" />
 
         <!-- 件名 -->
         <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static local:ComposeText.LabelSubject}"
                    VerticalAlignment="Center" Margin="0,0,16,12" />
-        <TextBox x:Name="SubjectBox" Grid.Row="3" Grid.Column="1" Margin="0,0,0,12" Padding="6,4"
+        <TextBox x:Name="SubjectBox" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,12" Padding="6,4"
                  SpellCheck.IsEnabled="False" PreviewKeyDown="OnSingleLineKeyDown"
                  AutomationProperties.Name="{x:Static local:ComposeText.LabelSubject}"
                  Text="{Binding Subject, UpdateSourceTrigger=PropertyChanged}" />
@@ -62,7 +74,7 @@
         <!-- 本文（プレーンテキスト。Tab は文字にせず次へ進む） -->
         <TextBlock Grid.Row="4" Grid.Column="0" Text="{x:Static local:ComposeText.LabelBody}"
                    VerticalAlignment="Top" Margin="0,6,16,12" />
-        <TextBox x:Name="BodyBox" Grid.Row="4" Grid.Column="1" Margin="0,0,0,12" Padding="6,4"
+        <TextBox x:Name="BodyBox" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,12" Padding="6,4"
                  AcceptsReturn="True" AcceptsTab="False" TextWrapping="Wrap" SpellCheck.IsEnabled="False"
                  VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top"
                  AutomationProperties.Name="{x:Static local:ComposeText.LabelBody}"
@@ -72,7 +84,7 @@
         <TextBlock Grid.Row="5" Grid.Column="0" Text="{x:Static local:ComposeText.AttachLabel}"
                    VerticalAlignment="Top" Margin="0,8,16,12"
                    Visibility="{Binding HasAttachments, Converter={StaticResource BoolToVisible}}" />
-        <ItemsControl x:Name="AttachmentList" Grid.Row="5" Grid.Column="1" ItemsSource="{Binding Attachments}"
+        <ItemsControl x:Name="AttachmentList" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding Attachments}"
                       Margin="0,0,0,12" IsTabStop="False"
                       Visibility="{Binding HasAttachments, Converter={StaticResource BoolToVisible}}">
             <ItemsControl.ItemsPanel>
@@ -98,12 +110,15 @@
         </ItemsControl>
 
         <!-- エラー行 -->
-        <TextBlock x:Name="ErrorLine" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding ErrorText}"
+        <TextBlock x:Name="ErrorLine" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Text="{Binding ErrorText}"
                    Foreground="{DynamicResource BannerError}" FontWeight="Bold" TextWrapping="Wrap"
                    MinHeight="32" Margin="0,0,0,12" />
 
         <!-- 下段: 左に「添付」、右に大きな「送信」（主な操作はこの 1 つだけ。キーボードの近道は付けない） -->
-        <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">
+        <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3">
+            <!-- 下書きを Gmail へ上げられていないときの状態行 [BN-18] -->
+            <TextBlock x:Name="DraftStatusLine" Text="{Binding DraftStatusText}" TextWrapping="Wrap"
+                       Foreground="{DynamicResource Hint}" VerticalAlignment="Center" Margin="140,0,230,0" />
             <Button x:Name="AttachButton" Style="{StaticResource AppButton}" HorizontalAlignment="Left"
                     Content="{x:Static local:ComposeText.BtnAttach}" Click="OnAttach" />
             <Button x:Name="SendButton" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"
