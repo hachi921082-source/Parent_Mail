@@ -18,6 +18,22 @@ public sealed class DialogService : IDialogService
 
     private readonly ITextScale _scale;
 
+    // 直前に前面だった自アプリの窓。Explorer からのドラッグ＆ドロップなどで
+    // 自アプリの窓がどれも前面でないときに、ダイアログの持ち主を決めるために使う。
+    private static WeakReference<Window>? _lastActive;
+
+    static DialogService()
+    {
+        // 窓が読み込まれるたびに、前面になった記録を取る登録をする。
+        EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.LoadedEvent, new RoutedEventHandler((sender, _) =>
+        {
+            if (sender is Window w)
+            {
+                w.Activated += (_, _) => _lastActive = new WeakReference<Window>(w);
+            }
+        }));
+    }
+
     public DialogService(ITextScale scale) => _scale = scale;
 
     public void ShowNotice(string title, string message)
@@ -100,13 +116,20 @@ public sealed class DialogService : IDialogService
         };
         WindowRules.Apply(window, defaultButton, cancelButton: null);
 
+        var owner = window.Owner;
         window.ShowDialog();
+        // 閉じたあと、ダイアログを出した窓（作成窓など）を前面に戻す。
+        // 戻さないと、持ち主が主窓のとき作成窓が主窓の後ろに隠れて見失う。
+        owner?.Activate();
         return chosen;
     }
 
     private static Window? FindOwner()
     {
         var windows = Application.Current.Windows.OfType<Window>().Where(w => w.IsVisible).ToList();
-        return windows.FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow ?? windows.FirstOrDefault();
+        var active = windows.FirstOrDefault(w => w.IsActive);
+        if (active != null) return active;
+        if (_lastActive != null && _lastActive.TryGetTarget(out var last) && last.IsVisible) return last;
+        return Application.Current.MainWindow ?? windows.FirstOrDefault();
     }
 }
