@@ -28,7 +28,7 @@ Each feature's plan lives in `docs/plans/<feature-name>/PLAN.md` (large features
 | mail-list | PLAN | 1 (list), 3 (view rule), 22 | Q44 (A45 superseded), A52, A58-A65, A67, A68 |
 | mail-display | PLAN-1, PLAN-2, PLAN-3 | 6, 22 | A16-A18, A33-A35, A66, A70; Q45, Q46, Q69 (A36, A41 superseded) |
 | safety-warnings | PLAN-1, PLAN-2 | 14 | A29, A30 |
-| compose | PLAN-1, PLAN-2 | 7 | A12, A15, A19-A21, A42, A46, A69, A71, A74, A75 |
+| compose | PLAN-1, PLAN-2, PLAN-3 | 7 | A12, A15, A19-A21, A42, A46, A69, A71, A74, A75; Q80-Q85 (PLAN-3 = address-book picker) |
 | reply-forward | PLAN | 8 | A22 |
 | outbox-send | PLAN | 5 | A13-A15, A40, A46 |
 | folder-actions | PLAN | 9, 1 (header buttons), 22 | A3, A51, A59-A65, A76; Q64 (A38 superseded) |
@@ -200,7 +200,7 @@ Wave-based plan (revised 2026-10-10). A wave = features whose dependencies are a
 | W1 | app-shell/PLAN (banner/notice host, dialog service, palette, window rules, main window skeleton, log, single instance); settings/PLAN (settings.db + migrations incl. address-book/block/filter tables, `ITextScale`, settings window skeleton); sync-cache/PLAN-1 (cache.db, repositories, attachment store); safety-warnings/PLAN-1 + PLAN-2 (pure logic, no UI dependency) | W0 | merged |
 | W2 | batch A: accounts-auth/PLAN-1 (credential store, account-add, switch, `IAppState`); sync-cache/PLAN-2 (sync engine, MailKit gateway, incoming pipeline); outbox-send/PLAN (outbox, SMTP, retry, `MessageBuilder`); address-book/PLAN. batch B: block-list/PLAN + filter-rules/PLAN (one lane, both are `IIncomingRule` implementations on settings.db) | W1 (app-shell UI hosts, settings.db, cache.db) | merged (manual gate pending) |
 | W3 | mail-list/PLAN; mail-display/PLAN-1 + PLAN-2; sync-cache/PLAN-3 (on-demand fetch, idle backfill); accounts-auth/PLAN-2 (rename, delete, re-entry, warning gate); compose/PLAN-1 | W2 | merged (manual gate pending) |
-| W4 | folder-actions/PLAN; search/PLAN; mail-display/PLAN-3 (attachments); compose/PLAN-2 (drafts, close dialog) | W3 (mail-list for folder-actions and search) | not started |
+| W4 | folder-actions/PLAN; search/PLAN; mail-display/PLAN-3 (attachments); compose/PLAN-2 (drafts, close dialog), then compose/PLAN-3 (address-book picker; same lane, after PLAN-2, shares the compose XAML) | W3 (mail-list for folder-actions and search) | not started |
 | W5 | reply-forward/PLAN; app-lifecycle/PLAN; then the integration pass and release build | W4 | not started |
 
 Notes on lane edges:
