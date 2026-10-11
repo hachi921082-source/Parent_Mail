@@ -14,6 +14,9 @@ using ParentMail.Core.SafetyWarnings;
 
 namespace ParentMail.App.Features.Compose;
 
+/// <summary>宛先の 3 つの欄。</summary>
+public enum RecipientField { To, Cc, Bcc }
+
 /// <summary>作成画面の種類（題名と最初のフォーカスが変わる）。</summary>
 public enum ComposeKind { New, Reply, Forward }
 
@@ -31,6 +34,7 @@ public sealed partial class ComposeViewModel : ObservableObject
     private readonly IAppLog _log;
     private readonly ComposeInit _init;
     private readonly IDraftService? _draftService;
+    private readonly IAddressPickerService? _picker;
     // 自動保存と明示保存・送信が重ならないよう直列にする
     private readonly SemaphoreSlim _saveGate = new(1, 1);
     // この窓が持つローカル下書き行の ID（まだ保存していなければ null）
@@ -84,10 +88,11 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     public ComposeViewModel(ComposeInit init, string accountName, IOutboxService outbox, IDialogService dialogs,
         RecipientSuggester suggester, CachePaths paths, IAppLog log,
-        IDraftService? draftService = null, IDraftRepository? draftRows = null)
+        IDraftService? draftService = null, IDraftRepository? draftRows = null, IAddressPickerService? picker = null)
     {
         _init = init;
         _draftService = draftService;
+        _picker = picker;
         _draftId = init.SourceDraftId;
         _outbox = outbox;
         _dialogs = dialogs;
@@ -175,6 +180,65 @@ public sealed partial class ComposeViewModel : ObservableObject
 
     /// <summary>入力補完の候補（宛先欄から呼ばれる）。</summary>
     public IReadOnlyList<Suggestion> Suggest(string prefix) => _suggester.Suggest(AccountId, prefix);
+
+    // ---- アドレス帳から選ぶ（PLAN-3） ----
+
+    /// <summary>アドレス帳の画面の持ち主にする窓（作成窓が自分を入れる）。この窓にだけモーダルになる。</summary>
+    public System.Windows.Window? OwnerWindow { get; set; }
+
+    /// <summary>入れ終わったあと、その欄へフォーカスを戻してほしいとき。</summary>
+    public event EventHandler<RecipientField>? FocusRequested;
+
+    [RelayCommand]
+    private void PickTo() => PickInto(RecipientField.To);
+
+    [RelayCommand]
+    private void PickCc() => PickInto(RecipientField.Cc);
+
+    [RelayCommand]
+    private void PickBcc() => PickInto(RecipientField.Bcc);
+
+    /// <summary>
+    /// アドレス帳から選ぶ画面を出し、選ばれた人を欄の末尾へ「名前 &lt;アドレス&gt;」で足す。
+    /// 対象は作成窓のアカウントのアドレス帳（主窓に出ているアカウントではない）。
+    /// </summary>
+    public void PickInto(RecipientField field)
+    {
+        if (_picker is null) return;
+        var existing = RecipientParser.Parse(GetField(field))
+            .Where(t => t.IsValid && t.Address is not null).Select(t => t.Address!).ToList();
+        var chosen = _picker.Pick(OwnerWindow, AccountId, existing);
+        if (chosen is { Count: > 0 }) AppendRecipients(field, chosen);
+        FocusRequested?.Invoke(this, field);
+    }
+
+    /// <summary>欄の既存の文字はそのまま、末尾に「名前 &lt;アドレス&gt;, 」の形で足す（入力補完と同じ形）。</summary>
+    public void AppendRecipients(RecipientField field, IEnumerable<MimeKit.MailboxAddress> addresses)
+    {
+        var added = string.Join(", ", addresses.Select(a => RecipientParser.Format(a.Name, a.Address)));
+        if (added.Length == 0) return;
+
+        var current = GetField(field).TrimEnd();
+        var separator = current.Length == 0 ? "" : (current[^1] is ',' or ';' or '、' ? " " : ", ");
+        SetField(field, current + separator + added + ", ");
+    }
+
+    private string GetField(RecipientField field) => field switch
+    {
+        RecipientField.To => ToText ?? "",
+        RecipientField.Cc => CcText ?? "",
+        _ => BccText ?? "",
+    };
+
+    private void SetField(RecipientField field, string value)
+    {
+        switch (field)
+        {
+            case RecipientField.To: ToText = value; break;
+            case RecipientField.Cc: CcText = value; break;
+            default: BccText = value; break;
+        }
+    }
 
     // ---- 添付 ----
 
