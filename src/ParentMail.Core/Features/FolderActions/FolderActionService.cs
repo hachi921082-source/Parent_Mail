@@ -89,8 +89,14 @@ public sealed class FolderActionService : IFolderActionService
     public Task<MoveResult> NotSpamAsync(string accountId, DeleteTarget target, CancellationToken ct = default)
         => MoveAsync(accountId, new[] { (target, FolderKind.Inbox) }, ct);
 
+    // ごみ箱から戻す: 削除前のフォルダへ。記録がない・削除元がごみ箱・IMAP 名が未解決のときは受信トレイ
     public Task<MoveResult> RestoreAsync(string accountId, DeleteTarget target, CancellationToken ct = default)
-        => MoveAsync(accountId, new[] { (target, FolderKind.Inbox) }, ct);
+    {
+        var origin = _mail.GetTrashOrigin(accountId, target.GmMsgId);
+        var to = origin is null or FolderKind.Trash || _mail.GetImapName(accountId, origin.Value) is null
+            ? FolderKind.Inbox : origin.Value;
+        return MoveAsync(accountId, new[] { (target, to) }, ct);
+    }
 
     // ---- 既読・未読 ----
 
@@ -168,6 +174,9 @@ public sealed class FolderActionService : IFolderActionService
     private void ApplyLocal(string accountId, DeleteTarget t, FolderKind to, uint? newUid)
     {
         _mail.RemoveMembership(accountId, t.GmMsgId, t.FromFolder);
+        // ごみ箱へ移したら削除元を記録し、ごみ箱から出たら（戻す・元に戻す）記録を消す
+        if (to == FolderKind.Trash) _mail.SetTrashOrigin(accountId, t.GmMsgId, t.FromFolder);
+        else if (t.FromFolder == FolderKind.Trash) _mail.ClearTrashOrigin(accountId, t.GmMsgId);
         if (newUid is { } uid) _mail.AddMembership(accountId, new MessageFolder(t.GmMsgId, to, uid, 0));
 
         // 下書きをごみ箱へ移したら、対応するローカル下書き行も消す（同期のあとに再び現れないように）
