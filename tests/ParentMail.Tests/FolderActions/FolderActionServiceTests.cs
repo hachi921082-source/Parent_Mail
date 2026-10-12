@@ -17,6 +17,7 @@ public sealed class FolderActionServiceTests : IDisposable
     private const string InboxPath = "INBOX";
     private const string TrashPath = "[Gmail]/ごみ箱";
     private const string SpamPath = "[Gmail]/迷惑メール";
+    private const string SentPath = "[Gmail]/送信済みメール";
     private const string DraftsPath = "[Gmail]/下書き";
     private const string AllMailPath = "[Gmail]/すべてのメール";
 
@@ -295,8 +296,26 @@ public sealed class FolderActionServiceTests : IDisposable
         Assert.True(In(1, FolderKind.Inbox));
     }
 
+    [Theory]
+    [InlineData(FolderKind.Inbox, InboxPath)]
+    [InlineData(FolderKind.Sent, SentPath)]
+    public async Task Restore_ReturnsToFolderItWasDeletedFrom(FolderKind origin, string originPath)
+    {
+        _fx.Mail.SaveImapName(Acc, FolderKind.Sent, SentPath);
+        _fx.Add(1, origin);
+        var svc = Service();
+        await svc.DeleteAsync(Acc, new[] { Target(1, origin) });
+        var r = await svc.RestoreAsync(Acc, Target(1, FolderKind.Trash));
+
+        Assert.Equal(MoveStatus.Ok, r.Status);
+        await _gw.Received(1).MoveAsync(TrashPath, 500u, originPath, Arg.Any<CancellationToken>());
+        Assert.True(In(1, origin));
+        Assert.False(In(1, FolderKind.Trash));
+        Assert.Null(_fx.Mail.GetTrashOrigin(Acc, 1));
+    }
+
     [Fact]
-    public async Task Restore_AlwaysMovesTrashToInbox()
+    public async Task Restore_UnknownOrigin_GoesToInbox()
     {
         _fx.Add(1, FolderKind.Trash);
         var r = await Service().RestoreAsync(Acc, Target(1, FolderKind.Trash));
@@ -304,6 +323,28 @@ public sealed class FolderActionServiceTests : IDisposable
         await _gw.Received(1).MoveAsync(TrashPath, 101u, InboxPath, Arg.Any<CancellationToken>());
         Assert.True(In(1, FolderKind.Inbox));
         Assert.False(In(1, FolderKind.Trash));
+    }
+
+    [Fact]
+    public async Task Restore_OriginSurvivesNewRepositoryInstance()
+    {
+        _fx.Mail.SaveImapName(Acc, FolderKind.Sent, SentPath);
+        _fx.Add(1, FolderKind.Sent);
+        await Service().DeleteAsync(Acc, new[] { Target(1, FolderKind.Sent) });
+
+        var reopened = new MailRepository(_fx.Db, _fx.Files, _fx.Clock);
+        Assert.Equal(FolderKind.Sent, reopened.GetTrashOrigin(Acc, 1));
+    }
+
+    [Fact]
+    public async Task Undo_ClearsTrashOrigin()
+    {
+        _fx.Add(1, FolderKind.Inbox);
+        var svc = Service();
+        var del = await svc.DeleteAsync(Acc, new[] { Target(1) });
+        Assert.Equal(FolderKind.Inbox, _fx.Mail.GetTrashOrigin(Acc, 1));
+        await svc.UndoDeleteAsync(del.Token!);
+        Assert.Null(_fx.Mail.GetTrashOrigin(Acc, 1));
     }
 
     [Theory]
