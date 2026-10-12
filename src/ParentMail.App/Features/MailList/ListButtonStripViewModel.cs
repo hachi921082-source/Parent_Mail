@@ -33,7 +33,6 @@ public sealed partial class ListButtonStripViewModel : ObservableObject
         _filterRules = filterRules;
 
         ComposeCommand = new RelayCommand(Compose, HasAccount);
-        SearchCommand = new RelayCommand(() => SearchRequested?.Invoke(this, EventArgs.Empty));
         SettingsCommand = new RelayCommand(() => SettingsRequested?.Invoke(this, EventArgs.Empty));
         AddressBookCommand = new RelayCommand(() => WithAccount(id => _addressBook?.OpenBook(id)), HasAccount);
         BlockListCommand = new RelayCommand(() => WithAccount(id => _blockList?.OpenWindow(id)), HasAccount);
@@ -47,14 +46,10 @@ public sealed partial class ListButtonStripViewModel : ObservableObject
     public double ChromeFontSize => _scale.ChromeFontSizeDip;
 
     public IRelayCommand ComposeCommand { get; }
-    public IRelayCommand SearchCommand { get; }
     public IRelayCommand SettingsCommand { get; }
     public IRelayCommand AddressBookCommand { get; }
     public IRelayCommand BlockListCommand { get; }
     public IRelayCommand FilterRulesCommand { get; }
-
-    /// <summary>検索ボタンが押された。search 機能が検索ボックスへ移す処理をつなぐ（A47）。</summary>
-    public event EventHandler? SearchRequested;
 
     /// <summary>設定ボタンが押された。設定の窓が実装されたら、その入口をつなぐ。</summary>
     public event EventHandler? SettingsRequested;

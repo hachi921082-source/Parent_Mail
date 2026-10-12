@@ -62,11 +62,6 @@ public class SearchViewSmokeTests
             var window = sp.GetRequiredService<MainWindow>();
             var list = Assert.IsType<MailListView>(((ContentControl)window.FindName("ListPaneSlot")).Content);
             Assert.IsType<SearchView>(list.SearchHost.Content);
-
-            var focus = 0;
-            sp.GetRequiredService<SearchViewModel>().FocusRequested += (_, _) => focus++;
-            sp.GetRequiredService<ListButtonStripViewModel>().SearchCommand.Execute(null);
-            Assert.Equal(1, focus);
         });
     }
 

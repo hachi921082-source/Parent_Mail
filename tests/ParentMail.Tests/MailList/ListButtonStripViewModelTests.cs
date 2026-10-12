@@ -53,17 +53,13 @@ public sealed class ListButtonStripViewModelTests
     }
 
     [Fact]
-    public void SearchAndSettings_RaisePlugInEvents()
+    public void Settings_RaisesPlugInEvent()
     {
         var vm = Vm();
-        var search = 0;
         var settings = 0;
-        vm.SearchRequested += (_, _) => search++;
         vm.SettingsRequested += (_, _) => settings++;
-        vm.SearchCommand.Execute(null);
         vm.SettingsCommand.Execute(null);
         vm.SettingsCommand.Execute(null);
-        Assert.Equal(1, search);
         Assert.Equal(2, settings);
     }
 

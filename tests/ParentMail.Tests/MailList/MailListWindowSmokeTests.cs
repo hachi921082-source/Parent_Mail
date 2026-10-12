@@ -50,7 +50,7 @@ public class MailListWindowSmokeTests
     }
 
     [Fact]
-    public void ButtonStrip_HasSixButtonsInOrder_WithComposeAsPrimary()
+    public void ButtonStrip_HasFiveButtons_KeepGridCells_AndBlankCellHasNoControl()
     {
         RunSta(() =>
         {
@@ -63,11 +63,16 @@ public class MailListWindowSmokeTests
             {
                 view.UpdateLayout();
                 var buttons = FindAll<Button>(view).ToList();
-                Assert.Equal(new[] { Strings.TB_14, Strings.TB_15, Strings.TB_16, Strings.TB_17, Strings.TB_18, Strings.TB_19 },
+                Assert.Equal(new[] { Strings.TB_14, Strings.TB_16, Strings.TB_17, Strings.TB_18, Strings.TB_19 },
                     buttons.Select(b => ((TextBlock)b.Content).Text).ToArray());
                 Assert.Same(Application.Current.Resources["PrimaryButton"], buttons[0].Style);
                 Assert.All(buttons, b => Assert.True(b.ActualHeight >= 56));
-                // 2 列 x 3 行
+                // 2 列 x 3 行。各ボタンのマスは変わらず、行 0・列 1 は空きマス（Q88）
+                var cells = buttons.Select(b => (Grid.GetRow(b), Grid.GetColumn(b))).ToArray();
+                Assert.Equal(new[] { (0, 0), (1, 0), (1, 1), (2, 0), (2, 1) }, cells);
+                Assert.DoesNotContain(cells, c => c == (0, 1));
+                Assert.Equal(5, buttons.Count);
+                Assert.Equal(5, FindAll<UIElement>(view).Count(e => e is Button));
                 var rows = buttons.Select(b => (int)Math.Round(b.TranslatePoint(new Point(0, 0), view).Y)).Distinct().Count();
                 var cols = buttons.Select(b => (int)Math.Round(b.TranslatePoint(new Point(0, 0), view).X)).Distinct().Count();
                 Assert.Equal(3, rows);

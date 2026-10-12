@@ -40,8 +40,6 @@ public static class SearchRegistration
         var vm = sp.GetRequiredService<SearchViewModel>();
         var view = new SearchView(vm);
         listView.SearchHost.Content = view;
-        // 下部の「検索」ボタンは入力欄へフォーカスを移す（A47）
-        if (sp.GetService<ListButtonStripViewModel>() is { } strip) strip.SearchRequested += (_, _) => vm.RequestFocus();
     }
 
     private static MainWindow CreatePrevious(IServiceProvider sp, ServiceDescriptor previous)

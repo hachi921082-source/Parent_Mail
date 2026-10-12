@@ -31,8 +31,6 @@ public static class Strings
     public const string TB_13 = "更新中…";
     /// <summary>新しいメール</summary>
     public const string TB_14 = "新しいメール";
-    /// <summary>検索</summary>
-    public const string TB_15 = "検索";
     /// <summary>設定</summary>
     public const string TB_16 = "設定";
     /// <summary>アドレス帳</summary>
@@ -327,8 +325,8 @@ public static class Strings
     public const string FA_07 = "編集";
     /// <summary>迷惑メールではない</summary>
     public const string FA_08 = "迷惑メールではない";
-    /// <summary>受信トレイに戻す</summary>
-    public const string FA_09 = "受信トレイに戻す";
+    /// <summary>元のフォルダに戻す</summary>
+    public const string FA_09 = "元のフォルダに戻す";
     /// <summary>このアドレスだけ / このドメイン全体</summary>
     public const string FA_10 = "このアドレスだけ / このドメイン全体";
     /// <summary>受信拒否に追加しました</summary>

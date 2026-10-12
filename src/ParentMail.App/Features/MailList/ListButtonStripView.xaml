@@ -14,25 +14,32 @@
     <!-- 文字は上部バーと同じく 20 pt で頭打ち -->
     <Border Background="{DynamicResource Bar}" BorderBrush="{DynamicResource BarBorder}" BorderThickness="0,2,0,0" Padding="6"
             TextElement.FontSize="{Binding ChromeFontSize}">
-        <UniformGrid Columns="2" Rows="3">
-            <Button Command="{Binding ComposeCommand}" Style="{StaticResource PrimaryButton}" Margin="4" MinWidth="0" Padding="8,6">
+        <!-- 2 列 x 3 行。1 行目の右（行 0・列 1）は空きマスで、コントロールを置かない（Q88） -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" Grid.Column="0" Command="{Binding ComposeCommand}" Style="{StaticResource PrimaryButton}" Margin="4" MinWidth="0" Padding="8,6">
                 <TextBlock Text="{x:Static res:Strings.TB_14}" Style="{StaticResource StripText}" />
             </Button>
-            <Button Command="{Binding SearchCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
-                <TextBlock Text="{x:Static res:Strings.TB_15}" Style="{StaticResource StripText}" />
-            </Button>
-            <Button Command="{Binding SettingsCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
+            <Button Grid.Row="1" Grid.Column="0" Command="{Binding SettingsCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
                 <TextBlock Text="{x:Static res:Strings.TB_16}" Style="{StaticResource StripText}" />
             </Button>
-            <Button Command="{Binding AddressBookCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
+            <Button Grid.Row="1" Grid.Column="1" Command="{Binding AddressBookCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
                 <TextBlock Text="{x:Static res:Strings.TB_17}" Style="{StaticResource StripText}" />
             </Button>
-            <Button Command="{Binding BlockListCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
+            <Button Grid.Row="2" Grid.Column="0" Command="{Binding BlockListCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
                 <TextBlock Text="{x:Static res:Strings.TB_18}" Style="{StaticResource StripText}" />
             </Button>
-            <Button Command="{Binding FilterRulesCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
+            <Button Grid.Row="2" Grid.Column="1" Command="{Binding FilterRulesCommand}" Style="{StaticResource AppButton}" Margin="4" MinWidth="0" Padding="8,6">
                 <TextBlock Text="{x:Static res:Strings.TB_19}" Style="{StaticResource StripText}" />
             </Button>
-        </UniformGrid>
+        </Grid>
     </Border>
 </UserControl>
