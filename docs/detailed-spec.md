@@ -173,11 +173,12 @@ Source: S5, D8-D9, Q22.
 | Sent | Forward, Delete |
 | Drafts | Edit, Delete |
 | Spam | Not spam (move to Inbox), Delete |
-| Trash | 「受信トレイに戻す」 (Restore, always to Inbox) only; no permanent delete |
+| Trash | 「受信トレイに戻す」 (Restore, to the folder the mail was deleted from; Inbox if unknown, Q86) only; no permanent delete |
 | Outbox | Send now, Return to drafts |
 
 - Delete = IMAP move to Gmail Trash (S8). Applies to both the Delete menu item and the Delete header button.
 - Delete shows no confirmation dialog. Instead a non-modal notice 「ごみ箱に移動しました [元に戻す]」 is shown for 10 seconds; "元に戻す" (Undo) moves the mail back to the folder in which it was viewed when deleted; other Gmail labels are not restored (Q40, Q55). Undo is refused while offline. The notice stays for 10 seconds (Q64; replaces A38, 5 s). Moving a mail to Spam gets NO undo notice (Q63). Only the latest delete can be undone (a new delete replaces the notice). The Delete key deletes only while the mail list has keyboard focus (section 21). Deleting several checked mails: section 22.
+- Restore from Trash (Q86): the app persists, per mail, the folder it was deleted from (an origin-folder record in the local cache, so it survives restarts; recorded when the app itself deletes, including multi-delete). Restore moves the mail back to that folder (Sent -> Sent). If no origin is recorded (trashed on another device or Gmail web, trashed before this feature existed, or an All-Mail-only mail) it goes to the Inbox. Other Gmail labels are not restored. The record is cleared once the mail leaves Trash. Open point: the menu label wording (see QA.md Q86).
 - Moves in this table are refused while offline (section 4, Q55). The block menu item reads 「受信拒否に追加」 (Q57).
 - "Add sender to address book" adds to the displayed account's address book (D19). "Block sender" adds to the displayed account's block list (Q35); its entry-unit choice follows section 11.
 - Preview-header buttons (section 1) are enabled only where the same action exists in this table: Assumption A3. Exception (Q63): in Drafts the header also has the large 「編集」 button (= the Edit menu item).
