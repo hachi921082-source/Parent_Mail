@@ -82,7 +82,7 @@ Banner area (0 to 2 banners, section 2.3)
 | [ ] 佐藤花子   10月8日 9:12 | |                                                |
 |     お礼                    | |  Body text (plain by default)                  |
 |  ...                        | |                                                |
-| [新しいメール] [検索]       | |                                                |
+| [新しいメール]  (blank)     | |                                                |
 | [設定]  [アドレス帳]        | |        (transient notice: bottom of preview)   |
 | [受信拒否リスト][振り分けルール] | |                                            |
 +--------------------------+-+-----------------------------------------------+
@@ -102,7 +102,7 @@ Banner area (0 to 2 banners, section 2.3)
    - Line 1: sender (display name, else address) left, ellipsis when long; date/time right-aligned; paperclip icon after the date when the mail has attachments. Sent/Drafts: 「宛先: <first recipient> ほか N 人」 in the sender position.
    - Line 2: subject, ellipsis when long.
    - Unread = bold on both lines (no dot, no colour). Selected row = fill `#D6E4F7` + 6 px left bar `#0B4FA8`.
-4. Bottom button strip: 2 columns x 3 rows, each cell >= 56 DIP high, text capped (1.3), wrapping allowed. Order (row by row): 新しいメール / 検索 / 設定 / アドレス帳 / 受信拒否リスト / 振り分けルール. 新しいメール is drawn as the primary (blue) button.
+4. Bottom button strip: 2 columns x 3 rows, each cell >= 56 DIP high, text capped (1.3), wrapping allowed. Order (row by row): 新しいメール / (blank) / 設定 / アドレス帳 / 受信拒否リスト / 振り分けルール. The former 検索 button (row 1, right column) was removed (Q88, 2026-10-12): that cell is LEFT EMPTY (no button, not focusable), so the grid and the other five buttons keep their places; the user may put something there later. 新しいメール is drawn as the primary (blue) button.
 
 At the 1024x700 minimum the list shows only about 2.5 rows (top bar 136 + search 64 + header 48 + strip about 200); on a 1080p maximized window about 8 rows. If this is too tight, the fallback is a 3 x 2 strip with shorter wrap; the user decides after seeing the mockup.
 
@@ -116,14 +116,14 @@ At the 1024x700 minimum the list shows only about 2.5 rows (top bar 136 + search
 
 ### 2.4 Preview pane
 
-- Header buttons row: 返信, 全員に返信, 転送 on the left; zoom group (拡大, 縮小, 100%に戻す, percent) in the middle; 削除 at the FAR RIGHT, apart from the others, in red-outlined style (approved, to avoid pressing it instead of 返信/転送). Drafts folder: an extra large 「編集」 button after the left group (decided). 迷惑メールではない, 受信トレイに戻す, 今すぐ送る, 下書きに戻す stay right-click only (decided).
+- Header buttons row: 返信, 全員に返信, 転送 on the left; zoom group (拡大, 縮小, 100%に戻す, percent) in the middle; 削除 at the FAR RIGHT, apart from the others, in red-outlined style (approved, to avoid pressing it instead of 返信/転送). Drafts folder: an extra large 「編集」 button after the left group (decided). 迷惑メールではない, 元のフォルダに戻す (Q87; was 受信トレイに戻す), 今すぐ送る, 下書きに戻す stay right-click only (decided).
 - Header block: 差出人, 宛先, CC (only when present, approved), 件名, 日時, then notices (「アドレス帳に登録されていません」, image hint). Attachments list below.
 - No mail selected: guide text 「左の一覧からメールを選んでください」 centered (decided).
 - Several rows checked: guide text 「N通のメールを選んでいます。「削除」を押すと、まとめてごみ箱に移します。」, header buttons other than 削除 disabled (approved).
 
 ### 2.5 Tab order (main window)
 
-Initial focus = mail list. Tab order: account switch, HTML checkbox, 更新, six folder buttons, search box, クリア, すべて選ぶ, mail list (rows: Up/Down, Space toggles the check), bottom strip (6 buttons, row by row), preview header buttons (返信, 全員に返信, 転送, [編集], 拡大, 縮小, 100%に戻す, 削除), HTML preview/plain text, attachment buttons. Shift+Tab reverses.
+Initial focus = mail list. Tab order: account switch, HTML checkbox, 更新, six folder buttons, search box, クリア, すべて選ぶ, mail list (rows: Up/Down, Space toggles the check), bottom strip (5 buttons, row by row; the blank cell is skipped, Q88), preview header buttons (返信, 全員に返信, 転送, [編集], 拡大, 縮小, 100%に戻す, 削除), HTML preview/plain text, attachment buttons. Shift+Tab reverses.
 
 ## 3. Common dialogs
 
