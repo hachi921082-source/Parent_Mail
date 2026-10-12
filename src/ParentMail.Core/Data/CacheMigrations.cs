@@ -79,6 +79,12 @@ public static class CacheMigrations
             gm_msgid INTEGER NOT NULL,
             arg TEXT NULL);
         """,
+        // v2: アプリで削除したメールの削除元フォルダ（ごみ箱から戻すときの戻し先。再起動後も残す）
+        """
+        CREATE TABLE trash_origin(
+            gm_msgid INTEGER PRIMARY KEY REFERENCES messages(gm_msgid) ON DELETE CASCADE,
+            folder INTEGER NOT NULL);
+        """,
     };
 
     public static int CurrentVersion => Steps.Length;
