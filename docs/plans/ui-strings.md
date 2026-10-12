@@ -2,6 +2,8 @@
 
 Status (2026-10-08): FULLY APPROVED by the user (section 17 decisions on 2026-10-08, all remaining rows on 2026-10-08 in the follow-up review, Q76). This file is the source of truth for UI wording; `Strings.ja.cs` is generated from it. The earlier note that only part of the file was approved is obsolete. Exception already applied: FA-08 is 「迷惑メールではない」 (suffix dropped by the user).
 
+Addendum (2026-10-12): FA-09 reworded to 「元のフォルダに戻す」 and TB-15 (bottom 検索 button) SUPERSEDED, both by user decision (Q87, Q88).
+
 Addendum (2026-10-11): rows CP-18 to CP-22 and WD-31 (address-book picker in compose, Q80-Q85) are APPROVED (wording approved by the user on 2026-10-11).
 
 Single list of every user-visible Japanese string referenced by `docs/plans/**/PLAN*.md` plus the strings the UI needs but no PLAN contains yet. When a row is APPROVED it is the source of truth (PLANs keep inline wording as drafts; on any difference this file wins). 
@@ -48,7 +50,7 @@ Tone rule (detailed-spec 17): polite plain Japanese, no technical terms, one sen
 | TB-12 | Top bar, refresh button | 更新 | APPROVED | NEW | |
 | TB-13 | Refresh button while syncing | 更新中… | APPROVED | NEW | |
 | TB-14 | List pane bottom: compose | 新しいメール | APPROVED | PROPOSED | N3 |
-| TB-15 | List pane bottom: search | 検索 | APPROVED | PROPOSED | |
+| TB-15 | List pane bottom: search | 検索 | SUPERSEDED | PROPOSED | the bottom 検索 button is removed (user, 2026-10-12, Q88); its grid cell stays blank. The search box's own action SR-01 stays |
 | TB-16 | List pane bottom: settings | 設定 | APPROVED | PROPOSED | |
 | TB-17 | List pane bottom: address book | アドレス帳 | APPROVED | PROPOSED | |
 | TB-18 | List pane bottom: block list | 受信拒否リスト | APPROVED | PROPOSED | N1 |
@@ -249,7 +251,7 @@ Kind of each message (banner / modal OK / transient / in-place): detailed-spec s
 | FA-06 | Inbox right-click menu | 受信拒否に追加 | APPROVED | PROPOSED | N1 |
 | FA-07 | Drafts right-click menu | 編集 | APPROVED | PROPOSED | Q63 |
 | FA-08 | Spam right-click menu | 迷惑メールではない | APPROVED | PROPOSED | suffix 「(受信トレイへ)」 dropped by the user (Q76) |
-| FA-09 | Trash right-click menu | 受信トレイに戻す | APPROVED | PROPOSED | N5b |
+| FA-09 | Trash right-click menu | 元のフォルダに戻す | APPROVED | PROPOSED | N5b; changed by the user on 2026-10-12 (Q87) from 「受信トレイに戻す」 because Restore now returns to the folder the mail was deleted from (Q86) |
 | FA-10 | Block-sender dialog, options | このアドレスだけ / このドメイン全体 | APPROVED | PROPOSED | default = address |
 | FA-11 | Transient notice after blocking | 受信拒否に追加しました | APPROVED | PROPOSED | |
 | FA-12 | Modal OK, sender already in the address book | すでに登録されています | APPROVED | PROPOSED | |
@@ -337,7 +339,7 @@ Kind of each message (banner / modal OK / transient / in-place): detailed-spec s
 | N3 | Compose button | Bottom button of the list pane and compose window title: 「新しいメール」 | TB-14, CP-01 |
 | N4 | Header buttons of the preview | 「返信」 / 「全員に返信」 / 「転送」 / 「削除」 (unchanged) | TB-20, FA-01 |
 | N5 | Preview zoom reset button | 「100%に戻す」 (was 「元に戻す」) | TB-21 |
-| N5b | Trash right-click menu item that moves a mail back to the Inbox | 「受信トレイに戻す」 (was 「元に戻す(受信トレイへ)」) | FA-09 |
+| N5b | Trash right-click menu item that moves a mail back to the folder it was deleted from | 「元のフォルダに戻す」 (2026-10-12, Q87; earlier 「受信トレイに戻す」, before that 「元に戻す(受信トレイへ)」) | FA-09 |
 | N5c | Delete undo notice button | 「元に戻す」 stays (fixed by the spec: 「ごみ箱に移動しました [元に戻す]」) | BN-07 |
 | N6 | Notice in the mail header when the sender is not in the address book | 「アドレス帳に登録されていません」 | PV-02 |
 | N7 | Reading field name in the address book (column and edit field) | 「ふりがな」 (was 「よみがな」) | AB-02 |
@@ -346,7 +348,7 @@ Kind of each message (banner / modal OK / transient / in-place): detailed-spec s
 | N10 | Account switch button | Shows the account name only (no hint or arrow) | TB-09 |
 | N11 | Q31 warning text | 「この操作は詳しい方に相談してから行ってください。」 (unchanged) | AC-13 |
 | N12 | Preview guide text with no mail selected (Q62) | 「左の一覧からメールを選んでください」 | PV-12 |
-| N13 | Extra header button in Drafts (Q63) | 「編集」; the Outbox/Spam/Trash actions 「今すぐ送る」「下書きに戻す」「迷惑メールではない」「受信トレイに戻す」 are right-click only | TB-24, OB-03, OB-04 |
+| N13 | Extra header button in Drafts (Q63) | 「編集」; the Outbox/Spam/Trash actions 「今すぐ送る」「下書きに戻す」「迷惑メールではない」「元のフォルダに戻す」 are right-click only | TB-24, OB-03, OB-04 |
 | N14 | Button of every notice the user must read (Q64) | 「OK」 | BN-12 |
 | N15 | Multi-delete notice (Q71) | 「N通をごみ箱に移動しました [元に戻す]」, 10 seconds | BN-11 |
 | N16 | Approved in the PLANs (Q70) | Reply quote line, forward header block, 「このアドレスはすでに登録されています」, 「結果が多いため一部のみ表示しています」 | RF-03, RF-04, AB-06, SR-06 |
