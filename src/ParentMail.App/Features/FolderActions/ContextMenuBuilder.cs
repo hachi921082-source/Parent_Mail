@@ -7,7 +7,7 @@ public sealed record MenuEntry(FolderActionKind Kind, string Label, bool Enabled
 
 /// <summary>
 /// フォルダごとの右クリックメニューの中身を決める（folder-actions PLAN 2 章）。画面には触れない。
-/// 迷惑メールではない・受信トレイに戻す・今すぐ送る・下書きに戻すは右クリックだけにある（Q63）。
+/// 迷惑メールではない・元のフォルダに戻す・今すぐ送る・下書きに戻すは右クリックだけにある（Q63）。
 /// </summary>
 public static class ContextMenuBuilder
 {
