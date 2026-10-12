@@ -48,6 +48,7 @@ public partial class ComposeWindow : Window
         };
         Loaded += (_, _) =>
         {
+            KeepInsideWorkArea();
             FocusFirst();
             _autoSaveTimer!.Start();
         };
@@ -172,6 +173,16 @@ public partial class ComposeWindow : Window
         if (e.Key != Key.Enter) return;
         ((UIElement)sender).MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
         e.Handled = true;
+    }
+
+    // タイトルバーが画面の上へはみ出さないよう、表示位置を作業領域の中へ収める
+    private void KeepInsideWorkArea()
+    {
+        var area = SystemParameters.WorkArea;
+        Height = Math.Min(ActualHeight, area.Height);
+        Width = Math.Min(ActualWidth, area.Width);
+        Top = Math.Max(area.Top, Math.Min(Top, area.Bottom - ActualHeight));
+        Left = Math.Max(area.Left, Math.Min(Left, area.Right - ActualWidth));
     }
 
     private async void OnSend(object sender, RoutedEventArgs e) => await _vm.SendAsync();
