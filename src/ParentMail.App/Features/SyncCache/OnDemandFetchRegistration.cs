@@ -18,8 +18,9 @@ public static class OnDemandFetchRegistration
         services.TryAddSingleton<FetchSession>();
         services.TryAddSingleton<PendingFetchTracker>();
         services.TryAddSingleton<BodyFetcher>();
-        services.TryAddSingleton<IBodyFetcher>(sp => sp.GetRequiredService<BodyFetcher>());
-        services.TryAddSingleton<IAttachmentService, AttachmentService>();
+        // mail-display の仮実装（TryAdd で先に登録済み）を上書きするため、ここは AddSingleton（後勝ち）にする
+        services.AddSingleton<IBodyFetcher>(sp => sp.GetRequiredService<BodyFetcher>());
+        services.AddSingleton<IAttachmentService, AttachmentService>();
         services.TryAddSingleton<PendingFetchRunner>();
         services.TryAddSingleton<InputIdleMonitor>();
         services.TryAddSingleton<IIdleMonitor>(sp => sp.GetRequiredService<InputIdleMonitor>());
