@@ -123,6 +123,29 @@ public sealed class MailRepository : IMailRepository
             ("@id", gmailMsgId), ("@folder", (int)folder));
     }
 
+    /// <summary>アプリで削除したメールの削除元フォルダを記録する（ごみ箱から戻す先）。</summary>
+    public void SetTrashOrigin(string accountId, long gmailMsgId, FolderKind origin)
+    {
+        using var c = _db.Open(accountId);
+        Run(c, "INSERT INTO trash_origin(gm_msgid, folder) VALUES(@id, @f) ON CONFLICT(gm_msgid) DO UPDATE SET folder = excluded.folder",
+            ("@id", gmailMsgId), ("@f", (int)origin));
+    }
+
+    /// <summary>削除元フォルダの記録。なければ null。</summary>
+    public FolderKind? GetTrashOrigin(string accountId, long gmailMsgId)
+    {
+        using var c = _db.Open(accountId);
+        var v = Scalar(c, "SELECT folder FROM trash_origin WHERE gm_msgid = @id", ("@id", gmailMsgId));
+        return v is null or DBNull ? null : (FolderKind)Convert.ToInt32(v);
+    }
+
+    /// <summary>ごみ箱を出たメールの削除元記録を消す。</summary>
+    public void ClearTrashOrigin(string accountId, long gmailMsgId)
+    {
+        using var c = _db.Open(accountId);
+        Run(c, "DELETE FROM trash_origin WHERE gm_msgid = @id", ("@id", gmailMsgId));
+    }
+
     /// <summary>メール本体・所属・添付情報を消し、添付ファイルの実体も消す。</summary>
     public void DeleteMessage(string accountId, long gmailMsgId)
     {
