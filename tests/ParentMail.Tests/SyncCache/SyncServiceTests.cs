@@ -32,6 +32,20 @@ public class SyncServiceTests
     }
 
     [Fact]
+    public async Task Sync_StoresReplyToFromHeader()
+    {
+        using var h = new SyncHarness();
+        h.Put(Inbox, 1, 101);
+        h.Put(Inbox, 2, 102);
+        h.Gateway.Headers[Inbox][0] = h.Gateway.Headers[Inbox][0] with { ReplyTo = "返信係 <reply@example.org>" };
+
+        await h.RunAsync();
+
+        Assert.Equal("返信係 <reply@example.org>", h.Cache.Mail.Get(h.AccountId, 101)!.ReplyTo);
+        Assert.Null(h.Cache.Mail.Get(h.AccountId, 102)!.ReplyTo);
+    }
+
+    [Fact]
     public async Task InitialSync_FetchesBodiesOnlyWithin12Months_AndSkipsAllMailDuplicates()
     {
         using var h = new SyncHarness();
