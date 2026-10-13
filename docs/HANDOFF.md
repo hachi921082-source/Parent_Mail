@@ -28,7 +28,7 @@ Session-handoff file. Read this first in a fresh conversation, then open only th
   - Open: GitHub issue #1 (account switch as side-by-side buttons instead of a toggle; needs-design, needs designer-lite first).
 - Decisions of this session worth knowing: address-book picker button beside 宛先/CC/BCC (Q80-Q85, `compose/PLAN-3.md`, implemented); the address book window has NO search box (approved layout; search is only for autocomplete); remote images stay blocked by default and the broken-image look is accepted; password field label reads アプリパスワード（スペースなし）; settings window UI had been missed in W1 and was added as an extra lane in W3.
 - Test flakiness fixed: full runs used to fail about 1 in 10-15 (different tests each time) because many fixtures call the global `SqliteConnection.ClearAllPools()` while xUnit ran classes in parallel. `tests/ParentMail.Tests/AssemblyInfo.cs` turns parallelization off (30 consecutive green runs). Re-check if it reappears.
-- Tools: `Start-ParentMail.bat` (repo root) builds and starts the app; do not run it while the app is open (the build would fail on locked files).
+- Tools: `Start-ParentMail.bat` (repo root) builds and starts the app; do not run it while the app is open (the build would fail on locked files); env var `PARENTMAIL_DATA_ROOT` (absolute path) redirects the data root for testing only and must never be set for normal use.
 
 ## 2. Documents and where decisions live
 

@@ -13,7 +13,7 @@ public sealed class CachePaths
 
     /// <summary>既定のデータルート（%LOCALAPPDATA%\Parent_Mail）。</summary>
     public static string DefaultRoot()
-        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Parent_Mail");
+        => ParentMail.Core.Platform.AppPaths.ResolveDefaultRoot();
 
     public string AccountDir(string accountId)
     {

@@ -64,6 +64,27 @@ public sealed class AccountSettingsViewModelTests
     }
 
     [Fact]
+    public async Task AccountEvent_FromBackgroundThread_ReloadsOnUiDispatch()
+    {
+        // UI スレッドに見立てた実行キュー。バックグラウンドで Reload が直接走らないことを確かめる
+        var queue = new List<Action>();
+        var vm = new AccountSettingsViewModel(_svc, _repo, new WarningGate(_dialog), _dialog, _dialogs,
+            dispatch: a => { lock (queue) queue.Add(a); });
+        _repo.Rename("a1", "おかあさん");
+
+        // 背景スレッドから名前変更イベントを出す（ValidateAndAddAsync の ConfigureAwait(false) 後と同じ状況）
+        var ex = await Record.ExceptionAsync(() => Task.Run(() => _svc.Rename("a2", "ちち")));
+
+        Assert.Null(ex);
+        Assert.Equal("お母さん", vm.Accounts[0].DisplayName); // まだ UI 側で実行されていない
+        Action[] pending;
+        lock (queue) pending = queue.ToArray();
+        Assert.NotEmpty(pending);
+        foreach (var a in pending) a();
+        Assert.Equal(new[] { "おかあさん", "ちち" }, vm.Accounts.Select(x => x.DisplayName));
+    }
+
+    [Fact]
     public void Accounts_ListNamesAndAddresses_AddDisabledAtLimitWithNote()
     {
         Assert.Equal(new[] { "お母さん", "お父さん" }, _vm.Accounts.Select(a => a.DisplayName));

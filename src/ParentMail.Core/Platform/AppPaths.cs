@@ -10,8 +10,22 @@ public sealed class AppPaths
 
     public AppPaths(string? dataRoot = null)
     {
-        DataRoot = dataRoot ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppFolderName);
+        DataRoot = dataRoot ?? ResolveDefaultRoot();
+    }
+
+    /// <summary>テスト専用: データルートを上書きする環境変数（絶対パスのみ有効）。通常利用では設定しない。</summary>
+    public const string DataRootEnvVar = "PARENTMAIL_DATA_ROOT";
+
+    /// <summary>
+    /// 既定のデータルート。環境変数 PARENTMAIL_DATA_ROOT が絶対パスならそれを使い、
+    /// 空・相対パスなら無視して %LOCALAPPDATA%\Parent_Mail を返す。ルートを組み立てる箇所は全部ここを通す。
+    /// </summary>
+    public static string ResolveDefaultRoot()
+    {
+        var over = Environment.GetEnvironmentVariable(DataRootEnvVar);
+        if (!string.IsNullOrWhiteSpace(over) && Path.IsPathFullyQualified(over))
+            return over;
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppFolderName);
     }
 
     public string DataRoot { get; }
