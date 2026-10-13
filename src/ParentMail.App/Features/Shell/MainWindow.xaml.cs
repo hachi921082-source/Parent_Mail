@@ -31,7 +31,39 @@ public partial class MainWindow : Window
             if (WindowState != WindowState.Minimized) _lastNonMinimizedState = WindowState;
         };
         Splitter.DragCompleted += (_, _) => SaveWindowState();
-        Closing += (_, _) => SaveWindowState();
+        Closing += OnClosing;
+    }
+
+    /// <summary>
+    /// 窓を閉じる前の終了確認（app-lifecycle が設定する）。true を返したら閉じてよい。
+    /// 未設定なら確認なしで閉じる。
+    /// </summary>
+    public Func<Task<bool>>? QuitGuard { get; set; }
+
+    private bool _quitApproved;
+
+    /// <summary>終了が承認済みであることを知らせる（Windows の終了の承認後など、再確認させないため）。</summary>
+    public void ApproveQuit() => _quitApproved = true;
+
+    private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        SaveWindowState();
+        // 確認済み、確認の仕組みが無い、アプリがすでに終了処理中のときは、そのまま閉じる
+        if (_quitApproved || QuitGuard is null || Application.Current?.Dispatcher.HasShutdownStarted == true) return;
+
+        // いったん止めて確認し、続けてよければ改めて閉じる
+        e.Cancel = true;
+        _ = ConfirmQuitAndCloseAsync();
+    }
+
+    private async Task ConfirmQuitAndCloseAsync()
+    {
+        bool approved;
+        try { approved = await QuitGuard!().ConfigureAwait(true); }
+        catch { approved = true; } // 終了中の例外で閉じられなくならないようにする（記録は QuitCoordinator 側）
+        if (!approved) return;
+        _quitApproved = true;
+        Close();
     }
 
     /// <summary>2 回目の起動などから呼ばれ、窓を元の状態に戻して前面に出す。</summary>
