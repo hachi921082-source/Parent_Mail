@@ -25,7 +25,7 @@ public sealed class MailRepository : IMailRepository
     // 一覧用の列（本文は含めない。一覧で本文を読み込まないため）
     private const string HeaderCols =
         "m.gm_msgid, m.message_id, m.references_hdr, m.subject, m.from_addr, m.from_name, m.to_json, m.cc_json, " +
-        "m.date_utc, m.is_read, m.has_attachments, m.body_state";
+        "m.date_utc, m.is_read, m.has_attachments, m.body_state, m.reply_to";
     private const string FullCols = HeaderCols + ", m.body_text, m.body_html, m.derived_text";
 
     // Q42: Inbox / Sent / Drafts の一覧は、Trash または Spam にも属するメールを除く。
@@ -84,13 +84,13 @@ public sealed class MailRepository : IMailRepository
         Run(c,
             """
             INSERT INTO messages(gm_msgid, message_id, references_hdr, subject, from_addr, from_name, to_json, cc_json,
-                date_utc, is_read, has_attachments, body_state, body_text, body_html, derived_text, search_key, body_key)
-            VALUES(@id, @mid, @refs, @subject, @fa, @fn, @to, @cc, @date, @read, @att, @bs, @bt, @bh, @dt, @sk, @bk)
+                date_utc, is_read, has_attachments, body_state, body_text, body_html, derived_text, search_key, body_key, reply_to)
+            VALUES(@id, @mid, @refs, @subject, @fa, @fn, @to, @cc, @date, @read, @att, @bs, @bt, @bh, @dt, @sk, @bk, @rt)
             ON CONFLICT(gm_msgid) DO UPDATE SET
                 message_id = excluded.message_id, references_hdr = excluded.references_hdr, subject = excluded.subject,
                 from_addr = excluded.from_addr, from_name = excluded.from_name, to_json = excluded.to_json, cc_json = excluded.cc_json,
                 date_utc = excluded.date_utc, is_read = excluded.is_read, has_attachments = excluded.has_attachments,
-                search_key = excluded.search_key,
+                search_key = excluded.search_key, reply_to = excluded.reply_to,
                 body_state = CASE WHEN excluded.body_state = 1 THEN 1 ELSE messages.body_state END,
                 body_text = CASE WHEN excluded.body_state = 1 THEN excluded.body_text ELSE messages.body_text END,
                 body_html = CASE WHEN excluded.body_state = 1 THEN excluded.body_html ELSE messages.body_html END,
@@ -105,7 +105,8 @@ public sealed class MailRepository : IMailRepository
             ("@bt", fetched ? message.BodyText : null), ("@bh", fetched ? message.BodyHtml : null),
             ("@dt", fetched ? message.DerivedText : null),
             ("@sk", SearchKey(message)),
-            ("@bk", fetched ? BodyKey(message.BodyText, message.DerivedText) : null));
+            ("@bk", fetched ? BodyKey(message.BodyText, message.DerivedText) : null),
+            ("@rt", message.ReplyTo));
         foreach (var m in memberships) PutMembership(c, m);
         tx.Commit();
     }
@@ -360,9 +361,10 @@ public sealed class MailRepository : IMailRepository
                 IsRead = r.GetInt32(9) != 0,
                 HasAttachments = r.GetInt32(10) != 0,
                 BodyState = (BodyState)r.GetInt32(11),
-                BodyText = withBody && !r.IsDBNull(12) ? r.GetString(12) : null,
-                BodyHtml = withBody && !r.IsDBNull(13) ? r.GetString(13) : null,
-                DerivedText = withBody && !r.IsDBNull(14) ? r.GetString(14) : null,
+                ReplyTo = r.IsDBNull(12) ? null : r.GetString(12),
+                BodyText = withBody && !r.IsDBNull(13) ? r.GetString(13) : null,
+                BodyHtml = withBody && !r.IsDBNull(14) ? r.GetString(14) : null,
+                DerivedText = withBody && !r.IsDBNull(15) ? r.GetString(15) : null,
             });
         }
         return list;
