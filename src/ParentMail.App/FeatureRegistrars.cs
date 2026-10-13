@@ -30,5 +30,6 @@ public static class FeatureRegistrars
         s => Features.Compose.ComposeRegistration.AddCompose(s),
         s => Features.FolderActions.FolderActionsRegistration.AddFolderActions(s),
         s => Features.Search.SearchRegistration.AddSearch(s),
+        s => Features.ReplyForward.ReplyForwardRegistration.AddReplyForward(s),
     };
 }
