@@ -40,10 +40,12 @@ public sealed partial class AccountSettingsViewModel : ObservableObject
     private readonly WarningGate _gate;
     private readonly IDialogService _dialog;
     private readonly IAccountDialogs _dialogs;
+    private readonly Action<Action> _dispatch;
 
     public AccountSettingsViewModel(AccountService service, IAccountRepository accounts, WarningGate gate,
-        IDialogService dialog, IAccountDialogs dialogs)
+        IDialogService dialog, IAccountDialogs dialogs, Action<Action>? dispatch = null)
     {
+        _dispatch = dispatch ?? PostToUi;
         _service = service;
         _accounts = accounts;
         _gate = gate;
@@ -51,10 +53,19 @@ public sealed partial class AccountSettingsViewModel : ObservableObject
         _dialogs = dialogs;
         AddCommand = new AsyncRelayCommand(AddAsync, () => _service.CanAddMore);
 
-        _service.AccountAdded += (_, _) => Reload();
-        _service.AccountRenamed += (_, _) => Reload();
-        _service.AccountRemoved += (_, _) => Reload();
+        // 追加の通知は ConfigureAwait(false) 後の別スレッドから来るので、一覧の更新は UI スレッドに寄せる
+        _service.AccountAdded += (_, _) => _dispatch(Reload);
+        _service.AccountRenamed += (_, _) => _dispatch(Reload);
+        _service.AccountRemoved += (_, _) => _dispatch(Reload);
         Reload();
+    }
+
+    // UI スレッドなら直接、別スレッドなら Dispatcher に載せる。Application が無い（単体テスト）ときは同期実行
+    private static void PostToUi(Action action)
+    {
+        var d = System.Windows.Application.Current?.Dispatcher;
+        if (d is null || d.CheckAccess()) action();
+        else d.BeginInvoke(action);
     }
 
     public string SectionTitle => Strings.ST_05;
