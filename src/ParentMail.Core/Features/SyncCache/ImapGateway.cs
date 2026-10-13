@@ -24,6 +24,8 @@ public sealed class ImapGateway : IImapGateway
     private ImapClient? _client;
     private IMailFolder? _open;
     private bool _openWritable;
+    // 移動先などの解決済みフォルダ（パスごと）。接続し直したら捨てる
+    private readonly Dictionary<string, IMailFolder> _folders = new(StringComparer.Ordinal);
 
     public ImapGateway(Account account, ICredentialStore credentials)
     {
@@ -39,6 +41,7 @@ public sealed class ImapGateway : IImapGateway
         _client?.Dispose();
         _client = null;
         _open = null;
+        _folders.Clear();
 
         var client = new ImapClient { Timeout = TimeoutMilliseconds };
         try
@@ -96,13 +99,23 @@ public sealed class ImapGateway : IImapGateway
         return list;
     }
 
-    private async Task<IMailFolder> OpenAsync(string path, bool writable, CancellationToken ct)
+    // フォルダ名の解決（LIST の往復）を同じ接続の間は 1 回で済ませる
+    private async Task<IMailFolder> ResolveFolderAsync(string path, CancellationToken ct)
     {
         var c = await ConnectAsync(ct).ConfigureAwait(false);
-        if (_open is { IsOpen: true } o && o.FullName == path && (!writable || _openWritable)) return o;
+        if (_folders.TryGetValue(path, out var cached)) return cached;
         var folder = string.Equals(path, "INBOX", StringComparison.OrdinalIgnoreCase)
             ? c.Inbox
             : await c.GetFolderAsync(path, ct).ConfigureAwait(false);
+        _folders[path] = folder;
+        return folder;
+    }
+
+    private async Task<IMailFolder> OpenAsync(string path, bool writable, CancellationToken ct)
+    {
+        await ConnectAsync(ct).ConfigureAwait(false);
+        if (_open is { IsOpen: true } o && o.FullName == path && (!writable || _openWritable)) return o;
+        var folder = await ResolveFolderAsync(path, ct).ConfigureAwait(false);
         await folder.OpenAsync(writable ? FolderAccess.ReadWrite : FolderAccess.ReadOnly, ct).ConfigureAwait(false);
         _open = folder;
         _openWritable = writable;
@@ -250,7 +263,7 @@ public sealed class ImapGateway : IImapGateway
     public async Task<uint?> MoveAsync(string fromFolderPath, uint uid, string toFolderPath, CancellationToken ct = default)
     {
         var f = await OpenAsync(fromFolderPath, true, ct).ConfigureAwait(false);
-        var dest = await (await ConnectAsync(ct).ConfigureAwait(false)).GetFolderAsync(toFolderPath, ct).ConfigureAwait(false);
+        var dest = await ResolveFolderAsync(toFolderPath, ct).ConfigureAwait(false);
         var moved = await f.MoveToAsync(new UniqueId(uid), dest, ct).ConfigureAwait(false);
         return moved?.Id;
     }
@@ -279,6 +292,7 @@ public sealed class ImapGateway : IImapGateway
         var c = _client;
         _client = null;
         _open = null;
+        _folders.Clear();
         if (c is null) return;
         try
         {
