@@ -85,7 +85,7 @@ public sealed class WebViewHtmlHost
     private async Task InitializeAsync()
     {
         // 利用者データ置き場は日本語を含むユーザーフォルダでも使えるよう、WebView2 に任せる（%LOCALAPPDATA% 配下）
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Parent_Mail", "webview2");
+        var folder = Path.Combine(ParentMail.Core.Platform.AppPaths.ResolveDefaultRoot(), "webview2");
         Directory.CreateDirectory(folder);
 
         var web = new WebView2
