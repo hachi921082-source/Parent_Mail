@@ -144,6 +144,37 @@ public sealed class FolderActionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MultiDelete_SameSource_UsesOneSessionAndKeepsPerMailNewUids()
+    {
+        _fx.Add(1, FolderKind.Inbox);
+        _fx.Add(2, FolderKind.Inbox);
+        _fx.Add(3, FolderKind.Inbox);
+        var result = await Service().DeleteAsync(Acc, new[] { Target(1), Target(2), Target(3) });
+
+        Assert.Equal(MoveStatus.Ok, result.Move.Status);
+        await _gw.Received(1).TestLoginAsync(Arg.Any<CancellationToken>());
+        // 1 通ごとの移動後 UID がそれぞれ付く
+        var uids = new[] { 1L, 2L, 3L }.Select(id => _fx.Mail.GetMemberships(Acc, id).Single(m => m.Folder == FolderKind.Trash).Uid).ToList();
+        Assert.Equal(new uint[] { 500, 501, 502 }, uids);
+    }
+
+    [Fact]
+    public async Task MultiDelete_PartialFailure_CountsOnlyFailedOnes_AndLogsTiming()
+    {
+        _fx.Add(1, FolderKind.Inbox);
+        _fx.Add(2, FolderKind.Inbox);
+        _fx.Add(3, FolderKind.Inbox);
+        _gw.MoveAsync(Arg.Any<string>(), 102u, Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns<uint?>(_ => throw new InvalidOperationException("拒否された"));
+        var result = await Service().DeleteAsync(Acc, new[] { Target(1), Target(2), Target(3) });
+
+        Assert.Equal(MoveStatus.Partial, result.Move.Status);
+        Assert.Equal(2, result.Move.Moved.Count);
+        Assert.Equal(1, result.Move.Failed);
+        Assert.Contains(_log.Entries, e => e.StartsWith("I:FolderActions:Move batch: count=3 moved=2 elapsedMs="));
+    }
+
+    [Fact]
     public async Task MultiDelete_OverLimit_Throws_AndMaxIsAccepted()
     {
         var over = Enumerable.Range(1, Constants.MaxDeleteBatch + 1).Select(i => new DeleteTarget(i, FolderKind.Inbox, (uint)i)).ToList();
