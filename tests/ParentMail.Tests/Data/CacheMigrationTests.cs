@@ -30,6 +30,29 @@ public sealed class CacheMigrationTests : IDisposable
     }
 
     [Fact]
+    public void Upgrade_from_v2_adds_reply_to_column_and_keeps_data()
+    {
+        _f.Add(1, ParentMail.Core.Models.FolderKind.Inbox);
+        using (var c = _f.Db.Open(AccountId))
+        {
+            // v2 の状態に戻す（列を外して user_version を 2 にする）
+            using var cmd = c.CreateCommand();
+            cmd.CommandText = "ALTER TABLE messages DROP COLUMN reply_to; PRAGMA user_version = 2;";
+            cmd.ExecuteNonQuery();
+        }
+        SqliteConnection.ClearAllPools();
+
+        using var again = _f.Db.Open(AccountId);
+        Assert.Equal(CacheMigrations.CurrentVersion, CacheMigrations.GetVersion(again));
+        Assert.Equal("1", Scalar(again, "SELECT COUNT(*) FROM pragma_table_info('messages') WHERE name = 'reply_to'"));
+        Assert.Equal("件名", Scalar(again, "SELECT subject FROM messages WHERE gm_msgid = 1"));
+        Assert.Equal("", Scalar(again, "SELECT reply_to FROM messages WHERE gm_msgid = 1"));
+        var m = _f.Mail.Get(AccountId, 1)!;
+        Assert.Null(m.ReplyTo);
+        Assert.Equal("件名", m.Subject);
+    }
+
+    [Fact]
     public void Reopen_is_idempotent_and_keeps_data()
     {
         using (var c = _f.Db.Open(AccountId))
