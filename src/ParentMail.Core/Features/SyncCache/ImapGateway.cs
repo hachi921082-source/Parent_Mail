@@ -4,6 +4,7 @@ using MailKit.Search;
 using MailKit.Security;
 using MimeKit;
 using ParentMail.Core.Models;
+using ParentMail.Core.Features.Compose;
 
 namespace ParentMail.Core.Features.SyncCache;
 
@@ -163,9 +164,17 @@ public sealed class ImapGateway : IImapGateway
                 env?.Cc.Mailboxes.Select(m => m.Address).ToList() ?? new List<string>(),
                 date.UtcDateTime,
                 s.Flags?.HasFlag(MessageFlags.Seen) ?? false,
-                s.Attachments.Any()));
+                s.Attachments.Any(),
+                FormatReplyTo(env)));
         }
         return list;
+    }
+
+    // Reply-To が複数あるときは先頭の 1 件だけ使う。無い・読めないときは null（返信は From 宛て）
+    private static string? FormatReplyTo(Envelope? env)
+    {
+        var m = env?.ReplyTo.Mailboxes.FirstOrDefault();
+        return string.IsNullOrWhiteSpace(m?.Address) ? null : RecipientParser.Format(m.Name, m.Address);
     }
 
     private static string? WrapId(string? id)
