@@ -9,7 +9,7 @@ public sealed record ImapFolderStatus(string FolderPath, uint UidValidity, uint 
 
 /// <summary>IMAP から取得したヘッダ情報。</summary>
 public sealed record ImapHeader(uint Uid, long GmailMsgId, string MessageIdHeader, string? References, string Subject, string FromAddress, string FromName,
-    IReadOnlyList<string> To, IReadOnlyList<string> Cc, DateTime DateUtc, bool IsRead, bool HasAttachments);
+    IReadOnlyList<string> To, IReadOnlyList<string> Cc, DateTime DateUtc, bool IsRead, bool HasAttachments, string? ReplyTo = null);
 
 /// <summary>IMAP から取得した本文。</summary>
 public sealed record ImapBody(uint Uid, string? Text, string? Html, IReadOnlyList<AttachmentInfo> Attachments);

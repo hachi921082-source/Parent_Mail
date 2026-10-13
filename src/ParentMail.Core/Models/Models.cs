@@ -21,6 +21,8 @@ public sealed record MailMessage
     public string MessageIdHeader { get; init; } = "";
     /// <summary>References ヘッダの値（返信時に引き継ぐ）。</summary>
     public string? References { get; init; }
+    /// <summary>Reply-To ヘッダの先頭の 1 件（「名前 &lt;アドレス&gt;」形式）。無い・読めないときは null（返信は From 宛て）。</summary>
+    public string? ReplyTo { get; init; }
     public string Subject { get; init; } = "";
     public string FromAddress { get; init; } = "";
     public string FromName { get; init; } = "";

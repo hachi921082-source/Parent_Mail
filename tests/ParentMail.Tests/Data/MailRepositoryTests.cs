@@ -16,6 +16,16 @@ public sealed class MailRepositoryTests : IDisposable
     private IReadOnlyList<long> Ids(FolderKind folder) => _f.Mail.GetList(AccountId, folder).Select(m => m.GmailMsgId).ToList();
 
     [Fact]
+    public void ReplyTo_round_trips_and_defaults_to_null()
+    {
+        _f.Mail.Upsert(AccountId, Msg(1) with { ReplyTo = "営業部 <reply@example.org>" }, new[] { In(1, FolderKind.Inbox) });
+        _f.Add(2, FolderKind.Inbox);
+        Assert.Equal("営業部 <reply@example.org>", _f.Mail.Get(AccountId, 1)!.ReplyTo);
+        Assert.Equal("営業部 <reply@example.org>", _f.Mail.GetList(AccountId, FolderKind.Inbox).Single(x => x.GmailMsgId == 1).ReplyTo);
+        Assert.Null(_f.Mail.Get(AccountId, 2)!.ReplyTo);
+    }
+
+    [Fact]
     public void Inbox_excludes_messages_also_in_trash_or_spam()
     {
         _f.Add(1, FolderKind.Inbox, FolderKind.AllMail);

@@ -2,6 +2,7 @@ using ParentMail.App.Features.FolderActions;
 using ParentMail.App.Resources;
 using ParentMail.Core;
 using ParentMail.Core.Models;
+using ParentMail.Core.Features.Compose;
 
 namespace ParentMail.App.Features.ReplyForward;
 
@@ -39,7 +40,14 @@ public sealed class ReplyForwardHandler : IReplyForwardHandler
     {
         if (await EnsureSourceAsync(accountId, gmailMsgId).ConfigureAwait(true) is not { } source) return;
         var email = _accounts.Get(accountId)?.Email ?? "";
-        _compose.Open(ReplyBuilder.BuildReply(accountId, source, email, replyAll));
+        _compose.Open(ReplyBuilder.BuildReply(accountId, source, email, replyAll, UsableReplyTo(source.ReplyTo)));
+    }
+
+    // 保存済みの Reply-To が宛先として読めるときだけ使う（読めなければ null で From 宛て）
+    private static string? UsableReplyTo(string? stored)
+    {
+        var first = RecipientParser.Parse(stored).FirstOrDefault();
+        return first is { IsValid: true } ? first.Text : null;
     }
 
     public async Task ForwardAsync(string accountId, long gmailMsgId)

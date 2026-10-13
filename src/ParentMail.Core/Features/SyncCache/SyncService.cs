@@ -508,6 +508,7 @@ public sealed class SyncService : ISyncService, IReadStateSync
         GmailMsgId = h.GmailMsgId,
         MessageIdHeader = h.MessageIdHeader,
         References = h.References,
+        ReplyTo = h.ReplyTo,
         Subject = h.Subject,
         FromAddress = h.FromAddress,
         FromName = h.FromName,
