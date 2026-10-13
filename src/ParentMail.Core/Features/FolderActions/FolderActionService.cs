@@ -125,6 +125,7 @@ public sealed class FolderActionService : IFolderActionService
         var moved = new List<UndoEntry>();
         var failed = 0;
         var networkLost = false;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
 
         var (outcome, _) = await _session.RunAsync<bool>(accountId, async gw =>
         {
@@ -163,6 +164,8 @@ public sealed class FolderActionService : IFolderActionService
 
         // 接続できなかった・認証に失敗した・ローカル保存で例外が出た場合は、移せなかった残りをまとめて失敗にする
         failed = pairs.Count - moved.Count;
+        // 所要時間だけ残す（件数と経過ミリ秒のみ。メールの内容・宛先・件名は書かない）
+        _log.Info("FolderActions", $"Move batch: count={pairs.Count} moved={moved.Count} elapsedMs={sw.ElapsedMilliseconds}");
         var status = failed == 0 ? MoveStatus.Ok
             : moved.Count > 0 ? MoveStatus.Partial
             : (outcome == FetchOutcome.Offline || networkLost) ? MoveStatus.Offline
