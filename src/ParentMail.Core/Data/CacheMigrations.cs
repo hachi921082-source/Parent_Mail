@@ -85,6 +85,10 @@ public static class CacheMigrations
             gm_msgid INTEGER PRIMARY KEY REFERENCES messages(gm_msgid) ON DELETE CASCADE,
             folder INTEGER NOT NULL);
         """,
+        // v3: Reply-To ヘッダ（返信の宛先に使う。既存の取り込み済みメールは NULL のまま From 宛てになる）
+        """
+        ALTER TABLE messages ADD COLUMN reply_to TEXT NULL;
+        """,
     };
 
     public static int CurrentVersion => Steps.Length;
