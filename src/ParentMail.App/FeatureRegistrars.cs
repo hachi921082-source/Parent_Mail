@@ -31,5 +31,6 @@ public static class FeatureRegistrars
         s => Features.FolderActions.FolderActionsRegistration.AddFolderActions(s),
         s => Features.Search.SearchRegistration.AddSearch(s),
         s => Features.ReplyForward.ReplyForwardRegistration.AddReplyForward(s),
+        s => Features.AppLifecycle.AppLifecycleRegistration.AddAppLifecycle(s),
     };
 }

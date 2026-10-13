@@ -1,5 +1,6 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using ParentMail.App.Features.AppLifecycle;
 using ParentMail.App.Features.Shell;
 using ParentMail.App.Services;
 using ParentMail.Core;
@@ -38,14 +39,20 @@ public partial class App : Application
         Services.GetRequiredService<GlobalErrorHandler>().Attach(this);
         Services.GetRequiredService<IAppLog>().Info("App", "startup");
 
-        var window = Services.GetRequiredService<MainWindow>();
-        MainWindow = window;
-        window.Show();
+        // Windows のサインアウト・シャットダウン時も、窓を閉じるときと同じ終了手順を通す
+        var sessionEnding = Services.GetRequiredService<SessionEndingHandler>();
+        SessionEnding += (_, args) => sessionEnding.Handle(args, MainWindow);
+
+        // 主窓の表示、アカウントの選択、同期の開始（初回起動のアカウント追加は accounts-auth が出す）
+        Services.GetRequiredService<StartupCoordinator>().RunAsync().GetAwaiter().GetResult();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
         _guard?.Dispose();
+        // 同期やDB接続など、破棄が必要なサービスを閉じる
+        try { (Services as IDisposable)?.Dispose(); }
+        catch { /* 終了処理の失敗でプロセスを残さない */ }
         base.OnExit(e);
     }
 
