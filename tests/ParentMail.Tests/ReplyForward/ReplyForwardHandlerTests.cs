@@ -35,7 +35,7 @@ public sealed class ReplyForwardHandlerTests : IDisposable
         try { Directory.Delete(_root, recursive: true); } catch (IOException) { }
     }
 
-    private void Store(bool fetched, string? text = "本文です")
+    private void Store(bool fetched, string? text = "本文です", string? replyTo = null)
     {
         _mail.Upsert(Acc, new MailMessage
         {
@@ -43,6 +43,7 @@ public sealed class ReplyForwardHandlerTests : IDisposable
             FromAddress = "taro@example.com", FromName = "山田 太郎",
             To = new[] { "me@example.com", "hanako@example.com" }, DateUtc = new DateTime(2026, 10, 5, 0, 3, 0, DateTimeKind.Utc),
             BodyState = fetched ? BodyState.Fetched : BodyState.None, BodyText = fetched ? text : null,
+            ReplyTo = replyTo,
         }, new[] { new MessageFolder(7, FolderKind.Inbox, 1, 1) });
     }
 
@@ -57,6 +58,32 @@ public sealed class ReplyForwardHandlerTests : IDisposable
         Assert.Equal(Acc, init.AccountId);
         Assert.Empty(init.Cc);
         Assert.Empty(_body.Requested);
+    }
+
+    [Fact]
+    public async Task Reply_and_reply_all_use_stored_reply_to_instead_of_from()
+    {
+        Store(fetched: true, replyTo: "事務局 <office@example.org>");
+        await _handler.ReplyAsync(Acc, 7);
+        await _handler.ReplyAllAsync(Acc, 7);
+
+        Assert.Equal(2, _compose.Opened.Count);
+        foreach (var init in _compose.Opened)
+        {
+            Assert.Equal(new[] { "事務局 <office@example.org>" }, init.To);
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("これはアドレスではない")]
+    public async Task Reply_falls_back_to_from_when_reply_to_is_missing_or_malformed(string? replyTo)
+    {
+        Store(fetched: true, replyTo: replyTo);
+        await _handler.ReplyAsync(Acc, 7);
+
+        Assert.Equal(new[] { "山田 太郎 <taro@example.com>" }, Assert.Single(_compose.Opened).To);
     }
 
     [Fact]
