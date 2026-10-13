@@ -10,7 +10,7 @@ namespace ParentMail.App.Features.ReplyForward;
 /// </summary>
 public static class ReplyBuilder
 {
-    /// <param name="replyTo">Reply-To ヘッダの値（保存していないので今は呼び出し側が渡せたときだけ）。空なら差出人へ返す。</param>
+    /// <param name="replyTo">Reply-To ヘッダの値（同期時に保存した先頭 1 件）。空なら差出人へ返す。</param>
     public static ComposeInit BuildReply(string accountId, MailMessage source, string accountEmail, bool replyAll, string? replyTo = null)
     {
         var to = !string.IsNullOrWhiteSpace(replyTo) ? replyTo.Trim() : RecipientParser.Format(source.FromName, source.FromAddress);
