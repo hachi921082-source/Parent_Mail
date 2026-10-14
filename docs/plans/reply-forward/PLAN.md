@@ -33,3 +33,9 @@ Builds `ComposeInit` for reply, reply all and forward from a cached message and 
 
 - Unit: prefix de-duplication, reply-all own-address removal, Reply-To handling, quote formatting with Japanese, forward drops flagged/oversized/undownloaded attachments, References chain.
 - Manual: reply, reply all, forward of a mail with a PDF and of an HTML-only mail.
+
+## Change request (Q89, 2026-10-14): single compose window
+
+User decided (Issue #5): at most ONE compose window at a time; a repeat request only restores (if minimized) and activates the open one, no notice (detailed-spec section 7, A77-A81). developer-lite must change:
+- Before building `ComposeInit` (and before fetching forward attachments), call the compose factory's `TryActivateExisting()` (compose PLAN-1 change request); if it activated a window, stop silently (no notice).
+- Test: reply/reply all/forward with a compose window open activates it and builds nothing.
