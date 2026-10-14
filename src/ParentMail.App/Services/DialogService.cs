@@ -125,7 +125,7 @@ public sealed class DialogService : IDialogService
                 Text = message,
                 TextWrapping = TextWrapping.Wrap,
                 // 長い文面で窓が横に伸び続けないよう、文字サイズに応じた幅で折り返す。
-                MaxWidth = Math.Max(DialogWidth - DialogMargin * 2, _scale.FontSizeDip * 20),
+                MaxWidth = DialogButtonLayout.BodyMaxWidth(DialogWidth, DialogMargin, _scale.FontSizeDip, maxWidth),
             },
         });
         window.Content = panel;
