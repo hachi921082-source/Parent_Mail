@@ -337,13 +337,22 @@ public sealed class FolderActionController
     }
 
     // 下書きを作成窓で開く（ローカル下書き行はローカルの行から、Gmail の下書きは所属から）
+    // 作成窓が既に開いていれば前面に出すだけ（下書きの取得もしない）。取得中の続けての要求も受け付けない。
+    private bool _editingDraft;
+
     private async Task EditDraftAsync(string acc, MailListItem row)
     {
         if (_drafts is null || _compose is null) return;
-        ComposeInit? init = null;
-        if (row.DraftId is { } did && !row.GmMsgId.HasValue) init = await _drafts.OpenForEditAsync(did).ConfigureAwait(true);
-        else if (row.GmMsgId is { } id) init = await _drafts.OpenForEditByMessageAsync(acc, id).ConfigureAwait(true);
-        if (init is not null) _compose.Open(init);
+        if (_editingDraft || _compose.TryActivateExisting()) return;
+        _editingDraft = true;
+        try
+        {
+            ComposeInit? init = null;
+            if (row.DraftId is { } did && !row.GmMsgId.HasValue) init = await _drafts.OpenForEditAsync(did).ConfigureAwait(true);
+            else if (row.GmMsgId is { } id) init = await _drafts.OpenForEditByMessageAsync(acc, id).ConfigureAwait(true);
+            if (init is not null) _compose.Open(init);
+        }
+        finally { _editingDraft = false; }
     }
 
     private void ShowOffline() => _dialogs.ShowNotice(Strings.WD_10, Strings.BN_05);
