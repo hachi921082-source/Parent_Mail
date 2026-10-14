@@ -57,6 +57,12 @@ public interface IDraftService
     /// <summary>下書きをローカルに保存する。uploadNow が true なら Drafts へ即アップロードする。</summary>
     Task<DraftItem> SaveAsync(DraftSnapshot snapshot, bool uploadNow, CancellationToken ct = default);
     Task DeleteAsync(long draftId, CancellationToken ct = default);
+    /// <summary>ローカルの行だけ今すぐ消し、Gmail 側の削除はバックグラウンドで行う（窓を閉じるとき用）。</summary>
+    Task DeleteLocalAndQueueRemoteAsync(long draftId, CancellationToken ct = default);
+    /// <summary>このアカウントの Dirty な下書きをバックグラウンドで Drafts へ上げる。すぐ戻り、窓の寿命に縛られない。</summary>
+    void QueueUpload(string accountId);
+    /// <summary>バックグラウンドの反映・削除が終わったとき（一覧の更新を促すため）。</summary>
+    event EventHandler<AccountEventArgs>? BackgroundCompleted;
     /// <summary>未アップロード（Dirty）の下書きをまとめて Drafts へ送る。</summary>
     Task FlushDirtyAsync(string accountId, CancellationToken ct = default);
     /// <summary>ローカル下書き行から編集用の初期値を作る。</summary>
