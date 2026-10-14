@@ -19,6 +19,8 @@ internal sealed class UnavailableAttachmentService : IAttachmentService
 
 internal sealed class UnavailableComposeWindowFactory : IComposeWindowFactory
 {
+    public bool TryActivateExisting() => false;
+
     public void Open(ComposeInit init)
     {
         // 作成窓ができるまでは何もしない
