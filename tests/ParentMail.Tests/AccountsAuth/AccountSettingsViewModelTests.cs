@@ -60,7 +60,7 @@ public sealed class AccountSettingsViewModelTests
         _cred.Save("a1", "pw1");
         _cred.Save("a2", "pw2");
         _svc = new AccountService(_repo, _cred, _gateways, _sync, _outbox);
-        _vm = new AccountSettingsViewModel(_svc, _repo, new WarningGate(_dialog), _dialog, _dialogs);
+        _vm = new AccountSettingsViewModel(_svc, _repo, new WarningGate(_dialog), _dialog, _dialogs, dispatch: a => a());
     }
 
     [Fact]
