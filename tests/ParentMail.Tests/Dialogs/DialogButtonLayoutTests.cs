@@ -50,4 +50,18 @@ public class DialogButtonLayoutTests
     {
         Assert.Equal(1728, DialogButtonLayout.MaxWindowWidth(1920), 6);
     }
+
+    [Fact]
+    public void BodyMaxWidth_大きい文字でも窓の最大幅から余白と枠を引いた値を超えない()
+    {
+        // 48pt = 64 DIP なら基本幅は 1280。窓の最大幅 1200 では余白 24x2 と枠 32 を引いた 1120 まで
+        var w = DialogButtonLayout.BodyMaxWidth(520, 24, 64, 1200);
+        Assert.Equal(1120, w);
+    }
+
+    [Fact]
+    public void BodyMaxWidth_小さい文字では基本幅のまま()
+    {
+        Assert.Equal(472, DialogButtonLayout.BodyMaxWidth(520, 24, 18, 1700));
+    }
 }
