@@ -37,3 +37,10 @@ Startup sequence, first-launch handling, quit by X, open compose windows at quit
 
 - Unit: quit decision table (compose cancel, outbox choices, send failure keeps app open); startup with zero/one/two accounts; last-account fallback.
 - Manual: close with an unsent Outbox item for each button; Windows sign-out with unsent mail shows the dialog; first launch with a clean data folder opens the account-add screen.
+
+## Change request (Q89, 2026-10-14): single compose window
+
+User decided (Issue #5): at most ONE compose window at a time; a repeat request only restores (if minimized) and activates the open one, no notice (detailed-spec section 7, A77-A81). developer-lite must change:
+- Quit step 1 ("for each compose window") may become "the compose window, if any". Keeping the loop over `ComposeWindowRegistry` is acceptable (simplest, generic); at most one entry exists.
+- Shutdown (`SessionEnding`) check "compose windows have content" likewise concerns at most one window.
+- Test: quit decision table needs only the 0 or 1 compose window cases.
