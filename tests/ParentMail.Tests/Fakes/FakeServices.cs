@@ -79,6 +79,11 @@ public sealed class FakeDraftService : IDraftService
     }
 
     public Task DeleteAsync(long draftId, CancellationToken ct = default) { Deleted.Add(draftId); return Task.CompletedTask; }
+    public List<string> Queued { get; } = new();
+    public event EventHandler<AccountEventArgs>? BackgroundCompleted;
+    public void RaiseBackgroundCompleted(string accountId) => BackgroundCompleted?.Invoke(this, new AccountEventArgs(accountId));
+    public Task DeleteLocalAndQueueRemoteAsync(long draftId, CancellationToken ct = default) { Deleted.Add(draftId); return Task.CompletedTask; }
+    public void QueueUpload(string accountId) => Queued.Add(accountId);
     public Task FlushDirtyAsync(string accountId, CancellationToken ct = default) { Flushed.Add(accountId); return Task.CompletedTask; }
     public Task<ComposeInit?> OpenForEditAsync(long draftId, CancellationToken ct = default) => Task.FromResult(OpenResult);
     public Task<ComposeInit?> OpenForEditByMessageAsync(string accountId, long gmailMsgId, CancellationToken ct = default) => Task.FromResult(OpenResult);
