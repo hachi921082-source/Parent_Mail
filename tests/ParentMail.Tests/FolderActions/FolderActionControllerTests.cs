@@ -596,6 +596,18 @@ public sealed class FolderActionControllerTests
     }
 
     [Fact]
+    public async Task EditDraft_WhenComposeWindowIsOpen_ActivatesItAndDoesNotEvenReadTheDraft()
+    {
+        _compose.TryActivateExisting().Returns(true);
+        AddMails(1, FolderKind.Drafts);
+        await _controller.InvokeAsync(FolderActionKind.Edit, Row(1));
+
+        await _drafts.DidNotReceiveWithAnyArgs().OpenForEditByMessageAsync(default!, default, default);
+        await _drafts.DidNotReceiveWithAnyArgs().OpenForEditAsync(default, default);
+        _compose.DidNotReceiveWithAnyArgs().Open(default!);
+    }
+
+    [Fact]
     public async Task OutboxActions_CallOutboxService()
     {
         var item = new OutboxItem { AccountId = Acc, Subject = "送信待ち" };
