@@ -494,10 +494,11 @@ public sealed partial class ComposeViewModel : ObservableObject
     }
 
     // _saveGate を持った状態で呼ぶ。保存結果に応じて状態行を更新する
-    private async Task SaveLockedAsync()
+    // uploadNow が false なら Gmail を待たずローカル保存だけで戻る（閉じるとき用。反映は QueueUpload が後で行う）
+    private async Task SaveLockedAsync(bool uploadNow = true)
     {
         var signature = Signature();
-        var item = await _draftService!.SaveAsync(BuildDraftSnapshot(), uploadNow: true).ConfigureAwait(true);
+        var item = await _draftService!.SaveAsync(BuildDraftSnapshot(), uploadNow).ConfigureAwait(true);
         _draftId = item.LocalId;
         _lastSavedSignature = signature;
         _uploadPending = item.Dirty;
@@ -509,7 +510,8 @@ public sealed partial class ComposeViewModel : ObservableObject
     {
         if (_draftId is { } id)
         {
-            await _draftService!.DeleteAsync(id).ConfigureAwait(true);
+            // 行はすぐ消し、Gmail 側の削除は裏で行う（窓が IMAP を待たないように）
+            await _draftService!.DeleteLocalAndQueueRemoteAsync(id).ConfigureAwait(true);
             _draftId = null;
         }
         _uploadPending = false;
@@ -569,7 +571,9 @@ public sealed partial class ComposeViewModel : ObservableObject
         await _saveGate.WaitAsync().ConfigureAwait(true);
         try
         {
-            await SaveLockedAsync().ConfigureAwait(true);
+            // ローカル保存(Dirty=true)だけ待って閉じる。Gmail への反映は閉じたあとに裏で行う
+            await SaveLockedAsync(uploadNow: false).ConfigureAwait(true);
+            _draftService.QueueUpload(AccountId);
         }
         catch (Exception ex)
         {

@@ -24,6 +24,17 @@ public sealed class DraftSyncHook
     {
         if (Interlocked.Exchange(ref _attached, 1) == 1) return;
         _sync.SyncCompleted += OnSyncCompleted;
+        _drafts.BackgroundCompleted += OnBackgroundCompleted;
+    }
+
+    // 窓を閉じたあとの裏の反映・削除が終わったら、Drafts の一覧に出るよう同期を促す（既存の同期の仕組みをそのまま使う）
+    private void OnBackgroundCompleted(object? sender, AccountEventArgs e)
+    {
+        _ = Task.Run(async () =>
+        {
+            try { await _sync.SyncNowAsync(e.AccountId, SyncTrigger.Manual).ConfigureAwait(false); }
+            catch (Exception ex) { _log.Error("Draft", "下書き反映後の同期に失敗", ex); }
+        });
     }
 
     private void OnSyncCompleted(object? sender, AccountEventArgs e)

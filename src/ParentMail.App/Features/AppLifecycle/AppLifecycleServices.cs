@@ -101,11 +101,39 @@ public sealed class DialogQuitPrompt : IQuitPrompt
 /// <summary>終了の後片付け。同期のタイマーを止める（DB 接続などは、プロセス終了時の ServiceProvider の破棄で閉じる）。</summary>
 public sealed class QuitFinalizer : IQuitFinalizer
 {
+    /// <summary>裏の下書き反映を待つ上限。</summary>
+    public static readonly TimeSpan DraftWaitLimit = TimeSpan.FromSeconds(5);
+
     private readonly SyncCoordinator _coordinator;
+    private readonly IDraftService? _drafts;
+    private readonly TimeSpan _wait;
 
-    public QuitFinalizer(SyncCoordinator coordinator) => _coordinator = coordinator;
+    public QuitFinalizer(SyncCoordinator coordinator, IDraftService? drafts = null)
+        : this(coordinator, drafts, DraftWaitLimit) { }
 
-    public void FinishQuit() => _coordinator.Stop();
+    public QuitFinalizer(SyncCoordinator coordinator, IDraftService? drafts, TimeSpan wait)
+    {
+        _coordinator = coordinator;
+        _drafts = drafts;
+        _wait = wait;
+    }
+
+    public void FinishQuit()
+    {
+        WaitForDrafts();
+        _coordinator.Stop();
+    }
+
+    /// <summary>
+    /// 閉じた直後の下書き反映が APPEND だけ済んで行の更新前に切れると、次回に二重になる。終わるまで少し待つ。
+    /// UI スレッドから呼ばれるので別スレッドで待ち、上限を過ぎたら諦める（終了を止めない）。
+    /// </summary>
+    public void WaitForDrafts()
+    {
+        if (_drafts is null) return;
+        try { Task.Run(() => _drafts.WaitForBackgroundAsync(_wait)).Wait(_wait + TimeSpan.FromSeconds(1)); }
+        catch (Exception) { /* 待てなくても終了は続ける */ }
+    }
 }
 
 /// <summary>起動手順の実体。主窓を出し、終了確認を主窓につなぎ、同期と本文先読みを始める。</summary>
@@ -131,6 +159,8 @@ public sealed class StartupSteps : IStartupSteps
     {
         ((SyncCache.SyncStartup)_services.GetService(typeof(SyncCache.SyncStartup))!).Start();
         ((SyncCache.OnDemandFetchStartup)_services.GetService(typeof(SyncCache.OnDemandFetchStartup))!).Start();
+        // 前回の起動で上げられなかった下書きを最初の同期のあとに送れるよう、作成窓を開く前から結んでおく
+        ((DraftSyncHook?)_services.GetService(typeof(DraftSyncHook)))?.Attach();
     }
 }
 

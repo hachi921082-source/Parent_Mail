@@ -64,6 +64,13 @@ public sealed class ComposeDraftTests : IDisposable
         }
 
         public Task DeleteAsync(long draftId, CancellationToken ct = default) { Deleted.Add(draftId); return Task.CompletedTask; }
+        public List<string> Queued { get; } = new();
+#pragma warning disable CS0067
+        public event EventHandler<AccountEventArgs>? BackgroundCompleted;
+#pragma warning restore CS0067
+        public Task DeleteLocalAndQueueRemoteAsync(long draftId, CancellationToken ct = default) { Deleted.Add(draftId); return Task.CompletedTask; }
+        public void QueueUpload(string accountId) => Queued.Add(accountId);
+        public Task WaitForBackgroundAsync(TimeSpan timeout) => Task.CompletedTask;
         public Task FlushDirtyAsync(string accountId, CancellationToken ct = default) => Task.CompletedTask;
         public Task<ComposeInit?> OpenForEditAsync(long draftId, CancellationToken ct = default) => Task.FromResult<ComposeInit?>(null);
         public Task<ComposeInit?> OpenForEditByMessageAsync(string accountId, long gmailMsgId, CancellationToken ct = default) => Task.FromResult<ComposeInit?>(null);
@@ -249,7 +256,7 @@ public sealed class ComposeDraftTests : IDisposable
     }
 
     [Fact]
-    public async Task Choosing_save_saves_and_uploads_then_allows_closing()
+    public async Task Choosing_save_saves_locally_queues_the_upload_then_allows_closing()
     {
         var vm = Make();
         vm.ToText = "花子 <hanako@example.jp>";
@@ -259,7 +266,8 @@ public sealed class ComposeDraftTests : IDisposable
         Assert.True(await vm.ConfirmCloseAsync());
 
         var saved = Assert.Single(_drafts.Saved);
-        Assert.True(saved.UploadNow);
+        Assert.False(saved.UploadNow); // 閉じるときは Gmail を待たない
+        Assert.Equal(new[] { Acc }, _drafts.Queued);
         Assert.Equal("お願い", saved.Snapshot.Subject);
         Assert.True(vm.CloseApproved);
     }
