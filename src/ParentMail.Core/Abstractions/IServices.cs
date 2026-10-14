@@ -144,6 +144,13 @@ public sealed record ComposeInit
 /// <summary>作成ウィンドウを開く（他機能から利用）。</summary>
 public interface IComposeWindowFactory
 {
+    /// <summary>
+    /// 作成窓が既に開いていれば、最小化を戻して前面に出し true を返す（通知は出さない）。開いていなければ false。
+    /// 作成窓は同時に 1 つだけ。下書きの取得や添付のダウンロードなど、重い作業の前に呼ぶ。
+    /// </summary>
+    bool TryActivateExisting();
+
+    /// <summary>作成窓を開く。既に開いている窓があれば、新しい窓は作らず、その窓を前面に出すだけ（init は使わない）。</summary>
     void Open(ComposeInit init);
 }
 
