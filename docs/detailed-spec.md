@@ -135,6 +135,7 @@ Source: S8, S5, S14 (section 14 below).
 Source: S4, S5, Q19, Q20, Q21, D14-D16.
 
 - Separate window, opened by the compose button in the main window (S4).
+- Single compose window (Q89, user decision 2026-10-14, Issue #5): at most ONE compose window exists at a time. If one is open and any of 新しいメール, 返信, 全員に返信, 転送, Drafts > 編集 (button, menu or double-click) or a `mailto:` link is used, the app only brings the existing compose window to the front and activates it (restoring it first if minimized, A77). No notice, no new window, and the new request's content (recipient, quote, draft) is NOT applied to the open window and is not queued (A79). After the window closes (Send, close dialog, quit) the next request opens a new window normally. The address-book picker (modal child of the compose window) is unaffected (A80).
 - Fields: To, CC, BCC, subject, body, attachments (S5). The body is plain text only (text/plain, UTF-8); no HTML composing. The From header carries the account's address only, never the display name (Q47). Window title: 「新しいメール - <account display name>」 (Q57). BCC is hidden until requested (D14).
 - Recipient autocomplete: candidates from the displayed account's address book and that account's previously used recipients (Q19, D17). "Previously used" = addresses in To/CC/BCC of mails in that account's Sent: Assumption A19.
 - Address-book picker (Q80-Q85, user decision 2026-10-11). A button 「アドレス帳から選ぶ」 sits beside each of 宛先, CC and BCC (the BCC button appears with the BCC row). It opens a dialog MODAL TO THAT COMPOSE WINDOW ONLY (other windows stay usable), titled 「アドレス帳から選ぶ - <account display name>」, listing the address book of the compose window's own account (A21), not the account displayed in the main window; previously used recipients are not listed. Sorted by ふりがな as in the address book; ONE ROW PER EMAIL ADDRESS (name, address, large checkbox, row height at least 56 DIP); multi-select; NO search box. Buttons [ 入れる ] [ やめる ]; Enter = 入れる, Esc = やめる, initial focus = the list. 入れる with nothing checked: error line, dialog stays open. Empty address book: the picker is not opened; a notice with one 「OK」 button is shown instead. Picked addresses are appended to the end of that field as `Name <address>` tokens (existing text untouched) and focus returns to that field. Addresses already in THAT field (case-insensitive) are shown checked and disabled with the tag 「入力ずみ」. The same address in 宛先 and CC is not blocked. Tab order: each picker button directly follows its field. No new shortcut key. Wording: ui-strings CP-18 to CP-22, WD-31 (PENDING approval of the wording). Implemented by compose PLAN-3.
@@ -154,7 +155,7 @@ Source: S4, S5, Q19, Q20, Q21, D14-D16.
 
 Source: S5, D14.
 
-- Open in a separate window, same as compose (S5).
+- Open in a separate window, same as compose (S5). Subject to the single compose window rule (section 7, Q89): if a compose window is already open, reply, reply all and forward only activate it; nothing is built or fetched (A81).
 - Reply quotes the original (D14). APPROVED (Q70), as in the reply-forward PLAN:
   - Reply: To = Reply-To header if present, else From. Subject = `Re: ` + original subject unless it already starts with Re:/RE:/返信:. Quote: first line `yyyy年M月d日 H:mm、<sender name> さんは書きました:`, then each original line prefixed `> `; blank line above the quote and the cursor above it. Source text = body text, else the text derived from HTML.
   - Reply all: To = Reply-To/From; CC = original To + CC minus the account's own address and duplicates (case-insensitive).
@@ -273,7 +274,7 @@ Source: Q13, Q14, Q34, D5-D6.
   - 「このまま閉じる」: quit; unsent mail stays in Outbox.
   - 「戻る」 (default): return to the app.
   - Windows shutdown/logoff is intercepted via `SessionEnding` and the same 3-button dialog is shown; 「このまま閉じる」 lets Windows continue (Q52; settles A48).
-- Open compose windows at quit: handled by the section 7 close dialog: Assumption A32.
+- Open compose window at quit: handled by the section 7 close dialog: Assumption A32. There is at most one compose window (Q89), so the quit sequence runs that one window's close dialog if it exists; 「戻る」 aborts the quit. The implementation may stay generic over a list of windows.
 
 ## 17. Message tone
 
@@ -332,7 +333,7 @@ Added by designer-lite because the source documents do not state them; each need
 - A29 SETTLED by Q49: shortener list = code constant; look-alike = xn--, non-ASCII host, mixed script.
 - A30 Macro-enabled Office extensions: docm, xlsm, pptm, dotm, xltm, potm, xlam, ppam, ppsm.
 - A31 First launch without any account opens the account-add screen, which is not preceded by the Q31 warning dialog.
-- A32 Quitting with open compose windows goes through the section 7 close dialog.
+- A32 Quitting with an open compose window goes through the section 7 close dialog (at most one such window since Q89; the original wording "windows" is kept generic in code).
 - A33 Preview zoom is a temporary multiplier on the text-size setting, applies to the preview pane only, does not change the stored text-size setting, and does not affect the compose window.
 - A34 Zoom controls: large 拡大, 縮小, 「100%に戻す」 buttons beside the preview header buttons, plus Ctrl+mouse wheel. NARROWED by Q69: no Ctrl+0 / Ctrl+plus / Ctrl+minus.
 - A35 Zoom range 100%-300%, step 25%, default 100%.
@@ -378,6 +379,11 @@ Added by designer-lite because the source documents do not state them; each need
 - A74 CONFIRMED: draft upload failure during auto-save is silent (retry each cycle plus a status line in the compose window); modal only when the user explicitly saved the draft.
 - A75 CHANGED and CONFIRMED (Q75): the compose close dialog default button is 「下書きに保存」 (not 「戻る」); the three labels stay as in Q20.
 - A76 CONFIRMED (Q71): right-click Delete on a checked row deletes all checked rows; on an unchecked row only that row.
+- A77 designer-lite assumption (Q89, user may veto): if the open compose window is minimized, the repeat request restores it (normal state) and activates it.
+- A78 designer-lite assumption (Q89, user may veto): opening a draft from the Drafts list (Edit button, menu, double-click) while a compose window is open also only activates the open window; the draft is not opened and the open window's content is not touched.
+- A79 designer-lite assumption (Q89, user may veto): the repeat request is simply dropped. Its content (reply quote, forward attachments, mailto address, draft) is not merged into or queued for the open window, and a request for a different account than the open window's account is dropped the same way (the open window keeps sending from its own account, A21).
+- A80 designer-lite assumption (Q89, user may veto): the address-book picker and other modal child windows of the compose window (close dialog, empty-subject confirm, warnings) are unaffected; if one is open when the request arrives, the compose window is activated and the child stays in front of it as usual.
+- A81 designer-lite assumption (Q89, user may veto): the check happens before any work (no forward attachment download, no draft fetch), and a second app launch still brings the main window to front (Q47) and does not touch the compose window.
 
 ## 20. Notices, banners and dialogs
 
@@ -435,7 +441,7 @@ The Outbox failure marker in a row is a red pill with white text (not red text),
 ## 21. Keyboard, focus and window rules (APPROVED, A56)
 
 Full detail, sizes and per-window sketches: `docs/plans/window-layouts.md`. Summary:
-- Dialogs and windows opened from the main window are modal; compose windows are independent. Centered on the owner.
+- Dialogs and windows opened from the main window are modal; the compose window (at most one at a time, Q89) is independent. Centered on the owner.
 - Enter = the safe default button (confirm dialogs: the cancel-type one; add/edit forms: 保存). Exception (Q75): the compose close dialog (下書きに保存 / 保存しないで閉じる(...) / 戻る) has 「下書きに保存」 as the default, because saving loses nothing. Esc = cancel. Buttons right-aligned, the safe choice last.
 - Delete key deletes only while the mail list has keyboard focus. F5 = refresh. No keyboard shortcut for Send. Ctrl+mouse wheel zooms the preview; there are no other zoom shortcuts (Q69).
 - Initial focus: main window = mail list; compose = 宛先; dialogs = default button (forms: first field).
