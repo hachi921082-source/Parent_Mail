@@ -20,4 +20,16 @@ public static class DialogButtonLayout
         var total = naturalWidths.Sum() + gap * (naturalWidths.Count - 1);
         return total > availableWidth;
     }
+
+    /// <summary>
+    /// 本文の最大幅。文字サイズに応じた幅（20 文字分）を基本にするが、窓の枠・スクロールバー分を残した
+    /// 窓の最大幅を超えない（超えると右の余白が消えて端に接する）。
+    /// </summary>
+    public static double BodyMaxWidth(double minWindowWidth, double margin, double fontSizeDip, double maxWindowWidth)
+    {
+        const double chrome = 32; // 窓の枠とスクロールバーの分
+        var wanted = Math.Max(minWindowWidth - margin * 2, fontSizeDip * 20);
+        var limit = Math.Max(0, AvailableWidth(maxWindowWidth, margin) - chrome);
+        return Math.Min(wanted, limit);
+    }
 }
