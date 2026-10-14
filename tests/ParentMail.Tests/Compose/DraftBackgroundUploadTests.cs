@@ -185,6 +185,54 @@ public sealed class DraftBackgroundUploadTests : IDisposable
     }
 
     [Fact]
+    public async Task Bounded_wait_returns_after_upload_finishes()
+    {
+        _gw.AppendGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _svc.SaveAsync(Snap(), uploadNow: false);
+        _svc.QueueUpload(Acc);
+        await Within(_gw.AppendEntered.Task);
+
+        var wait = _svc.WaitForBackgroundAsync(TimeSpan.FromSeconds(30));
+        await Task.Delay(100);
+        Assert.False(wait.IsCompleted); // 反映が終わるまで待っている
+
+        _gw.AppendGate.SetResult();
+        await Within(wait);
+        Assert.False(Assert.Single(_drafts.GetAll(Acc)).Dirty);
+    }
+
+    [Fact]
+    public async Task Bounded_wait_gives_up_after_the_timeout_when_upload_never_finishes()
+    {
+        _gw.AppendGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _svc.SaveAsync(Snap(), uploadNow: false);
+        _svc.QueueUpload(Acc);
+        await Within(_gw.AppendEntered.Task);
+
+        await Within(_svc.WaitForBackgroundAsync(TimeSpan.FromMilliseconds(200)));
+
+        Assert.True(Assert.Single(_drafts.GetAll(Acc)).Dirty); // 未反映のまま。次回の Flush が拾う
+        _gw.AppendGate.SetResult();
+        await Within(_svc.WaitForBackgroundAsync());
+    }
+
+    [Fact]
+    public async Task Draft_deleted_during_upload_is_not_counted_as_uploaded()
+    {
+        _gw.AppendGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var raised = 0;
+        _svc.BackgroundCompleted += (_, _) => raised++;
+        var row = await _svc.SaveAsync(Snap(), uploadNow: false);
+        _svc.QueueUpload(Acc);
+        await Within(_gw.AppendEntered.Task);
+        await Within(_svc.DeleteLocalAndQueueRemoteAsync(row.LocalId));
+        _gw.AppendGate.SetResult();
+        await Within(_svc.WaitForBackgroundAsync());
+
+        Assert.Equal(0, raised);
+    }
+
+    [Fact]
     public async Task Hook_asks_for_a_sync_when_background_work_completes()
     {
         var sync = Substitute.For<ISyncService>();
