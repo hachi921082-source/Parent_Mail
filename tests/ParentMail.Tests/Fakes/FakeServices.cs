@@ -159,5 +159,21 @@ public sealed class FakeComposeWindowFactory : IComposeWindowFactory
 {
     /// <summary>Open の呼び出し記録。</summary>
     public List<ComposeInit> Opened { get; } = new();
-    public void Open(ComposeInit init) => Opened.Add(init);
+    /// <summary>作成窓が開いている状態を模す。true の間は Open も TryActivateExisting も窓を作らず前面化だけ数える。</summary>
+    public bool WindowOpen { get; set; }
+    /// <summary>既存の窓を前面に出した回数。</summary>
+    public int Activated { get; private set; }
+
+    public bool TryActivateExisting()
+    {
+        if (!WindowOpen) return false;
+        Activated++;
+        return true;
+    }
+
+    public void Open(ComposeInit init)
+    {
+        if (TryActivateExisting()) return;
+        Opened.Add(init);
+    }
 }
