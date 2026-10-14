@@ -61,6 +61,8 @@ public interface IDraftService
     Task DeleteLocalAndQueueRemoteAsync(long draftId, CancellationToken ct = default);
     /// <summary>このアカウントの Dirty な下書きをバックグラウンドで Drafts へ上げる。すぐ戻り、窓の寿命に縛られない。</summary>
     void QueueUpload(string accountId);
+    /// <summary>裏の反映・削除が終わるか timeout が過ぎるまで待つ（終了時用）。例外は出さない。</summary>
+    Task WaitForBackgroundAsync(TimeSpan timeout);
     /// <summary>バックグラウンドの反映・削除が終わったとき（一覧の更新を促すため）。</summary>
     event EventHandler<AccountEventArgs>? BackgroundCompleted;
     /// <summary>未アップロード（Dirty）の下書きをまとめて Drafts へ送る。</summary>
