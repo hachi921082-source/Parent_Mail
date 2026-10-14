@@ -131,6 +131,8 @@ public sealed class StartupSteps : IStartupSteps
     {
         ((SyncCache.SyncStartup)_services.GetService(typeof(SyncCache.SyncStartup))!).Start();
         ((SyncCache.OnDemandFetchStartup)_services.GetService(typeof(SyncCache.OnDemandFetchStartup))!).Start();
+        // 前回の起動で上げられなかった下書きを最初の同期のあとに送れるよう、作成窓を開く前から結んでおく
+        ((DraftSyncHook?)_services.GetService(typeof(DraftSyncHook)))?.Attach();
     }
 }
 
