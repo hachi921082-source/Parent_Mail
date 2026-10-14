@@ -62,11 +62,13 @@ public sealed class DialogService : IDialogService
         }
 
         var chosen = -1;
+        var maxWidth = DialogButtonLayout.MaxWindowWidth(SystemParameters.WorkArea.Width);
         var window = new Window
         {
             Title = title,
-            Width = DialogWidth,
-            SizeToContent = SizeToContent.Height,
+            MinWidth = DialogWidth,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            MaxWidth = maxWidth,
             MaxHeight = SystemParameters.WorkArea.Height * 0.9,
             Owner = FindOwner(),
             FontSize = _scale.FontSizeDip,
@@ -74,37 +76,57 @@ public sealed class DialogService : IDialogService
         };
 
         var panel = new DockPanel { Margin = new Thickness(DialogMargin) };
-        var row = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Right,
-            Margin = new Thickness(0, Gap, 0, 0),
-        };
-        DockPanel.SetDock(row, Dock.Bottom);
-
         var created = new List<Button>();
         for (var i = 0; i < buttons.Count; i++)
         {
             var index = i;
             var button = new Button
             {
-                Content = buttons[i],
+                // 長い文言は折り返せるように TextBlock にする。
+                Content = new TextBlock { Text = buttons[i], TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center },
                 Style = (Style)Application.Current.FindResource("AppButton"),
-                Margin = new Thickness(i == 0 ? 0 : Gap, 0, 0, 0),
             };
             button.Click += (_, _) =>
             {
                 chosen = index;
                 window.DialogResult = true;
             };
-            row.Children.Add(button);
             created.Add(button);
+        }
+
+        // 折り返さない自然幅を測り、横に収まらなければ縦積みにする。
+        var naturalWidths = created.Select(b =>
+        {
+            b.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            return b.DesiredSize.Width;
+        }).ToList();
+        var stack = DialogButtonLayout.ShouldStack(naturalWidths, Gap, DialogButtonLayout.AvailableWidth(maxWidth, DialogMargin));
+
+        var row = new StackPanel
+        {
+            Orientation = stack ? Orientation.Vertical : Orientation.Horizontal,
+            HorizontalAlignment = stack ? HorizontalAlignment.Stretch : HorizontalAlignment.Right,
+            Margin = new Thickness(0, Gap, 0, 0),
+        };
+        DockPanel.SetDock(row, Dock.Bottom);
+        for (var i = 0; i < created.Count; i++)
+        {
+            created[i].Margin = stack
+                ? new Thickness(0, i == 0 ? 0 : Gap, 0, 0)
+                : new Thickness(i == 0 ? 0 : Gap, 0, 0, 0);
+            row.Children.Add(created[i]);
         }
         panel.Children.Add(row);
         panel.Children.Add(new ScrollViewer
         {
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
+            Content = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                // 長い文面で窓が横に伸び続けないよう、文字サイズに応じた幅で折り返す。
+                MaxWidth = DialogButtonLayout.BodyMaxWidth(DialogWidth, DialogMargin, _scale.FontSizeDip, maxWidth),
+            },
         });
         window.Content = panel;
 
