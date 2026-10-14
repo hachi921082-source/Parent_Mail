@@ -50,7 +50,7 @@ Main window has 3 areas (see sketch: `docs/images/layout-sketch.png`).
   - Large buttons always shown at the top of the preview pane: Reply, Reply all, Forward, Delete (the context menu remains available as well). In Drafts there is also a large 「編集」 button. Other folder-specific actions (迷惑メールではない, 元のフォルダに戻す, 今すぐ送る, 下書きに戻す) are right-click only.
   - No mail selected: the preview shows the guide text 「左の一覧からメールを選んでください」.
   - Preview zoom ("mail enlarged display") controls near these buttons (see section 5).
-- Composing a new mail, reply, and forward open in a separate window, not inline in the main window.
+- Composing a new mail, reply, and forward open in a separate window, not inline in the main window. Only one such window exists at a time (section 5).
 - The boundary between mail list and preview is draggable (resizable splitter). First launch: the window opens maximized with the list pane about 35 percent of the width; afterwards the last size and splitter position are restored.
 - The text of the top bar and of the bottom button strip of the list pane is capped (it stops growing above a maximum size) so that it always fits; mail list, preview and mail text follow the text-size setting up to 48pt. The cap is 20pt; the top bar has two rows and the bottom strip is a 2 x 3 grid (detailed-spec section 1).
 - Unread count is shown only on the Inbox folder button. Exception: the account switch button shows a small unread badge showing the unread count when the other (non-displayed) account has unread mail.
@@ -70,6 +70,7 @@ All features below are in the first release (no phasing), including the local ma
 - Search: local cache `LIKE` substring match, normalizing case and full/half width only (no hiragana/katakana folding).
 - Compose with To, CC, BCC. Besides autocomplete, a button beside each of To, CC and BCC opens an address-book picker (modal to that compose window, multi-select, the compose window's own account's address book; Q80-Q85). Compose body is plain text only (text/plain, UTF-8). The From header carries the address only (the account display name is never sent). Only one app instance runs; a second launch brings the existing window to front.
 - Reply / reply all / forward (open in a separate window, same as compose).
+- Only ONE compose window can be open at a time (Q89, Issue #5). While it is open, pressing 新しいメール, 返信, 全員に返信, 転送, editing a draft or opening a `mailto:` link only brings the existing compose window to the front (restoring it if minimized); no notice is shown and no second window is created.
 - Attachment save / open.
 - Text-size setting (large by default, changeable by free numeric input or slider).
 - Mail enlarged display (preview zoom): the preview can be enlarged temporarily; the zoom is never saved. It resets to 100% whenever the displayed mail, folder or account changes (and therefore on every launch). Buttons: 拡大 / 縮小 / 100%に戻す, plus Ctrl+mouse wheel over the preview; there are no other zoom keyboard shortcuts.

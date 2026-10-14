@@ -24,7 +24,7 @@ ASCII sketches are schematic: Japanese characters are wider than the drawing gri
 
 | Rule | Value |
 |---|---|
-| Modality | Every dialog and every window opened from the main window (settings, address book, block list, filter rules, their edit dialogs, warnings) is MODAL to its owner. Compose windows are the exception: independent, several can be open. |
+| Modality | Every dialog and every window opened from the main window (settings, address book, block list, filter rules, their edit dialogs, warnings) is MODAL to its owner. The compose window is the exception: independent, but at most ONE is open at a time (Q89); a repeat request only restores and activates it. |
 | Position | Centered on the owner window (first-launch account-add: centered on the screen). |
 | Enter | Activates the SAFE default button. In confirm dialogs the safe button is the cancel-type one (戻る / やめる / キャンセル). In form dialogs (add/edit) Enter activates 保存 (it only saves valid input; errors are shown, nothing destructive). In a multi-line field Enter inserts a new line. |
 | Esc | Always cancels / closes the dialog (same as the cancel-type button). Not bound in compose (see 10). |
@@ -288,6 +288,8 @@ Edit dialog:
 Field order: 差出人に含む文字, 件名に含む文字, 本文に含む文字, 動作, 保存, やめる. Initial focus = 差出人に含む文字. Enter = 保存; Esc = やめる. At least one condition and an action are required (the error line explains instead of silently disabling 保存; approved change from the PLAN's disabled button).
 
 ## 10. Compose (new mail; reply and forward are the same window), non-modal, 960 x 720 at 18pt
+
+Only one compose window exists at a time (Q89, detailed-spec section 7, A77-A81): a repeat request restores (if minimized) and activates the open window; no new window, no notice.
 
 ```
 +----------------------------------------------------------------------+
