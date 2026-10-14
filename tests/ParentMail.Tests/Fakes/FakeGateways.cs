@@ -80,10 +80,19 @@ public sealed class FakeImapGateway : IImapGateway
         return Task.FromResult<uint?>(null);
     }
 
-    public Task<uint?> AppendAsync(string folderPath, byte[] rawMessage, bool seen, CancellationToken ct = default)
+    /// <summary>設定すると AppendAsync がこれが完了するまで止まる（遅い Gmail の再現）。</summary>
+    public TaskCompletionSource? AppendGate { get; set; }
+    /// <summary>AppendAsync に入ったら完了する。</summary>
+    public TaskCompletionSource AppendEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public int AppendCount;
+
+    public async Task<uint?> AppendAsync(string folderPath, byte[] rawMessage, bool seen, CancellationToken ct = default)
     {
         Enter("Append:" + folderPath);
-        return Task.FromResult<uint?>(1);
+        Interlocked.Increment(ref AppendCount);
+        AppendEntered.TrySetResult();
+        if (AppendGate is { } gate) await gate.Task.ConfigureAwait(false);
+        return 1;
     }
 
     public Task DeleteAsync(string folderPath, IReadOnlyList<uint> uids, CancellationToken ct = default)
