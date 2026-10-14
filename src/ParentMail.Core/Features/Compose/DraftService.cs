@@ -99,6 +99,13 @@ public sealed class DraftService : IDraftService
     /// <summary>実行中のバックグラウンド処理がすべて終わるまで待つ（テスト用）。</summary>
     public Task WaitForBackgroundAsync() => Task.WhenAll(_background.Keys.ToArray());
 
+    /// <summary>裏の反映・削除が終わるか、timeout が過ぎるまで待つ（終了時用）。例外は出さない。</summary>
+    public async Task WaitForBackgroundAsync(TimeSpan timeout)
+    {
+        try { await Task.WhenAny(WaitForBackgroundAsync(), Task.Delay(timeout)).ConfigureAwait(false); }
+        catch (Exception ex) { _log.Warn("Draft", "裏の処理の待機で例外: " + ex.GetType().Name); }
+    }
+
     private void Track(Func<Task> work, string failureText)
     {
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -182,9 +189,9 @@ public sealed class DraftService : IDraftService
             foreach (var row in _drafts.GetAll(accountId).Where(d => d.Dirty).ToList())
             {
                 ct.ThrowIfCancellationRequested();
-                var (_, ok) = await UploadAsync(accountId, row.LocalId, ct).ConfigureAwait(false);
+                var (saved, ok) = await UploadAsync(accountId, row.LocalId, ct).ConfigureAwait(false);
                 if (!ok) break;
-                uploaded++;
+                if (saved is not null) uploaded++; // 反映中に消された下書きは数えない
             }
             return uploaded;
         }
