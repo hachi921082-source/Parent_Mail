@@ -40,3 +40,11 @@ Separate compose window, recipient fields with autocomplete, attachments (drag a
 
 - Unit: recipient parsing (Japanese display names, separators), suggester ranking and dedupe, estimator (boundary at 25,000,000; 18 MB raw file is under, ~19 MB over), executable block, empty-subject flow.
 - Manual: drag and drop of a Japanese-named file; over-limit file refused with the amount; Send closes the window immediately and the item appears in Outbox.
+
+## Change request (Q89, 2026-10-14): single compose window
+
+User decided (Issue #5): at most ONE compose window at a time; a repeat request only restores (if minimized) and activates the open one, no notice (detailed-spec section 7, A77-A81). developer-lite must change:
+- `IComposeWindowFactory.Open(ComposeInit)`: if a compose window is already open, restore it (`WindowState.Normal` when minimized) and `Activate()` it, then return it; do not create a new window and do not apply the new `ComposeInit`. Applies to all callers: 新しいメール, reply, reply all, forward, Drafts edit, `mailto:`.
+- `ComposeWindowRegistry` may stay a generic list (at most one entry in practice); the factory checks it before creating a window.
+- Check before any work (A81): callers (Drafts edit, forward) must not fetch the draft or download attachments when the factory would only activate; expose e.g. `IComposeWindowFactory.TryActivateExisting()` and call it first.
+- Tests: second Open returns/activates the existing window and creates none; minimized window is restored; after close a new Open creates a window.
