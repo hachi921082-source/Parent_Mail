@@ -70,6 +70,7 @@ public sealed class ComposeDraftTests : IDisposable
 #pragma warning restore CS0067
         public Task DeleteLocalAndQueueRemoteAsync(long draftId, CancellationToken ct = default) { Deleted.Add(draftId); return Task.CompletedTask; }
         public void QueueUpload(string accountId) => Queued.Add(accountId);
+        public Task WaitForBackgroundAsync(TimeSpan timeout) => Task.CompletedTask;
         public Task FlushDirtyAsync(string accountId, CancellationToken ct = default) => Task.CompletedTask;
         public Task<ComposeInit?> OpenForEditAsync(long draftId, CancellationToken ct = default) => Task.FromResult<ComposeInit?>(null);
         public Task<ComposeInit?> OpenForEditByMessageAsync(string accountId, long gmailMsgId, CancellationToken ct = default) => Task.FromResult<ComposeInit?>(null);
