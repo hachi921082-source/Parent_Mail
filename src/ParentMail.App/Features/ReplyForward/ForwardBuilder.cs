@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using ParentMail.Core;
 using ParentMail.Core.Features.Compose;
+using ParentMail.Core.Features.MailDisplay;
 using ParentMail.Core.Models;
 using ParentMail.Core.SafetyWarnings;
 
@@ -106,7 +107,7 @@ public sealed class ForwardBuilder
         sb.Append(ReplyForwardText.LabelFrom).Append(from).Append(nl);
         sb.Append(ReplyForwardText.LabelDate).Append(ReplyForwardText.FormatDate(m.DateUtc)).Append(nl);
         sb.Append(ReplyForwardText.LabelSubject).Append(m.Subject).Append(nl);
-        sb.Append(ReplyForwardText.LabelTo).Append(string.Join(", ", m.To)).Append(nl);
+        sb.Append(ReplyForwardText.LabelTo).Append(string.Join(", ", m.To.Select(MailTextDecoder.ForDisplay))).Append(nl);
         sb.Append(nl);
         sb.Append(string.Join(nl, QuoteFormatter.SplitLines(text)));
         return sb.ToString();
