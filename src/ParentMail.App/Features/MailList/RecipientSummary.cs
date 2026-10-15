@@ -1,4 +1,5 @@
 using ParentMail.App.Resources;
+using ParentMail.Core.Features.MailDisplay;
 
 namespace ParentMail.App.Features.MailList;
 
@@ -12,7 +13,7 @@ public static class RecipientSummary
 
     public static string Format(IReadOnlyList<string>? recipients)
     {
-        var list = recipients?.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim()).ToList()
+        var list = recipients?.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => MailTextDecoder.ForDisplay(r.Trim())).ToList()
                    ?? new List<string>();
         // 宛先が 1 件も無いときは、差出人なしと同じ文言で埋める（専用の文言は無い）
         if (list.Count == 0) return Strings.ML_12;
