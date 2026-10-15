@@ -190,4 +190,54 @@ public class FolderActionsWindowSmokeTests
             Assert.Equal(new object?[] { Strings.FA_09 }, menu.Items.OfType<MenuItem>().Select(i => i.Header).ToArray());
         });
     }
+
+    // 回帰: チェック欄の上のダブルクリックは行の本文として扱わない（本文の上は行を返す）
+    [Fact]
+    public void RowBodyAt_IgnoresCheckBoxAndFindsTextBody()
+    {
+        RunSta(() =>
+        {
+            EnsureApp();
+            var s = new Setup(FolderKind.Drafts, 1);
+            var template = new DataTemplate();
+            var panel = new FrameworkElementFactory(typeof(StackPanel));
+            panel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+            var box = new FrameworkElementFactory(typeof(CheckBox));
+            box.SetValue(FrameworkElement.WidthProperty, 40.0);
+            box.SetValue(FrameworkElement.HeightProperty, 40.0);
+            var text = new FrameworkElementFactory(typeof(TextBlock));
+            text.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding("Subject"));
+            panel.AppendChild(box);
+            panel.AppendChild(text);
+            template.VisualTree = panel;
+
+            var list = new ListView { ItemsSource = s.List.Items, ItemTemplate = template, Width = 300, Height = 100 };
+            var window = new Window { Content = list, Width = 400, Height = 200, ShowInTaskbar = false };
+            window.Show();
+            try
+            {
+                list.UpdateLayout();
+                var item = (ListViewItem)list.ItemContainerGenerator.ContainerFromIndex(0);
+                var checkBox = FindChild<CheckBox>(item)!;
+                var textBlock = FindChild<TextBlock>(item)!;
+                Assert.Null(ListContextMenuHost.RowBodyAt(checkBox));
+                Assert.Same(s.List.Items[0], ListContextMenuHost.RowBodyAt(textBlock));
+                Assert.Same(s.List.Items[0], ListContextMenuHost.RowBodyAt(item));
+                Assert.Null(ListContextMenuHost.RowBodyAt(null));
+                Assert.Null(ListContextMenuHost.RowBodyAt(list));
+            }
+            finally { window.Close(); }
+        });
+    }
+
+    private static T? FindChild<T>(System.Windows.DependencyObject root) where T : System.Windows.DependencyObject
+    {
+        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var c = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (c is T t) return t;
+            if (FindChild<T>(c) is { } f) return f;
+        }
+        return null;
+    }
 }
