@@ -608,6 +608,56 @@ public sealed class FolderActionControllerTests
     }
 
     [Fact]
+    public async Task DoubleClick_InDrafts_OpensThatRowForEditing()
+    {
+        var init = new ComposeInit { AccountId = Acc, Subject = "ダブルクリックの下書き" };
+        _drafts.OpenForEditByMessageAsync(Acc, 2, Arg.Any<CancellationToken>()).Returns(init);
+        AddMails(2, FolderKind.Drafts);
+        await _controller.DoubleClickAsync(Row(2));
+        _compose.Received(1).Open(init);
+    }
+
+    [Fact]
+    public async Task DoubleClick_InDrafts_IgnoresOtherCheckedRows()
+    {
+        var init = new ComposeInit { AccountId = Acc, Subject = "対象の行" };
+        _drafts.OpenForEditByMessageAsync(Acc, 2, Arg.Any<CancellationToken>()).Returns(init);
+        AddMails(2, FolderKind.Drafts);
+        Row(1).IsChecked = true;
+        await _controller.DoubleClickAsync(Row(2));
+
+        await _drafts.Received(1).OpenForEditByMessageAsync(Acc, 2, Arg.Any<CancellationToken>());
+        await _drafts.DidNotReceive().OpenForEditByMessageAsync(Acc, 1, Arg.Any<CancellationToken>());
+        _compose.Received(1).Open(init);
+    }
+
+    [Theory]
+    [InlineData(FolderKind.Inbox)]
+    [InlineData(FolderKind.Sent)]
+    [InlineData(FolderKind.Trash)]
+    [InlineData(FolderKind.Spam)]
+    public async Task DoubleClick_OutsideDrafts_DoesNothing(FolderKind folder)
+    {
+        AddMails(1, folder);
+        await _controller.DoubleClickAsync(Row(1));
+
+        await _drafts.DidNotReceiveWithAnyArgs().OpenForEditByMessageAsync(default!, default, default);
+        _compose.DidNotReceiveWithAnyArgs().TryActivateExisting();
+        _compose.DidNotReceiveWithAnyArgs().Open(default!);
+    }
+
+    [Fact]
+    public async Task DoubleClick_InDrafts_WhenComposeWindowIsOpen_OnlyActivatesIt()
+    {
+        _compose.TryActivateExisting().Returns(true);
+        AddMails(1, FolderKind.Drafts);
+        await _controller.DoubleClickAsync(Row(1));
+
+        await _drafts.DidNotReceiveWithAnyArgs().OpenForEditByMessageAsync(default!, default, default);
+        _compose.DidNotReceiveWithAnyArgs().Open(default!);
+    }
+
+    [Fact]
     public async Task OutboxActions_CallOutboxService()
     {
         var item = new OutboxItem { AccountId = Acc, Subject = "送信待ち" };
