@@ -255,6 +255,13 @@ public sealed class FolderActionController
         }
     }
 
+    /// <summary>
+    /// 一覧の行のダブルクリック。下書きフォルダのときだけ、その行を「編集」ボタンと同じ経路で開く（チェック状態は見ない）。
+    /// 他のフォルダでは何もしない。作成窓が開いている場合の扱いは EditDraftAsync の既存の判定に任せる。
+    /// </summary>
+    public Task DoubleClickAsync(MailListItem row)
+        => _list.Folder == FolderKind.Drafts ? InvokeAsync(FolderActionKind.Edit, row) : Task.CompletedTask;
+
     // 迷惑メールにする・迷惑メールではない・ごみ箱から戻す（1 通、通知なし）
     private async Task MoveOneAsync(string acc, MailListItem row, FolderKind to)
     {
