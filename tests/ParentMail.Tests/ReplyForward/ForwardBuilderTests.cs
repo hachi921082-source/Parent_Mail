@@ -82,6 +82,15 @@ public sealed class ForwardBuilderTests : IDisposable
     }
 
     [Fact]
+    public async Task Forward_decodes_encoded_word_recipient_in_header_lines()
+    {
+        var src = Source() with { To = new List<string> { "=?UTF-8?B?44OG44K544OI?=", "me@example.com" } };
+        var result = await _builder.BuildForwardAsync(Acc, src);
+
+        Assert.Contains("宛先: テスト, me@example.com", result.Init.Body);
+    }
+
+    [Fact]
     public async Task Forward_keeps_existing_fwd_prefix_and_uses_derived_text_for_html_only_mail()
     {
         var src = Source() with { Subject = "転送: 請求書", BodyText = null, DerivedText = "HTMLだけのメール" };
