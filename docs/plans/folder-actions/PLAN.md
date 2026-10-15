@@ -65,3 +65,5 @@ Right-click menu items (rows are the same size as buttons, min height 48 DIP) an
 
 - Unit (fake gateway): matrix per folder (Drafts header = 編集+削除; Spam/Trash/Outbox menus right-click only); single delete + undo restores the viewed folder only; multi-delete grouping, limit 200, skip Trash in search, All-Mail-only undo, partial failure (moved stay moved, modal text with N and M), right-click on checked vs unchecked row; undo after expiry not offered; offline refusal for delete and undo; failed move reverts; Restore always Inbox; auto-selection after delete does not mark read.
 - Manual: delete from Inbox, undo within 10 s, check in Gmail web; multi-delete of several checked mails; spam/not spam; context menus per folder; 削除 sits at the far right in red outline.
+
+- Change request (Q90, Issue #6): double-click on a row body in Drafts calls `FolderActionController.DoubleClickAsync(row)` (Drafts only; same path as 編集; checked rows ignored; the existing single compose window guard applies). Wired in `ListContextMenuHost` via `ListView.MouseDoubleClick`, ignoring ButtonBase (checkbox) sources.
