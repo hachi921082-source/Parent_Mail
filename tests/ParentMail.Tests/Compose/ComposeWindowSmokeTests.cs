@@ -165,6 +165,87 @@ public class ComposeWindowSmokeTests
         });
     }
 
+    private static ComposeWindow MakeWindow(string root)
+        => new(MakeVm(root, new ComposeInit { AccountId = "a" }, new FakeOutboxService(), new FakeDialogService(), new InMemoryContactRepository()),
+            new FakeTextScale());
+
+    [Fact]
+    public void OpenOnce_second_request_activates_existing_and_creates_nothing()
+    {
+        RunSta(() =>
+        {
+            EnsureApp();
+            var root = Path.Combine(Path.GetTempPath(), "ParentMail_窓_" + Guid.NewGuid().ToString("N"));
+            var registry = new ComposeWindowRegistry();
+            var created = 0;
+            Assert.True(registry.OpenOnce(() => { created++; return MakeWindow(root); }));
+            Assert.False(registry.OpenOnce(() => { created++; return MakeWindow(root); }));
+            Assert.Equal(1, created);
+            Assert.Equal(1, registry.Count);
+            Assert.True(registry.TryActivateExisting());
+            registry.Windows[0].Close();
+        });
+    }
+
+    [Fact]
+    public void TryActivateExisting_restores_a_minimized_window_and_is_false_when_none_is_open()
+    {
+        RunSta(() =>
+        {
+            EnsureApp();
+            var root = Path.Combine(Path.GetTempPath(), "ParentMail_窓_" + Guid.NewGuid().ToString("N"));
+            var registry = new ComposeWindowRegistry();
+            Assert.False(registry.TryActivateExisting());
+            registry.OpenOnce(() => MakeWindow(root));
+            var w = registry.Windows[0];
+            w.WindowState = WindowState.Minimized;
+            Assert.True(registry.TryActivateExisting());
+            Assert.Equal(WindowState.Normal, w.WindowState);
+            w.Close();
+        });
+    }
+
+    [Fact]
+    public void OpenOnce_after_close_creates_a_new_window()
+    {
+        RunSta(() =>
+        {
+            EnsureApp();
+            var root = Path.Combine(Path.GetTempPath(), "ParentMail_窓_" + Guid.NewGuid().ToString("N"));
+            var registry = new ComposeWindowRegistry();
+            registry.OpenOnce(() => MakeWindow(root));
+            registry.Windows[0].Close();
+            Assert.False(registry.TryActivateExisting());
+            Assert.True(registry.OpenOnce(() => MakeWindow(root)));
+            Assert.Equal(1, registry.Count);
+            registry.Windows[0].Close();
+        });
+    }
+
+    [Fact]
+    public void OpenOnce_creation_failure_leaves_no_guard_behind()
+    {
+        RunSta(() =>
+        {
+            EnsureApp();
+            var root = Path.Combine(Path.GetTempPath(), "ParentMail_窓_" + Guid.NewGuid().ToString("N"));
+            var registry = new ComposeWindowRegistry();
+            Assert.Throws<InvalidOperationException>(() => registry.OpenOnce(() => throw new InvalidOperationException("作成失敗")));
+            Assert.Equal(0, registry.Count);
+            Assert.False(registry.TryActivateExisting());
+            // 窓が作れたあとの Show 失敗でも登録を残さない
+            Assert.Throws<InvalidOperationException>(() => registry.OpenOnce(() =>
+            {
+                var w = MakeWindow(root);
+                w.Close();
+                return w; // 閉じた窓は Show できず例外になる
+            }));
+            Assert.Equal(0, registry.Count);
+            Assert.True(registry.OpenOnce(() => MakeWindow(root)));
+            registry.Windows[0].Close();
+        });
+    }
+
     [Fact]
     public async Task Send_closes_the_window_right_away_and_hands_the_mail_to_the_outbox()
     {

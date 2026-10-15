@@ -93,6 +93,16 @@ public class LinkClickHandlerTests
     }
 
     [Fact]
+    public async Task mailtoは作成ウィンドウが開いていれば新しい窓を作らず前面に出すだけ()
+    {
+        _compose.WindowOpen = true;
+        await Create().HandleAsync("mailto:taro@example.com", null);
+        Assert.Empty(_compose.Opened);
+        Assert.Equal(1, _compose.Activated);
+        Assert.Empty(_dialogs.Notices);
+    }
+
+    [Fact]
     public async Task mailtoのクエリと複数宛先を扱う()
     {
         await Create().HandleAsync("mailto:a@example.com,b@example.com?subject=x", null);

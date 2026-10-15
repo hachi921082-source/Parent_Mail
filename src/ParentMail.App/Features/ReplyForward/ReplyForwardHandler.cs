@@ -19,6 +19,8 @@ public sealed class ReplyForwardHandler : IReplyForwardHandler
     private readonly IComposeWindowFactory _compose;
     private readonly IDialogService _dialogs;
     private readonly IAppLog _log;
+    // 準備中（本文の取り寄せ・添付のダウンロード中）の要求がある間は、続けて来た要求を受け付けない（UI スレッドからだけ触る）
+    private bool _preparing;
 
     public ReplyForwardHandler(IMailRepository mail, IAccountRepository accounts, IBodyFetcher bodyFetcher,
         ForwardBuilder forward, IComposeWindowFactory compose, IDialogService dialogs, IAppLog log)
@@ -38,9 +40,23 @@ public sealed class ReplyForwardHandler : IReplyForwardHandler
 
     private async Task ReplyCoreAsync(string accountId, long gmailMsgId, bool replyAll)
     {
-        if (await EnsureSourceAsync(accountId, gmailMsgId).ConfigureAwait(true) is not { } source) return;
-        var email = _accounts.Get(accountId)?.Email ?? "";
-        _compose.Open(ReplyBuilder.BuildReply(accountId, source, email, replyAll, UsableReplyTo(source.ReplyTo)));
+        if (!BeginRequest()) return;
+        try
+        {
+            if (await EnsureSourceAsync(accountId, gmailMsgId).ConfigureAwait(true) is not { } source) return;
+            var email = _accounts.Get(accountId)?.Email ?? "";
+            _compose.Open(ReplyBuilder.BuildReply(accountId, source, email, replyAll, UsableReplyTo(source.ReplyTo)));
+        }
+        finally { _preparing = false; }
+    }
+
+    // 作成窓が既に開いていれば前面に出すだけで終わる（本文の取り寄せも添付のダウンロードもしない）。準備中の要求があっても何もしない。
+    private bool BeginRequest()
+    {
+        if (_preparing) return false;
+        if (_compose.TryActivateExisting()) return false;
+        _preparing = true;
+        return true;
     }
 
     // 保存済みの Reply-To が宛先として読めるときだけ使う（読めなければ null で From 宛て）
@@ -52,9 +68,15 @@ public sealed class ReplyForwardHandler : IReplyForwardHandler
 
     public async Task ForwardAsync(string accountId, long gmailMsgId)
     {
-        if (await EnsureSourceAsync(accountId, gmailMsgId).ConfigureAwait(true) is not { } source) return;
-        var result = await _forward.BuildForwardAsync(accountId, source).ConfigureAwait(true);
-        _compose.Open(result.Init);
+        if (!BeginRequest()) return;
+        ForwardResult result;
+        try
+        {
+            if (await EnsureSourceAsync(accountId, gmailMsgId).ConfigureAwait(true) is not { } source) return;
+            result = await _forward.BuildForwardAsync(accountId, source).ConfigureAwait(true);
+            _compose.Open(result.Init);
+        }
+        finally { _preparing = false; }
 
         // 作成窓を開いたあとに、その窓の上で知らせる
         if (result.Notices.RejectedFileNames.Count > 0)

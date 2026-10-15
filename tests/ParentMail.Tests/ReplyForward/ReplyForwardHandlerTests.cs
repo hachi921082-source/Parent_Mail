@@ -1,3 +1,4 @@
+using NSubstitute;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using ParentMail.App;
@@ -58,6 +59,48 @@ public sealed class ReplyForwardHandlerTests : IDisposable
         Assert.Equal(Acc, init.AccountId);
         Assert.Empty(init.Cc);
         Assert.Empty(_body.Requested);
+    }
+
+    [Fact]
+    public async Task Open_compose_window_makes_reply_reply_all_forward_only_activate_it_without_any_work()
+    {
+        Store(fetched: false);
+        _compose.WindowOpen = true;
+
+        await _handler.ReplyAsync(Acc, 7);
+        await _handler.ReplyAllAsync(Acc, 7);
+        await _handler.ForwardAsync(Acc, 7);
+
+        Assert.Equal(3, _compose.Activated);
+        Assert.Empty(_compose.Opened);
+        Assert.Empty(_body.Requested);
+        Assert.Empty(_attachments.Requested);
+        Assert.Empty(_dialogs.Notices);
+    }
+
+    [Fact]
+    public async Task Second_request_while_first_is_still_preparing_is_ignored()
+    {
+        Store(fetched: false);
+        var gate = new TaskCompletionSource<BodyFetchResult>();
+        var body = Substitute.For<IBodyFetcher>();
+        body.EnsureBodyAsync(Acc, 7, Arg.Any<CancellationToken>()).Returns(gate.Task);
+        var handler = new ReplyForwardHandler(_mail, _accounts, body, new ForwardBuilder(_mail, _attachments, new FakeAppLog()),
+            _compose, _dialogs, new FakeAppLog());
+
+        var first = handler.ReplyAsync(Acc, 7);
+        await handler.ReplyAsync(Acc, 7);
+        await handler.ForwardAsync(Acc, 7);
+        await body.Received(1).EnsureBodyAsync(Acc, 7, Arg.Any<CancellationToken>());
+
+        _mail.Upsert(Acc, _mail.Get(Acc, 7)! with { BodyState = BodyState.Fetched, BodyText = "本文" }, new[] { new MessageFolder(7, FolderKind.Inbox, 1, 1) });
+        gate.SetResult(BodyFetchResult.Ready);
+        await first;
+
+        Assert.Single(_compose.Opened);
+        // 準備が終われば、次の要求は受け付ける
+        await handler.ReplyAsync(Acc, 7);
+        Assert.Equal(2, _compose.Opened.Count);
     }
 
     [Fact]
