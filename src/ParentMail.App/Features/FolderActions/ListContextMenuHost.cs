@@ -40,6 +40,21 @@ public sealed class ListContextMenuHost
         listView.PreviewMouseRightButtonDown += (_, e) => _pendingRow = RowAt(e.OriginalSource as DependencyObject);
         listView.ContextMenuOpening += OnContextMenuOpening;
         listView.PreviewKeyDown += OnPreviewKeyDown;
+        listView.MouseDoubleClick += OnMouseDoubleClick;
+    }
+
+    // 行の本文部分のダブルクリック。チェック欄・ボタンの上では反応しない。判断は FolderActionController.DoubleClickAsync にある。
+    private void OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left) return;
+        var source = e.OriginalSource as DependencyObject;
+        for (var d = source; d is not null && d is not ListViewItem; d = d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
+        {
+            if (d is System.Windows.Controls.Primitives.ButtonBase) return;
+        }
+        if (RowAt(source) is not { } row) return;
+        e.Handled = true;
+        _ = _controller.DoubleClickAsync(row);
     }
 
     // 行の上以外では出さない。キーボード（メニューキー・Shift+F10）で開いたときはフォーカス中の行が対象。
