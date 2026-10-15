@@ -44,17 +44,26 @@ public sealed class ListContextMenuHost
     }
 
     // 行の本文部分のダブルクリック。チェック欄・ボタンの上では反応しない。判断は FolderActionController.DoubleClickAsync にある。
+    // MouseDoubleClick は ListViewItem 自身が発生元（OriginalSource）になるため、実際にカーソルの下にある要素で判定する。
     private void OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton != MouseButton.Left) return;
-        var source = e.OriginalSource as DependencyObject;
-        for (var d = source; d is not null && d is not ListViewItem; d = d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
-        {
-            if (d is System.Windows.Controls.Primitives.ButtonBase) return;
-        }
-        if (RowAt(source) is not { } row) return;
+        var listView = (ListView)sender;
+        var hit = listView.InputHitTest(e.GetPosition(listView)) as DependencyObject;
+        if (RowBodyAt(hit) is not { } row) return;
         e.Handled = true;
         _ = _controller.DoubleClickAsync(row);
+    }
+
+    /// <summary>カーソルの下の要素 hit から、行の本文部分なら行を返す。チェック欄・ボタンの上や、行の外なら null。</summary>
+    public static MailListItem? RowBodyAt(DependencyObject? hit)
+    {
+        for (var d = hit; d is not null; d = d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
+        {
+            if (d is System.Windows.Controls.Primitives.ButtonBase) return null;
+            if (d is ListViewItem { DataContext: MailListItem item }) return item;
+        }
+        return null;
     }
 
     // 行の上以外では出さない。キーボード（メニューキー・Shift+F10）で開いたときはフォーカス中の行が対象。
