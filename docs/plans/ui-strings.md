@@ -2,6 +2,8 @@
 
 Status (2026-10-08): FULLY APPROVED by the user (section 17 decisions on 2026-10-08, all remaining rows on 2026-10-08 in the follow-up review, Q76). This file is the source of truth for UI wording; `Strings.ja.cs` is generated from it. The earlier note that only part of the file was approved is obsolete. Exception already applied: FA-08 is 「迷惑メールではない」 (suffix dropped by the user).
 
+Addendum (2026-10-16, Issue #8, Q92): maximum 5 accounts. AC-04 now reads 「アカウントは5つまでです」; new rows TB-26, TB-27, TB-28 for the account-strip scroll arrows (A82, A85, A88; the wording is a designer-lite assumption the user may veto).
+
 Addendum (2026-10-16, Issue #1, Q91): the single account switch button is replaced by two account buttons; TB-09, TB-10 and N10 reworded accordingly. No new Japanese string was added (the check mark is a symbol, not a string).
 
 Addendum (2026-10-12): FA-09 reworded to 「元のフォルダに戻す」 and TB-15 (bottom 検索 button) SUPERSEDED, both by user decision (Q87, Q88).
@@ -63,6 +65,9 @@ Tone rule (detailed-spec 17): polite plain Japanese, no technical terms, one sen
 | TB-23 | Preview header Delete button while rows are checked | 選んだN通を削除 | APPROVED | NEW | multi-select (detailed-spec 22) |
 | TB-24 | Preview header, Drafts only | 編集 | APPROVED | NEW | Q63: the only extra header button |
 | TB-25 | Outbox failure banner, close button (accessible name; shown as ×) | 閉じる | APPROVED | NEW | only banner with a close button (Q64) |
+| TB-26 | Account strip, left scroll arrow (tooltip and accessible name; the arrow itself is the symbol ◀) | 左のアカウントを見る | APPROVED | NEW | Issue #8, Q92, A82/A88 (user may veto); shown only when account buttons overflow |
+| TB-27 | Account strip, right scroll arrow (tooltip and accessible name; the arrow itself is the symbol ▶) | 右のアカウントを見る | APPROVED | NEW | Issue #8, Q92, A82/A88 (user may veto) |
+| TB-28 | Scroll arrow carrying an unread badge, extra tooltip line | 見えていないアカウントに未読メールがあります | APPROVED | NEW | Issue #8, Q92, A85/A88 (user may veto); the badge number itself is a number only like TB-10 |
 
 ## 2. Banners, notices, global errors
 
@@ -102,7 +107,7 @@ Kind of each message (banner / modal OK / transient / in-place): detailed-spec s
 | AC-01 | Account-add window, notice line | Gmailのアプリパスワードが必要です。 | APPROVED | NEW | spec: must state a Gmail app password is required; term アプリパスワード approved (N8) |
 | AC-02 | Account-add window, field labels | メールアドレス / アプリパスワード（スペースなし） / 表示名 | APPROVED | NEW | A6 |
 | AC-03 | Account-add window, buttons | 登録する / やめる | APPROVED | NEW | |
-| AC-04 | Settings, add button when 2 accounts exist | アカウントは2つまでです | APPROVED | PROPOSED | A4 |
+| AC-04 | Settings, add button when 5 accounts exist (was 2 until Issue #8) | アカウントは5つまでです | APPROVED | PROPOSED | A4, A88; changed from 「アカウントは2つまでです」 by Q92 (max 5 accounts) |
 | AC-05 | Account-add window, error line, duplicate address | このメールアドレスは登録済みです | APPROVED | PROPOSED | Q53 |
 | AC-06 | Account-add window, error line, login failed | ログインできませんでした。アプリパスワードを確認してください。 | APPROVED | PROPOSED | N9: stays as written |
 | AC-07 | Account-add window, error line, network error | 接続できませんでした。ネットワークを確認してください。 | APPROVED | PROPOSED | N9: stays as written |
