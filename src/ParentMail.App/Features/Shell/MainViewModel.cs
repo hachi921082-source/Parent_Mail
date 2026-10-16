@@ -56,7 +56,6 @@ public sealed partial class MainViewModel : ObservableObject
         };
         SelectFolderCommand = new RelayCommand<FolderItemViewModel>(SelectFolder);
         RefreshCommand = new RelayCommand(() => RefreshRequested?.Invoke(this, EventArgs.Empty), () => !IsRefreshing);
-        SwitchAccountCommand = new RelayCommand(() => SwitchAccountRequested?.Invoke(this, EventArgs.Empty));
 
         _scale.Changed += (_, _) =>
         {
@@ -82,25 +81,18 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>上部バーの文字サイズ (DIP)。20 pt で頭打ち。</summary>
     public double ChromeFontSize => _scale.ChromeFontSizeDip;
 
-    /// <summary>アカウント切替ボタンの表示名（accounts-auth が設定する）。</summary>
-    [ObservableProperty] private string _accountName = string.Empty;
-    /// <summary>もう一方のアカウントの未読数。0 のときバッジは出ない。</summary>
-    [NotifyPropertyChangedFor(nameof(OtherAccountBadge), nameof(HasOtherAccountBadge))]
-    [ObservableProperty] private int _otherAccountUnread;
+    /// <summary>上段左のアカウントボタン群（accounts-auth が AccountButtonItem の一覧を設定する）。</summary>
+    [ObservableProperty] private System.Collections.IEnumerable? _accountButtons;
     [ObservableProperty] private bool _htmlMode;
     [NotifyPropertyChangedFor(nameof(RefreshLabel))]
     [ObservableProperty] private bool _isRefreshing;
 
-    public string OtherAccountBadge => OtherAccountUnread.ToString();
-    public bool HasOtherAccountBadge => OtherAccountUnread > 0;
     public string RefreshLabel => IsRefreshing ? Strings.TB_13 : Strings.TB_12;
 
     public IRelayCommand<FolderItemViewModel> SelectFolderCommand { get; }
     public IRelayCommand RefreshCommand { get; }
-    public IRelayCommand SwitchAccountCommand { get; }
 
     public event EventHandler? RefreshRequested;
-    public event EventHandler? SwitchAccountRequested;
 
     partial void OnIsRefreshingChanged(bool value) => RefreshCommand.NotifyCanExecuteChanged();
 

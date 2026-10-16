@@ -122,16 +122,56 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Style="{StaticResource AppButton}" Command="{Binding SwitchAccountCommand}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding AccountName}" VerticalAlignment="Center" FontWeight="Bold" />
-                                <Border Style="{StaticResource BadgePill}"
-                                        Visibility="{Binding HasOtherAccountBadge, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Text="{Binding OtherAccountBadge}" FontWeight="Bold" VerticalAlignment="Center"
-                                               Foreground="{DynamicResource BadgeText}" />
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                        <!-- アカウントボタン: 1 アカウントごとに 1 つ。選択中は青地・太枠・太字・先頭に ✓、非選択は白地・細枠・名前の右に赤バッジ -->
+                        <ItemsControl Grid.Column="0" ItemsSource="{Binding AccountButtons}" IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding SelectCommand}" ToolTip="{Binding ToolTip}"
+                                            MinWidth="0" MaxWidth="300" Padding="16,8" Margin="0,0,12,0"
+                                            AutomationProperties.Name="{Binding Name}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource AppButton}">
+                                                <Setter Property="Background" Value="White" />
+                                                <Setter Property="BorderThickness" Value="2" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource Primary}" />
+                                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryActiveBorder}" />
+                                                        <Setter Property="BorderThickness" Value="4" />
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualOnDark}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="&#x2713;" Margin="0,0,8,0" FontWeight="Bold"
+                                                       VerticalAlignment="Center"
+                                                       Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <!-- 非選択側だけ。名前が長くても先にバッジ分（約 50 DIP）を確保する -->
+                                            <Border Grid.Column="2" Style="{StaticResource BadgePill}"
+                                                    Visibility="{Binding ShowBadge, Converter={StaticResource BoolToVisibility}}">
+                                                <TextBlock Text="{Binding BadgeText}" FontWeight="Bold" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource BadgeText}" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <CheckBox Grid.Column="2" Content="{x:Static res:Strings.TB_11}" IsChecked="{Binding HtmlMode}"
                                   VerticalAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,24,0" MinHeight="48">
                             <CheckBox.LayoutTransform>
