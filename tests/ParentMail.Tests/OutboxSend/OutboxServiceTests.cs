@@ -228,6 +228,22 @@ public sealed class OutboxServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SendAllPending_sendsAccountByAccount_notInParallel()
+    {
+        _smtp.Result = SendResult.Transient;
+        var svc = NewService();
+        await svc.EnqueueAndSendAsync(Snap(Acc));
+        await svc.EnqueueAndSendAsync(Snap(Other));
+        await svc.WaitIdleAsync();
+
+        _smtp.Result = SendResult.Ok;
+        _smtp.Delay = TimeSpan.FromMilliseconds(80);
+        Assert.Equal(SendAllResult.AllSent, await svc.SendAllPendingAsync());
+        Assert.Equal(1, _smtp.MaxConcurrent);
+        Assert.Equal(2, _smtp.Sent.Count);
+    }
+
+    [Fact]
     public async Task Oversized_message_stays_with_modal_notice()
     {
         var big = Path.Combine(_fx.Root, "大きい.bin");
