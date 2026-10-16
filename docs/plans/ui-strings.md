@@ -2,6 +2,8 @@
 
 Status (2026-10-08): FULLY APPROVED by the user (section 17 decisions on 2026-10-08, all remaining rows on 2026-10-08 in the follow-up review, Q76). This file is the source of truth for UI wording; `Strings.ja.cs` is generated from it. The earlier note that only part of the file was approved is obsolete. Exception already applied: FA-08 is 「迷惑メールではない」 (suffix dropped by the user).
 
+Addendum (2026-10-16, Issue #1, Q91): the single account switch button is replaced by two account buttons; TB-09, TB-10 and N10 reworded accordingly. No new Japanese string was added (the check mark is a symbol, not a string).
+
 Addendum (2026-10-12): FA-09 reworded to 「元のフォルダに戻す」 and TB-15 (bottom 検索 button) SUPERSEDED, both by user decision (Q87, Q88).
 
 Addendum (2026-10-11): rows CP-18 to CP-22 and WD-31 (address-book picker in compose, Q80-Q85) are APPROVED (wording approved by the user on 2026-10-11).
@@ -44,8 +46,8 @@ Tone rule (detailed-spec 17): polite plain Japanese, no technical terms, one sen
 | TB-06 | Folder button Spam | 迷惑メール | APPROVED | A2 | |
 | TB-07 | Inbox button with unread | 受信トレイ + red number badge N | APPROVED | PROPOSED | hidden when 0; layout may show the number as a badge instead of "(N)" |
 | TB-08 | Outbox button with failed items | 送信トレイ + red badge !N | APPROVED | NEW | N = failed count; A40 |
-| TB-09 | Account switch button | <display name> | APPROVED | NEW | N10: account name only |
-| TB-10 | Account switch badge | N (number only) | APPROVED | NEW | A44 |
+| TB-09 | Account buttons (two, one per account; Issue #1) | <display name> | APPROVED | NEW | N10: account name only on each button. The selected button also has a leading check mark (✓): a symbol drawn by the view, NOT a localized string, so it has no ID and is not in `Strings.ja.cs`. Tooltip = full display name (not new wording). Long names end with an ellipsis |
+| TB-10 | Account button badge | N (number only) | APPROVED | NEW | A44; shown only inside the NON-selected account button, right of the name (Issue #1, Q91) |
 | TB-11 | Top bar, HTML checkbox | HTMLで表示 | APPROVED | NEW | |
 | TB-12 | Top bar, refresh button | 更新 | APPROVED | NEW | |
 | TB-13 | Refresh button while syncing | 更新中… | APPROVED | NEW | |
@@ -345,7 +347,7 @@ Kind of each message (banner / modal OK / transient / in-place): detailed-spec s
 | N7 | Reading field name in the address book (column and edit field) | 「ふりがな」 (was 「よみがな」) | AB-02 |
 | N8 | Technical terms (IMAP, アプリパスワード, pt) | Kept as written | BN-03, AC-01, AC-06, ST-03 |
 | N9 | Tone gaps | Next-step sentence added only to: offline move refusal 「今はインターネットにつながっていないため操作できません。つながってからもう一度お試しください。」 and Outbox "send now" failure 「まだ送れませんでした。しばらくしてからもう一度お試しください。」. The login-failed (AC-06) and network-error (AC-07) messages stay as written | BN-05, OB-05, AC-06, AC-07 |
-| N10 | Account switch button | Shows the account name only (no hint or arrow) | TB-09 |
+| N10 | Account buttons | Each shows its account name only (no hint or arrow); the selected one adds a leading check mark symbol (not a string); badge only on the non-selected one (Issue #1, Q91) | TB-09, TB-10 |
 | N11 | Q31 warning text | 「この操作は詳しい方に相談してから行ってください。」 (unchanged) | AC-13 |
 | N12 | Preview guide text with no mail selected (Q62) | 「左の一覧からメールを選んでください」 | PV-12 |
 | N13 | Extra header button in Drafts (Q63) | 「編集」; the Outbox/Spam/Trash actions 「今すぐ送る」「下書きに戻す」「迷惑メールではない」「元のフォルダに戻す」 are right-click only | TB-24, OB-03, OB-04 |

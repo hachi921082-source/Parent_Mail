@@ -7,8 +7,8 @@ using ParentMail.Core.Features.AccountsAuth;
 namespace ParentMail.App.Features.AccountsAuth;
 
 /// <summary>
-/// 主窓の上部バー（app-shell の MainViewModel）に、アカウント切替ボタンの名前とバッジをつなぐ。
-/// 上部バーの XAML はそのまま使い、MainViewModel の AccountName / OtherAccountUnread / SwitchAccountRequested にだけ触れる。
+/// 主窓の上部バー（app-shell の MainViewModel）に、アカウントボタン（Items）をつなぐ。
+/// 上部バーの XAML はそのまま使い、MainViewModel の AccountButtons にだけ触れる。
 /// 起動直後にアカウントが 0 件なら、初回起動としてアカウント追加の窓を出す。
 /// </summary>
 public sealed class ShellAccountBinder
@@ -28,14 +28,12 @@ public sealed class ShellAccountBinder
     {
         void Push()
         {
-            shell.AccountName = _switch.Label;
-            shell.OtherAccountUnread = _switch.OtherUnread;
+            shell.AccountButtons = _switch.Items;
         }
 
         _switch.PropertyChanged += (_, _) => Push();
-        shell.SwitchAccountRequested += (_, _) => _switch.SwitchCommand.Execute(null);
         _service.AccountAdded += (_, _) => RunOnUi(_switch.Refresh);
-        // 名前変更・削除でも切替ボタンの名前と、現在のアカウント（削除で残る方へ）を取り直す
+        // 名前変更・削除でもアカウントボタンと、現在のアカウント（削除で残る方へ）を取り直す
         _service.AccountRenamed += (_, _) => RunOnUi(_switch.Refresh);
         _service.AccountRemoved += (_, _) => RunOnUi(_switch.Refresh);
 
@@ -44,7 +42,7 @@ public sealed class ShellAccountBinder
         {
             _switch.Initialize();
             Push();
-            if (_switch.Label.Length == 0 && _launcher.ShowAddWindow(firstLaunch: true))
+            if (_switch.Items.Count == 0 && _launcher.ShowAddWindow(firstLaunch: true))
             {
                 _switch.Refresh();
             }

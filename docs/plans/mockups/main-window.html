@@ -28,6 +28,10 @@ button,.btn{font:inherit;font-size:24px;min-height:56px;padding:0 24px;border:2p
 .btn.primary{background:var(--primary);color:var(--primary-text);border-color:var(--primary)}
 .btn.active{background:var(--primary);color:#fff;border-color:#06306b}
 .btn.danger{border-color:var(--red);color:var(--red);background:#fff;font-weight:bold}
+.btn.acct{max-width:300px;overflow:hidden;white-space:nowrap;display:inline-flex;align-items:center;background:#fff;color:#000;border:2px solid var(--line)}
+.btn.acct .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.btn.acct.selected{background:var(--primary);color:#fff;border:4px solid #06306b;font-weight:bold}
+.btn.acct .badge{flex:none}
 .btn.dis{color:#595959;background:#E8E8E8;border-style:dashed}
 .badge{display:inline-block;min-width:34px;height:34px;line-height:34px;border-radius:17px;background:var(--red);color:var(--red-text);font-size:20px;font-weight:bold;text-align:center;padding:0 8px;margin-left:8px}
 .banner{display:flex;align-items:center;min-height:56px;padding:6px 16px;font-weight:bold;font-size:24px;gap:16px}
@@ -100,7 +104,8 @@ button,.btn{font:inherit;font-size:24px;min-height:56px;padding:0 24px;border:2p
   <div class="banner offline">インターネットにつながっていません。保存済みのメールは読めます。</div>
   <div class="banner red"><span>メールを送れませんでした。送信トレイを確認してください。</span><span class="sp"></span><button aria-label="閉じる">×</button></div>
   <div class="bar">
-    <button class="btn">母のメール<span class="badge">3</span></button>
+    <button class="btn acct selected"><span class="nm">&#10003; 母のメール</span></button>
+    <button class="btn acct"><span class="nm">父のメール</span><span class="badge">3</span></button>
     <span class="sp"></span>
     <label style="font-size:24px"><span class="cb"></span> HTMLで表示</label>
     <button class="btn">更新</button>
@@ -159,7 +164,8 @@ button,.btn{font:inherit;font-size:24px;min-height:56px;padding:0 24px;border:2p
 <p class="cap">Frame 2: first sync, list still empty. Only the loading banner is shown (no 「メールはありません」); preview shows the guide text.</p>
 <div class="frame">
   <div class="banner loading">メールを読み込んでいます…</div>
-  <div class="bar"><button class="btn">母のメール</button><span class="sp"></span><label style="font-size:24px"><span class="cb"></span> HTMLで表示</label><button class="btn">更新中…</button></div>
+  <!-- one-account example: only the selected button, no empty frame -->
+  <div class="bar"><button class="btn acct selected"><span class="nm">&#10003; 母のメール</span></button><span class="sp"></span><label style="font-size:24px"><span class="cb"></span> HTMLで表示</label><button class="btn">更新中…</button></div>
   <div class="bar" style="border-top:0"><button class="btn active">受信トレイ</button><button class="btn">送信トレイ</button><button class="btn">送信済み</button><button class="btn">ごみ箱</button><button class="btn">下書き</button><button class="btn">迷惑メール</button></div>
   <div class="main" style="height:300px">
     <div class="list"><div class="search"><div class="box">差出人・件名・本文から探す</div><button class="btn">クリア</button></div><div class="rows"></div>
@@ -171,7 +177,7 @@ button,.btn{font:inherit;font-size:24px;min-height:56px;padding:0 24px;border:2p
 <!-- ============ FRAME 3: several rows checked ============ -->
 <p class="cap">Frame 3: three rows checked (multi-select delete, approved). The preview shows a guide; only the delete button is active and says how many.</p>
 <div class="frame">
-  <div class="bar"><button class="btn">母のメール</button><span class="sp"></span><label style="font-size:24px"><span class="cb"></span> HTMLで表示</label><button class="btn">更新</button></div>
+  <div class="bar"><button class="btn acct selected"><span class="nm">&#10003; 母のメール</span></button><button class="btn acct"><span class="nm">父のメール</span></button><span class="sp"></span><label style="font-size:24px"><span class="cb"></span> HTMLで表示</label><button class="btn">更新</button></div>
   <div class="bar" style="border-top:0"><button class="btn active">受信トレイ<span class="badge" style="background:#fff;color:#A80000;border:2px solid #A80000">9</span></button><button class="btn">送信トレイ</button><button class="btn">送信済み</button><button class="btn">ごみ箱</button><button class="btn">下書き</button><button class="btn">迷惑メール</button></div>
   <div class="main" style="height:420px">
     <div class="list">
@@ -193,6 +199,18 @@ button,.btn{font:inherit;font-size:24px;min-height:56px;padding:0 24px;border:2p
   </div>
 </div>
 <p class="legend">The green notice in frame 3 is shown only to illustrate the multi-delete wording; in real use it appears after pressing the delete button, when the checks have already been cleared.</p>
+
+<!-- ============ long-name example (Issue #1) ============ -->
+<p class="cap">Account buttons, long-name example (Issue #1): each button is at most about 300 DIP wide; a longer name ends with an ellipsis and the full name is a tooltip. About 50 DIP is reserved for the red badge on the NON-selected button first, so the name is cut earlier there. Fits 1024 px with the HTML checkbox and refresh at the 20 pt chrome cap.</p>
+<div class="frame" style="width:1024px">
+  <div class="bar">
+    <button class="btn acct selected" title="とても長い名前のお母さんのメールアカウント"><span class="nm">&#10003; とても長い名前のお母さんのメールアカウント</span></button>
+    <button class="btn acct" title="とても長い名前のお父さんのメールアカウント"><span class="nm">とても長い名前のお父さんのメールアカウント</span><span class="badge">12</span></button>
+    <span class="sp"></span>
+    <label style="font-size:24px"><span class="cb"></span> HTMLで表示</label>
+    <button class="btn">更新</button>
+  </div>
+</div>
 
 <!-- ============ banner gallery ============ -->
 <div class="doc">

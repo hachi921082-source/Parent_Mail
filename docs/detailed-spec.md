@@ -34,8 +34,8 @@ Sources: `docs/spec.md` (S#), `docs/QA.md` resolved items (Q#) and the 21 approv
 Source: S4, Q13, Q33, D8-D9.
 
 - Main window, minimum size 1024x700 (S8). Window size and splitter position are persisted in local settings (S8). First launch (nothing persisted yet): the window opens maximized with the list pane about 35 percent of the width; afterwards the last size, state and splitter position are restored (Q58).
-- Top bar, full width, left to right: account switch button, Inbox, Outbox, Sent, Trash, Drafts, Spam buttons (S4). Then the HTML/plain-text checkbox (S4; it applies to the currently displayed mail only, see section 6, Q39) and a manual refresh button (S8). Position of checkbox and refresh button within the bar: Assumption A1 (right side of the bar). APPROVED (A50): because one row cannot hold account button, 6 folder buttons, checkbox and refresh at 1024 wide, the bar has two rows: row 1 = account button (left), checkbox and refresh (right); row 2 = the six folder buttons. See `docs/plans/window-layouts.md` section 2.
-- Account switch button: labeled, shows the account name only, no hint or arrow (S3, Q57). Shows a small unread badge, showing the unread count as a number, when the other (non-displayed) account has unread mail (Q13; number display Assumption A44).
+- Top bar, full width, left to right: account buttons, Inbox, Outbox, Sent, Trash, Drafts, Spam buttons (S4). Then the HTML/plain-text checkbox (S4; it applies to the currently displayed mail only, see section 6, Q39) and a manual refresh button (S8). Position of checkbox and refresh button within the bar: Assumption A1 (right side of the bar). APPROVED (A50): because one row cannot hold account button, 6 folder buttons, checkbox and refresh at 1024 wide, the bar has two rows: row 1 = account buttons (left), checkbox and refresh (right); row 2 = the six folder buttons. See `docs/plans/window-layouts.md` section 2.
+- Account buttons (Issue #1, Q91; replaces the single toggle button of S3/Q57): one button per account, side by side, showing the account name only. The selected button is filled, bold, thick-bordered and starts with a check mark; the non-selected one is white. The non-selected button shows a small unread badge with the unread count as a number when that (non-displayed) account has unread mail (Q13; number display Assumption A44); the selected button shows none. With one account only the selected button is shown. Details: `docs/plans/window-layouts.md` section 2.
 - Unread count is shown only on the Inbox button, besides the account-button badge (S4).
 - Mail list pane: narrow, left, below the top bar. Each row has 2 lines (Q61): line 1 = sender (display name, else address), date/time and attachment icon (paperclip); line 2 = subject, ellipsis when long; unread rows are bold only. A checkbox is always shown at the left of every row (Q71, section 22; hidden in Trash and Outbox: APPROVED A62). Sent/Drafts rows show 「宛先: <first recipient>」, with 「ほか N 人」 appended when there are more (APPROVED A67). Dates/times (local time): today `HH:mm`; this year `M月d日 H:mm`; older `yyyy年M月d日 H:mm` (Q44, replaces A45). The list is sorted by date descending; APPROVED A68: the sort key and the displayed time are both INTERNALDATE (the same value the 12-month body window uses). Action buttons at the bottom of the pane (APPROVED A50: a 2-column x 3-row grid, labels may wrap), in order, row by row: 新しいメール (compose), [BLANK cell: the former search button was removed, Q88; the cell stays empty so the grid and the other five buttons keep their places], settings, address book, 受信拒否リスト (block list), 振り分けルール (filter rules) (S4, Q57). The blank cell is the top row, right column; it is not focusable and not drawn as a button.
 - Preview pane: very wide, right, most of the window (S4). Above the preview, large buttons always visible: Reply, Reply all, Forward, Delete (Q33). Context menu remains available (Q33). Next to these buttons: preview zoom controls 拡大, 縮小 and 「100%に戻す」 (Q38, Q57; section 6; control form Assumption A34). In Drafts there is an extra large button 「編集」; the other folder-specific actions (迷惑メールではない, 元のフォルダに戻す, 今すぐ送る, 下書きに戻す) are right-click only (Q63, Q87). APPROVED (A51): 削除 is placed apart from the other buttons at the far right of the header, outlined in red, so it is not pressed instead of 返信/転送. Moving to Spam gets no undo notice.
@@ -59,7 +59,7 @@ Source: S1, S3, S8, Q31, D4.
 - First launch with no account: if the account-add screen is closed without adding an account (やめる, Esc or X), the confirmation 「このまま閉じるとアプリは終わります。よろしいですか?」 with 「終わる」 / 「戻る」 (default 戻る) is shown; 「終わる」 quits the app (Q66; wording kept after review, ui-strings AC-19).
 - Wrong or revoked app password (S3): show a plain-language notice asking a knowledgeable person to re-enter it; open the password re-entry screen; cached mail stays viewable. Re-entry screen is not preceded by the Q31 warning dialog because it is opened by the app: Assumption A8.
 - Account switch while a sync runs does not cancel that sync (Q56).
-- Account switch: clicking the account switch button changes the displayed account; list, folders, counts, search and per-account data all follow the displayed account (S3, Q28, Q35).
+- Account switch: pressing the non-selected account button changes the displayed account; list, folders, counts, search and per-account data all follow the displayed account (S3, Q28, Q35).
 
 ## 3. Gmail folder mapping
 
@@ -264,7 +264,7 @@ Source: S5, S8, Q31, Q32, D21.
 Source: Q13, Q14, Q34, D5-D6.
 
 - New-mail notification: in-app only (the Inbox unread count changes); no toast, no sound (Q14).
-- Other-account indicator: unread badge on the account switch button (Q13).
+- Other-account indicator: unread badge on the non-selected account button (Q13, Q91).
 - Startup: opens the last-used account's Inbox (D5); a sync starts (S8). First launch without an account opens the account-add screen: Assumption A31.
 - Single instance: a second launch brings the existing window to the front instead of opening another one (Q47).
 - No auto-start with Windows and no setting for it (D6).
@@ -345,7 +345,7 @@ Added by designer-lite because the source documents do not state them; each need
 - A41 SUPERSEDED by Q45: ZoomFactor = pt / 12 x zoom, clamp 0.25-5.0, 2 decimals.
 - A42 SETTLED by Q50: formula in section 7.
 - A43 Block list and filter rules are not applied during the initial sync or when an account is first added; "new mail" = mail first seen in the Inbox after the initial sync completes (revised 2026-10-08 after PLAN self-review: rules must not touch the user's own sent mail or mail moved to Trash/Spam on the Gmail web).
-- A44 The other-account badge on the account switch button shows the unread count as a number.
+- A44 The other-account badge on the non-selected account button shows the unread count as a number (Q91).
 - A45 SUPERSEDED by Q44: today HH:mm; this year M月d日 H:mm; older yyyy年M月d日 H:mm.
 - A46 On successful send, the matching Gmail Drafts draft is deleted (also for drafts returned from Outbox and later sent); a failed send keeps the draft/Outbox item.
 - A47 SUPERSEDED (Q88): formerly "the bottom search button moves input focus to the always-visible inline search box"; the bottom button no longer exists.

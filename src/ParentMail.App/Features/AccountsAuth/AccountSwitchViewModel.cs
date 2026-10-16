@@ -6,7 +6,7 @@ using ParentMail.Core.Models;
 namespace ParentMail.App.Features.AccountsAuth;
 
 /// <summary>
-/// 上部バーのアカウント切替ボタン（現在の表示名）と、もう一方のアカウントの受信トレイ未読バッジ。
+/// 上部バーのアカウントボタン（アカウントごとに 1 つ、選択中 / 非選択）と、非選択側だけの受信トレイ未読バッジ。
 /// 現在のアカウントは IAppState.CurrentAccountId に持ち、最後に使った ID を設定に保存する。
 /// </summary>
 public sealed partial class AccountSwitchViewModel : ObservableObject
@@ -25,7 +25,6 @@ public sealed partial class AccountSwitchViewModel : ObservableObject
         _mail = mail;
         _settings = settings;
         _ui = SynchronizationContext.Current;
-        SwitchCommand = new RelayCommand(Switch, () => FindOther() is not null);
 
         _state.CurrentAccountChanged += (_, _) => Post(OnCurrentChanged);
         if (sync is not null)
@@ -38,17 +37,8 @@ public sealed partial class AccountSwitchViewModel : ObservableObject
         }
     }
 
-    /// <summary>切替ボタンの文字 = 現在のアカウントの表示名だけ。</summary>
-    [ObservableProperty] private string _label = string.Empty;
-
-    [NotifyPropertyChangedFor(nameof(HasBadge), nameof(BadgeText))]
-    [ObservableProperty] private int _otherUnread;
-
-    public bool HasBadge => OtherUnread > 0;
-    public string BadgeText => OtherUnread > 0 ? OtherUnread.ToString() : string.Empty;
-
-    /// <summary>もう一方のアカウントへ切り替える（1 つしか無いときは何もしない）。</summary>
-    public IRelayCommand SwitchCommand { get; }
+    /// <summary>アカウントごとのボタン（登録順、1〜2 件）。変わるたびに作り直す。</summary>
+    [ObservableProperty] private IReadOnlyList<AccountButtonItem> _items = Array.Empty<AccountButtonItem>();
 
     /// <summary>起動時: 前回のアカウント（無ければ先頭）を現在にする。</summary>
     public void Initialize() => Refresh();
@@ -69,23 +59,20 @@ public sealed partial class AccountSwitchViewModel : ObservableObject
             _state.CurrentAccountId = null;
         }
 
-        Label = current?.DisplayName ?? string.Empty;
-        var other = all.FirstOrDefault(a => a.Id != current?.Id);
-        OtherUnread = other is null ? 0 : _mail.UnreadCount(other.Id, FolderKind.Inbox);
-        SwitchCommand.NotifyCanExecuteChanged();
-    }
-
-    private Account? FindOther()
-    {
-        var all = _accounts.GetAll();
-        return all.Count < 2 ? null : all.FirstOrDefault(a => a.Id != _state.CurrentAccountId);
+        Items = all.Select(a =>
+        {
+            var selected = a.Id == current?.Id;
+            // 選択中のボタンには未読バッジを出さない（自分の未読は受信トレイのフォルダ表示にある）
+            var unread = selected ? 0 : _mail.UnreadCount(a.Id, FolderKind.Inbox);
+            return new AccountButtonItem(a.Id, a.DisplayName, a.DisplayName, selected, unread, () => Select(a.Id));
+        }).ToList();
     }
 
     // 切替: IAppState が受信トレイへ戻し・選択解除を行う。ズームと検索のリセットは各機能が CurrentAccountChanged で行う。
-    private void Switch()
+    // 選択中のボタンを押しても何もしない。
+    private void Select(string accountId)
     {
-        var other = FindOther();
-        if (other is not null) _state.CurrentAccountId = other.Id;
+        if (accountId != _state.CurrentAccountId) _state.CurrentAccountId = accountId;
     }
 
     private void OnCurrentChanged()
@@ -102,4 +89,32 @@ public sealed partial class AccountSwitchViewModel : ObservableObject
         if (_ui is null || SynchronizationContext.Current == _ui) action();
         else _ui.Post(_ => action(), null);
     }
+}
+
+/// <summary>アカウントボタン 1 つ分。Unread は選択中のとき 0。</summary>
+public sealed class AccountButtonItem
+{
+    private readonly Action _select;
+
+    public AccountButtonItem(string accountId, string name, string toolTip, bool isSelected, int unread, Action select)
+    {
+        AccountId = accountId;
+        Name = name;
+        ToolTip = toolTip;
+        IsSelected = isSelected;
+        Unread = unread;
+        _select = select;
+        // 選択中でも常に実行可（無効にすると押せなくなりフォーカスも受けない）。押しても何もしない。
+        SelectCommand = new RelayCommand(() => { if (!IsSelected) _select(); });
+    }
+
+    public string AccountId { get; }
+    public string Name { get; }
+    /// <summary>省略表示されても全文が読めるよう、表示名そのもの。</summary>
+    public string ToolTip { get; }
+    public bool IsSelected { get; }
+    public int Unread { get; }
+    public string BadgeText => Unread.ToString();
+    public bool ShowBadge => !IsSelected && Unread > 0;
+    public IRelayCommand SelectCommand { get; }
 }

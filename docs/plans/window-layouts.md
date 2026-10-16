@@ -59,7 +59,7 @@ Decided by the user: top-bar and bottom-strip text is capped while mail list, pr
 | 22pt (29 DIP) | about 960 | borderline, no margin |
 | 20pt (27 DIP) | about 900 | fits with margin |
 
-Proposal: cap = 20pt (constant `ChromeTextMaxPt`). Below 20pt the setting applies as is (default 18pt). Button HEIGHT still grows to the minimum 56 DIP. The list-pane bottom strip uses the same cap and wraps a long label onto two lines (e.g. 受信拒否リスト) instead of overflowing. If the user prefers a bigger cap, the top bar would have to wrap folder buttons onto two rows, which costs list space at 700 height.
+Proposal: cap = 20pt (constant `ChromeTextMaxPt`). Below 20pt the setting applies as is (default 18pt). Button HEIGHT still grows to the minimum 56 DIP. The list-pane bottom strip uses the same cap and wraps a long label onto two lines (e.g. 受信拒否リスト) instead of overflowing. Account buttons (Issue #1): row 1 holds two account buttons (each at most about 300 DIP), the HTML checkbox and 更新; at the 20pt cap this needs about 1,000 DIP, which fits the about 1,008 DIP usable at 1024 wide (tight, so the 300 DIP maximum and the ellipsis rule must not be loosened). If the user prefers a bigger cap, the top bar would have to wrap folder buttons onto two rows, which costs list space at 700 height.
 
 ## 2. Main window
 
@@ -72,7 +72,7 @@ At 1024 wide one row cannot hold account button + 6 folders + HTML checkbox + re
 ```
 Banner area (0 to 2 banners, section 2.3)
 +----------------------------------------------------------------------------+
-| [ 母のメール (3) ]                                  [ ] HTMLで表示  [ 更新 ] |  row 1
+| [✓母のメール] [父のメール (3)]                      [ ] HTMLで表示  [ 更新 ] |  row 1
 | [受信トレイ (12)] [送信トレイ (!1)] [送信済み] [ごみ箱] [下書き] [迷惑メール] |  row 2
 +--------------------------+-+-----------------------------------------------+
 | [検索ボックス....] [クリア] | |  [返信] [全員に返信] [転送]  [拡大][縮小][100%に戻す]   [削除] |
@@ -89,7 +89,13 @@ Banner area (0 to 2 banners, section 2.3)
          list ~35%         splitter            preview ~65%
 ```
 
-- Row 1: account switch button at the left (name only, small red number badge when the other account has unread mail); HTML checkbox 「HTMLで表示」 and 「更新」 at the right.
+- Row 1 (Issue #1, user decision 2026-10-16, replaces the single switch button): two side-by-side account buttons at the left end, one per account (data from `AccountSwitchViewModel`); HTML checkbox 「HTMLで表示」 and 「更新」 at the right.
+  - Selected account button: `Primary` blue fill, thick border (3-4 px), bold text and a leading check mark (✓) before the name, so the state is never colour alone. Pressing it does nothing (it still takes focus).
+  - Non-selected button: white background, black text, thin border (2 px); pressing it switches to that account.
+  - Only ONE account exists: show just the selected button; no empty frame or placeholder for the second.
+  - Unread badge (red, white text on `#A80000`) appears ONLY inside the NON-selected button, to the right of the name, when that account's Inbox has unread mail. The selected account's own unread count stays on the Inbox folder badge (row 2).
+  - Width: each button at most about 300 DIP; a longer name ends with an ellipsis and the full name is the tooltip. On the non-selected button about 50 DIP is reserved for the badge FIRST, then the name is cut to the rest.
+  - Switching behaviour is unchanged (Inbox of the new account selected, selection cleared, zoom/search reset, `last_account_id` saved).
 - Row 2: the six folder buttons in the spec order. Inbox unread count and Outbox failure count are shown as red badges inside the button (white text on `#A80000`).
 - The active folder button is drawn pressed (thick border + blue fill).
 
@@ -123,7 +129,7 @@ At the 1024x700 minimum the list shows only about 2.5 rows (top bar 136 + search
 
 ### 2.5 Tab order (main window)
 
-Initial focus = mail list. Tab order: account switch, HTML checkbox, 更新, six folder buttons, search box, クリア, すべて選ぶ, mail list (rows: Up/Down, Space toggles the check), bottom strip (5 buttons, row by row; the blank cell is skipped, Q88), preview header buttons (返信, 全員に返信, 転送, [編集], 拡大, 縮小, 100%に戻す, 削除), HTML preview/plain text, attachment buttons. Shift+Tab reverses.
+Initial focus = mail list. Tab order: account button 1, account button 2 (only one stop when there is one account), HTML checkbox, 更新, six folder buttons, search box, クリア, すべて選ぶ, mail list (rows: Up/Down, Space toggles the check), bottom strip (5 buttons, row by row; the blank cell is skipped, Q88), preview header buttons (返信, 全員に返信, 転送, [編集], 拡大, 縮小, 100%に戻す, 削除), HTML preview/plain text, attachment buttons. Shift+Tab reverses. Enter and Space press the focused account button; Left/Right arrow keys do NOT switch accounts (Issue #1).
 
 ## 3. Common dialogs
 
