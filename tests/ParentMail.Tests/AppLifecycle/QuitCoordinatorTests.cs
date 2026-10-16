@@ -128,10 +128,11 @@ public sealed class QuitCoordinatorTests
     }
 
     [Fact]
-    public async Task Pending_is_counted_across_both_accounts()
+    public async Task Pending_is_counted_across_all_five_accounts()
     {
-        _outbox.Pending["a1"] = 0;
-        _outbox.Pending["a2"] = 1;
+        // 最後（5 番目）のアカウントだけに送信待ちがあっても警告を出す
+        for (var i = 1; i <= 4; i++) _outbox.Pending[$"a{i}"] = 0;
+        _outbox.Pending["a5"] = 1;
         await Create().RequestQuitAsync(QuitReason.MainWindowClosed);
         Assert.Equal(1, _prompt.AskCalls);
     }
