@@ -31,7 +31,7 @@
 - Gmail accounts only; authentication by Gmail app password.
 - Maximum 2 accounts.
 - Each account has a renamable display name.
-- Switched by the account switch button at the left end of the top bar. It is an obvious, labeled button showing the current account name.
+- Switched by the account buttons at the left end of the top bar: one labeled button per account, side by side; the selected one is filled, bold and marked with a check mark (Issue #1, QA.md Q91). With one account only that one button is shown.
 - Account-add screen states that a Gmail app password is required. Adding an account first tests IMAP and SMTP login with the entered address and app password; a duplicate address is rejected. No detailed in-app setup guide (a knowledgeable person sets up the accounts).
 - If the first account-add screen (no account exists yet) is closed without adding an account, a confirmation 「このまま閉じるとアプリは終わります。よろしいですか?」 with 「終わる」 / 「戻る」 (default 戻る) is shown (wording approved).
 - An account that still has mail in its Outbox cannot be deleted: the deletion is stopped with a message asking the user to send the mail or return it to drafts first.
@@ -41,7 +41,7 @@
 
 Main window has 3 areas (see sketch: `docs/images/layout-sketch.png`).
 
-- Top bar (full window width), left to right: account switch button, Inbox, Outbox, Sent, Trash, Drafts, Spam. Folders are not in a left pane.
+- Top bar (full window width), left to right: account buttons, Inbox, Outbox, Sent, Trash, Drafts, Spam. Folders are not in a left pane.
 - Mail list: narrow pane at the left below the top bar.
   - Each row has 2 lines: line 1 = sender, date/time and an attachment icon (paperclip); line 2 = subject, shortened with an ellipsis when long. Unread mails are bold (bold only). A checkbox is always shown at the left of every row (multi-select delete, section 5).
   - Action buttons at the bottom of the mail list pane (Japanese labels), a 2 x 3 grid filled row by row: 新しいメール (compose), [blank cell, kept free; no search button because the search box above the list is always visible], settings, address book, 受信拒否リスト (block list), 振り分けルール (filter rules).
@@ -53,7 +53,7 @@ Main window has 3 areas (see sketch: `docs/images/layout-sketch.png`).
 - Composing a new mail, reply, and forward open in a separate window, not inline in the main window. Only one such window exists at a time (section 5).
 - The boundary between mail list and preview is draggable (resizable splitter). First launch: the window opens maximized with the list pane about 35 percent of the width; afterwards the last size and splitter position are restored.
 - The text of the top bar and of the bottom button strip of the list pane is capped (it stops growing above a maximum size) so that it always fits; mail list, preview and mail text follow the text-size setting up to 48pt. The cap is 20pt; the top bar has two rows and the bottom strip is a 2 x 3 grid (detailed-spec section 1).
-- Unread count is shown only on the Inbox folder button. Exception: the account switch button shows a small unread badge showing the unread count when the other (non-displayed) account has unread mail.
+- Unread count is shown only on the Inbox folder button. Exception: the non-selected account button shows a small unread badge showing the unread count when that (non-displayed) account has unread mail.
 - HTML/plain-text switch: a checkbox in the top bar. It applies to the currently displayed mail only; opening another mail resets it to the default plain-text display.
 
 ## 5. Confirmed Features (first release)
