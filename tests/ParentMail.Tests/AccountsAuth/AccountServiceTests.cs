@@ -114,17 +114,30 @@ public sealed class AccountServiceTests
     }
 
     [Fact]
-    public async Task ThirdAccount_IsRejected_AsLimitReached_WithoutLoginAttempt()
+    public void AccountLimitConstants_MatchSpec()
     {
-        await _svc.ValidateAndAddAsync("a@gmail.com", "p", "A");
-        await _svc.ValidateAndAddAsync("b@gmail.com", "p", "B");
+        Assert.Equal(5, Constants.MaxAccounts);
+        Assert.Equal(300, Constants.AccountButtonMaxWidthDip);
+        Assert.Equal(220, Constants.AccountButtonMaxWidthManyDip);
+        Assert.Equal(120, Constants.AccountButtonMinWidthDip);
+        Assert.Equal(56, Constants.AccountScrollArrowDip);
+    }
+
+    [Fact]
+    public async Task FifthAccount_IsAccepted_SixthIsRejected_AsLimitReached_WithoutLoginAttempt()
+    {
+        for (var i = 1; i <= 5; i++)
+        {
+            Assert.True(_svc.CanAddMore);
+            Assert.Equal(AddAccountResult.Ok, await _svc.ValidateAndAddAsync($"u{i}@gmail.com", "p", $"N{i}"));
+        }
         Assert.False(_svc.CanAddMore);
         var count = _factory.CreateCount;
 
-        var r = await _svc.ValidateAndAddAsync("c@gmail.com", "p", "C");
+        var r = await _svc.ValidateAndAddAsync("u6@gmail.com", "p", "N6");
 
         Assert.Equal(AddAccountResult.LimitReached, r);
-        Assert.Equal(2, _repo.GetAll().Count);
+        Assert.Equal(5, _repo.GetAll().Count);
         Assert.Equal(count, _factory.CreateCount);
     }
 
