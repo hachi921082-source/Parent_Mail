@@ -143,7 +143,8 @@ public sealed class OutboxService : IOutboxService
         cts.CancelAfter(SendAllTimeout);
         try
         {
-            await Task.WhenAll(_accounts.GetAll().Select(a => RetryDueAsync(a.Id, cts.Token))).ConfigureAwait(false);
+            // アカウントごとに 1 つずつ順に送る（並列にしない、A90）。途中で失敗しても残りは試す
+            foreach (var a in _accounts.GetAll()) await RetryDueAsync(a.Id, cts.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) { }
         return PendingCount() == 0 ? SendAllResult.AllSent : SendAllResult.SomeFailed;

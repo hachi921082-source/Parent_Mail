@@ -83,6 +83,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>上段左のアカウントボタン群（accounts-auth が AccountButtonItem の一覧を設定する）。</summary>
     [ObservableProperty] private System.Collections.IEnumerable? _accountButtons;
+    /// <summary>アカウントボタン 1 つの最大幅（DIP）。1〜2 件は 300、3〜5 件は 220（accounts-auth が設定する）。</summary>
+    [ObservableProperty] private double _accountButtonMaxWidth = Constants.AccountButtonMaxWidthDip;
     [ObservableProperty] private bool _htmlMode;
     [NotifyPropertyChangedFor(nameof(RefreshLabel))]
     [ObservableProperty] private bool _isRefreshing;

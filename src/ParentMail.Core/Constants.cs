@@ -25,7 +25,13 @@ public static class Constants
 
     public const double MinWindowWidth = 1024;
     public const double MinWindowHeight = 700;
-    public const int MaxAccounts = 2;
+    public const int MaxAccounts = 5;
+
+    // アカウントボタン帯（Issue #8、A82・A86）
+    public const double AccountButtonMaxWidthDip = 300;      // 1〜2 件のとき
+    public const double AccountButtonMaxWidthManyDip = 220;  // 3〜5 件のとき
+    public const double AccountButtonMinWidthDip = 120;
+    public const double AccountScrollArrowDip = 56;
 
     /// <summary>pt から DIP への換算係数。</summary>
     public const double PointToDip = 96.0 / 72.0;

@@ -51,6 +51,12 @@ public static class Strings
     public const string TB_24 = "編集";
     /// <summary>閉じる</summary>
     public const string TB_25 = "閉じる";
+    /// <summary>左のアカウントを見る</summary>
+    public const string TB_26 = "左のアカウントを見る";
+    /// <summary>右のアカウントを見る</summary>
+    public const string TB_27 = "右のアカウントを見る";
+    /// <summary>見えていないアカウントに未読メールがあります</summary>
+    public const string TB_28 = "見えていないアカウントに未読メールがあります";
     /// <summary>インターネットにつながっていません。保存済みのメールは読めます。</summary>
     public const string BN_01 = "インターネットにつながっていません。保存済みのメールは読めます。";
     /// <summary>メールを読み込んでいます…</summary>
@@ -105,8 +111,8 @@ public static class Strings
     public const string AC_02 = "メールアドレス / アプリパスワード（スペースなし） / 表示名";
     /// <summary>登録する / やめる</summary>
     public const string AC_03 = "登録する / やめる";
-    /// <summary>アカウントは2つまでです</summary>
-    public const string AC_04 = "アカウントは2つまでです";
+    /// <summary>アカウントは5つまでです</summary>
+    public const string AC_04 = "アカウントは5つまでです";
     /// <summary>このメールアドレスは登録済みです</summary>
     public const string AC_05 = "このメールアドレスは登録済みです";
     /// <summary>ログインできませんでした。アプリパスワードを確認してください。</summary>

@@ -94,7 +94,13 @@ Banner area (0 to 2 banners, section 2.3)
   - Non-selected button: white background, black text, thin border (2 px); pressing it switches to that account.
   - Only ONE account exists: show just the selected button; no empty frame or placeholder for the second.
   - Unread badge (red, white text on `#A80000`) appears ONLY inside the NON-selected button, to the right of the name, when that account's Inbox has unread mail. The selected account's own unread count stays on the Inbox folder badge (row 2).
-  - Width: each button at most about 300 DIP; a longer name ends with an ellipsis and the full name is the tooltip. On the non-selected button about 50 DIP is reserved for the badge FIRST, then the name is cut to the rest.
+  - Up to 5 accounts, overflow scrolls sideways (Issue #8, Q92, A82-A87). The buttons sit in a horizontal strip that takes all the width between the left edge and the HTML checkbox; the strip is not a scrollbar:
+    - Arrow buttons 「◀」 (left) and 「▶」 (right) of 56 x 56 DIP at the two ends of the strip, shown only while the buttons do not all fit (tooltip and accessible name [TB-26] / [TB-27]). One press scrolls so the next hidden button on that side is completely visible (instant). An arrow with nothing further that way is drawn disabled. The mouse wheel over the strip also scrolls it.
+    - The selected button is always completely visible (scrolled in at startup, after a switch, add, delete and window resize).
+    - Tab or Shift+Tab onto a clipped or hidden button scrolls it completely into view (the thick focus rectangle is never cut off).
+    - Hidden unread: the arrow on the side with hidden buttons carries a red badge (same look as TB-10) with the SUM of their unread counts; none when 0; its tooltip then also reads [TB-28].
+    - Widths: content width, min 120 DIP; max 300 DIP with 1-2 accounts, max 220 DIP with 3-5 accounts; gap 16 DIP. At 1024 wide and the 20pt cap at least two 220 DIP buttons are visible together with the arrows. See the 5-account frame in `mockups/main-window.html`.
+  - Width (1-2 accounts, Q91): each button at most about 300 DIP; a longer name ends with an ellipsis and the full name is the tooltip. On the non-selected button about 50 DIP is reserved for the badge FIRST, then the name is cut to the rest.
   - Switching behaviour is unchanged (Inbox of the new account selected, selection cleared, zoom/search reset, `last_account_id` saved).
 - Row 2: the six folder buttons in the spec order. Inbox unread count and Outbox failure count are shown as red badges inside the button (white text on `#A80000`).
 - The active folder button is drawn pressed (thick border + blue fill).
@@ -129,7 +135,7 @@ At the 1024x700 minimum the list shows only about 2.5 rows (top bar 136 + search
 
 ### 2.5 Tab order (main window)
 
-Initial focus = mail list. Tab order: account button 1, account button 2 (only one stop when there is one account), HTML checkbox, 更新, six folder buttons, search box, クリア, すべて選ぶ, mail list (rows: Up/Down, Space toggles the check), bottom strip (5 buttons, row by row; the blank cell is skipped, Q88), preview header buttons (返信, 全員に返信, 転送, [編集], 拡大, 縮小, 100%に戻す, 削除), HTML preview/plain text, attachment buttons. Shift+Tab reverses. Enter and Space press the focused account button; Left/Right arrow keys do NOT switch accounts (Issue #1).
+Initial focus = mail list. Tab order: account button 1 to N left to right (N = 1 to 5, one stop per account; the scroll arrows are NOT Tab stops, a button scrolled out of view is scrolled in when it gets focus, A84/A91), HTML checkbox, 更新, six folder buttons, search box, クリア, すべて選ぶ, mail list (rows: Up/Down, Space toggles the check), bottom strip (5 buttons, row by row; the blank cell is skipped, Q88), preview header buttons (返信, 全員に返信, 転送, [編集], 拡大, 縮小, 100%に戻す, 削除), HTML preview/plain text, attachment buttons. Shift+Tab reverses. Enter and Space press the focused account button; Left/Right arrow keys do NOT switch accounts (Issue #1).
 
 ## 3. Common dialogs
 
@@ -171,10 +177,11 @@ Title is always filled in (see `ui-strings.md` section 18). Close box (X) = same
 |  | 父のメール   father@gmail.com                          |   |
 |  |   [名前を変える] [パスワードを入れ直す] [削除]         |   |
 |  +------------------------------------------------------+   |
-|  [アカウントを追加]  (disabled with 「アカウントは2つまでです」 at 2) |
+|  [アカウントを追加]  (disabled with 「アカウントは5つまでです」 at 5) |
 |                                                  [ 閉じる ]  |
 +------------------------------------------------------------+
 ```
+- Accounts list (Issue #8, Q92, A87): up to 5 two-line rows (about 140 DIP each). The list is a vertical scroll area filling the height left in the window: at least 2 full rows (about 280 DIP), at most 3 (about 420 DIP). With more rows a 24 DIP wide vertical scrollbar (shown when needed) and the mouse wheel scroll it; Tab onto a hidden button scrolls it into view. アカウントを追加 and 閉じる stay outside the scroll area and are always visible. The sketch above shows 2 rows only.
 - Field order: text-size number box, slider, then per account row: 名前を変える, パスワードを入れ直す, 削除; then アカウントを追加; then 閉じる.
 - Tab order = field order. Initial focus = the number box. Enter = 閉じる; Esc = 閉じる (changes apply live, so closing keeps them).
 - Invalid number: 「12から48の数字を入れてください。」 under the box, the last valid value is kept.

@@ -29,6 +29,7 @@ public sealed class ShellAccountBinder
         void Push()
         {
             shell.AccountButtons = _switch.Items;
+            shell.AccountButtonMaxWidth = _switch.ButtonMaxWidthDip;
         }
 
         _switch.PropertyChanged += (_, _) => Push();

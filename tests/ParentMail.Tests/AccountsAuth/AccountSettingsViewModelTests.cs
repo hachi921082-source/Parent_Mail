@@ -84,13 +84,30 @@ public sealed class AccountSettingsViewModelTests
         Assert.Equal(new[] { "おかあさん", "ちち" }, vm.Accounts.Select(x => x.DisplayName));
     }
 
+    // 上限（5 件）まで足す
+    private void FillToLimit()
+    {
+        for (var i = 3; i <= Constants.MaxAccounts; i++) _repo.Add(new Account($"a{i}", $"u{i}@gmail.com", $"名前{i}", i - 1));
+        _vm.Reload();
+    }
+
     [Fact]
-    public void Accounts_ListNamesAndAddresses_AddDisabledAtLimitWithNote()
+    public void Accounts_ListNamesAndAddresses_AddEnabledBelowLimit()
     {
         Assert.Equal(new[] { "お母さん", "お父さん" }, _vm.Accounts.Select(a => a.DisplayName));
         Assert.Equal("two@gmail.com", _vm.Accounts[1].Email);
+        Assert.True(_vm.AddCommand.CanExecute(null));
+        Assert.Equal(string.Empty, _vm.AddNote);
+    }
+
+    [Fact]
+    public void Accounts_AtFive_AddDisabledWithNote()
+    {
+        FillToLimit();
+        Assert.Equal(5, _vm.Accounts.Count);
         Assert.False(_vm.AddCommand.CanExecute(null));
         Assert.Equal(Strings.AC_04, _vm.AddNote);
+        Assert.Equal("アカウントは5つまでです", Strings.AC_04);
     }
 
     [Fact]
@@ -232,6 +249,7 @@ public sealed class AccountSettingsViewModelTests
     [Fact]
     public async Task Add_AtLimit_DoesNothing()
     {
+        FillToLimit();
         await _vm.AddAsync();
         Assert.Empty(_dialogs.Calls);
         Assert.Empty(_dialog.Confirms);

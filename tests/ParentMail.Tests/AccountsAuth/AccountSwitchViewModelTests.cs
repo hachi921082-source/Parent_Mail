@@ -178,13 +178,110 @@ public sealed class AccountSwitchViewModelTests
         Assert.True(item.IsSelected);
     }
 
+    // 再取得でボタンを作り直すと、押したボタンが消えてキーボードフォーカスを失う（Issue #1 の指摘）。同じ項目を更新し続ける。
     [Fact]
-    public void ItemsChange_RaisesPropertyChanged()
+    public void Switch_KeepsSameItemInstances_AndUpdatesInPlace()
+    {
+        _unread["a1"] = 7; _unread["a2"] = 3;
+        var vm = Vm(("a1", "A"), ("a2", "B"));
+        var first = vm.Items[0];
+        var second = vm.Items[1];
+        var changes = 0;
+        vm.Items.CollectionChanged += (_, _) => changes++;
+        var raised = new List<string?>();
+        first.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        second.SelectCommand.Execute(null);
+
+        Assert.Same(first, vm.Items[0]);
+        Assert.Same(second, vm.Items[1]);
+        Assert.Equal(0, changes);
+        Assert.False(first.IsSelected);
+        Assert.Equal(7, first.Unread);
+        Assert.Contains(nameof(AccountButtonItem.IsSelected), raised);
+        Assert.Contains(nameof(AccountButtonItem.ShowBadge), raised);
+        Assert.Contains(nameof(AccountButtonItem.Unread), raised);
+    }
+
+    [Fact]
+    public void Refresh_UnreadAndRename_UpdateExistingItems_WithoutCollectionChange()
+    {
+        var vm = Vm(("a1", "A"), ("a2", "B"));
+        var second = vm.Items[1];
+        var changes = 0;
+        vm.Items.CollectionChanged += (_, _) => changes++;
+
+        _unread["a2"] = 6;
+        _repo.Rename("a2", "新しい名前");
+        vm.Refresh();
+
+        Assert.Same(second, vm.Items[1]);
+        Assert.Equal(6, second.Unread);
+        Assert.Equal("新しい名前", second.Name);
+        Assert.Equal("新しい名前", second.ToolTip);
+        Assert.Equal(0, changes);
+    }
+
+    [Fact]
+    public void Refresh_AddAndDelete_OnlyAddsOrRemovesChangedItems()
+    {
+        var vm = Vm(("a1", "A"), ("a2", "B"), ("a3", "C"));
+        var a1 = vm.Items[0];
+        var a3 = vm.Items[2];
+
+        _repo.Delete("a2");
+        vm.Refresh();
+        Assert.Equal(new[] { "a1", "a3" }, vm.Items.Select(i => i.AccountId));
+        Assert.Same(a1, vm.Items[0]);
+        Assert.Same(a3, vm.Items[1]);
+
+        _repo.Add(new Account("a4", "a4@gmail.com", "D", 3));
+        vm.Refresh();
+        Assert.Equal(new[] { "a1", "a3", "a4" }, vm.Items.Select(i => i.AccountId));
+        Assert.Same(a1, vm.Items[0]);
+        Assert.Same(a3, vm.Items[1]);
+    }
+
+    [Fact]
+    public void CurrentDeleted_SelectionMovesToRemaining_KeepingItsItem()
+    {
+        var vm = Vm(("a1", "A"), ("a2", "B"));
+        var second = vm.Items[1];
+        _repo.Delete("a1");
+        vm.Refresh();
+        Assert.Same(second, Assert.Single(vm.Items));
+        Assert.True(second.IsSelected);
+        Assert.Equal(0, second.Unread);
+    }
+
+    [Fact]
+    public void FiveAccounts_AllShown_InRegistrationOrder_WithSingleSelected()
+    {
+        var vm = Vm(("a1", "A"), ("a2", "B"), ("a3", "C"), ("a4", "D"), ("a5", "E"));
+        Assert.Equal(new[] { "a1", "a2", "a3", "a4", "a5" }, vm.Items.Select(i => i.AccountId));
+        Assert.Single(vm.Items, i => i.IsSelected);
+    }
+
+    [Theory]
+    [InlineData(1, 300)]
+    [InlineData(2, 300)]
+    [InlineData(3, 220)]
+    [InlineData(5, 220)]
+    public void ButtonMaxWidth_DependsOnAccountCount(int count, double expected)
+    {
+        var vm = Vm(Enumerable.Range(1, count).Select(i => ($"a{i}", $"N{i}")).ToArray());
+        Assert.Equal(expected, vm.ButtonMaxWidthDip);
+    }
+
+    [Fact]
+    public void ButtonMaxWidth_ChangesWhenCountCrossesTwo_AndRaisesPropertyChanged()
     {
         var vm = Vm(("a1", "A"), ("a2", "B"));
         var raised = 0;
-        vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(AccountSwitchViewModel.Items)) raised++; };
-        Item(vm, "a2").SelectCommand.Execute(null);
-        Assert.True(raised > 0);
+        vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(AccountSwitchViewModel.ButtonMaxWidthDip)) raised++; };
+        _repo.Add(new Account("a3", "a3@gmail.com", "C", 2));
+        vm.Refresh();
+        Assert.Equal(220, vm.ButtonMaxWidthDip);
+        Assert.Equal(1, raised);
     }
 }

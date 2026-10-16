@@ -45,7 +45,7 @@
 
 ## Gmail app password (spec.md sections 1 and 3)
 
-- Decision: IMAP/SMTP with Gmail app password; Gmail only; maximum 2 accounts, each renamable.
+- Decision: IMAP/SMTP with Gmail app password; Gmail only; maximum 5 accounts, each renamable (raised from 2 on 2026-10-16, Issue #8; QA.md Q92).
 - Rationale: user's choice. (Note: app passwords require Google 2-step verification to be enabled on the account.)
 
 ## Local data protection (spec.md section 8)

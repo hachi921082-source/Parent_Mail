@@ -29,9 +29,9 @@
 ## 3. Accounts
 
 - Gmail accounts only; authentication by Gmail app password.
-- Maximum 2 accounts.
+- Maximum 5 accounts (Issue #8, QA.md Q92). The add action is unavailable once 5 exist.
 - Each account has a renamable display name.
-- Switched by the account buttons at the left end of the top bar: one labeled button per account, side by side; the selected one is filled, bold and marked with a check mark (Issue #1, QA.md Q91). With one account only that one button is shown.
+- Switched by the account buttons at the left end of the top bar: one labeled button per account, side by side; the selected one is filled, bold and marked with a check mark (Issue #1, QA.md Q91). With one account only that one button is shown. Buttons that do not fit in the row scroll sideways: the strip has left/right arrow buttons, the selected account is always scrolled into view, and unread of hidden accounts is shown on the arrow (detailed-spec section 1, A82-A87).
 - Account-add screen states that a Gmail app password is required. Adding an account first tests IMAP and SMTP login with the entered address and app password; a duplicate address is rejected. No detailed in-app setup guide (a knowledgeable person sets up the accounts).
 - If the first account-add screen (no account exists yet) is closed without adding an account, a confirmation 「このまま閉じるとアプリは終わります。よろしいですか?」 with 「終わる」 / 「戻る」 (default 戻る) is shown (wording approved).
 - An account that still has mail in its Outbox cannot be deleted: the deletion is stopped with a message asking the user to send the mail or return it to drafts first.
@@ -95,7 +95,7 @@ Not in the first release; may be reconsidered later.
 Out of scope:
 
 - Mail services other than Gmail
-- 3 or more accounts
+- 6 or more accounts
 - Smartphone version
 - Sharing with others
 - Calendar integration
@@ -125,13 +125,13 @@ Out of scope:
   - Background backfill of older bodies while the app is idle is included (parameters in detailed-spec section 4).
   - During the first sync with an empty list the list shows no 「メールはありません」, only the loading banner.
   - Gmail "All Mail" is also synced, under the same rules as the other folders; a message appearing in several Gmail folders is stored once (keyed by X-GM-MSGID).
-  - Both accounts are synced on the same timer (startup, then every 5 minutes).
+  - All accounts (up to 5) are synced on the same timer (startup, then every 5 minutes), one account after another, never in parallel (detailed-spec A89).
 - Fetch timing: on app startup, then automatically every 5 minutes, plus a manual refresh button.
 - Send failure (online or offline): the mail stays in Outbox, is retried every sync cycle (5 minutes) with no upper limit, and a plain-language failure notice is shown once after 3 failures (the failure marker stays); Outbox menu: "Send now" / "Return to drafts".
 - Attachment limit: size is checked on the estimated encoded message size against Gmail's 25 MB (about 18 MB of raw files): sum over files of ceil(n/3) x 4 x 78/76, plus body bytes, plus 10 KB header overhead, must be <= 25,000,000 bytes; over the limit, a plain-language warning is shown and the attachment is refused.
 - Search: local cache only (sender, subject, downloaded bodies) across all folders of the displayed account; not-downloaded older bodies are excluded and the UI says so; no IMAP server search.
 - Sync exclusion: one sync at a time per account; a manual refresh during a sync is merged into it (button shown busy); timer ticks during a sync are skipped.
-- Quitting the app with unsent mail in Outbox shows a warning ("送信待ちのメールがあります。このまま閉じると送信されません") with three large buttons: send then close / close anyway / back (default). If the send-then-close attempt fails, the app stays open and shows the failure notice. The same dialog is shown when Windows shutdown/logoff is intercepted (SessionEnding); "close anyway" lets Windows continue.
+- Quitting the app with unsent mail in the Outbox of ANY account shows a warning ("送信待ちのメールがあります。このまま閉じると送信されません") with three large buttons: send then close / close anyway / back (default). If the send-then-close attempt fails, the app stays open and shows the failure notice. The same dialog is shown when Windows shutdown/logoff is intercepted (SessionEnding); "close anyway" lets Windows continue.
 - Forward fetches the original's attachments and applies the same executable and size checks; violating attachments are dropped with a notice. Attachments not yet downloaded while offline: notice, forward continues without them.
 - Offline / Gmail unreachable: show cached mail with a plain-language banner; outgoing mail is held in Outbox and sent automatically after reconnect.
 - HTML display default: plain-text mode; the top-bar checkbox switches to HTML for the currently displayed mail only (reset on opening another mail). If a mail has no text part (HTML only), the plain text derived from the HTML is shown instead of an empty pane.

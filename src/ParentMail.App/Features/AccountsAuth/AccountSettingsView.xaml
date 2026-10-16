@@ -5,7 +5,21 @@
     <!-- 設定窓の「アカウント」欄。各行: 表示名 + アドレス、その下に 名前を変える / パスワードを入れ直す / 削除。最後に アカウントを追加。 -->
     <StackPanel>
         <TextBlock Text="{Binding SectionTitle}" FontWeight="Bold" Margin="0,0,0,8" />
-        <ItemsControl ItemsSource="{Binding Accounts}" IsTabStop="False">
+        <!-- 行の一覧は縦スクロール（2〜3 行ぶんの高さ、Issue #8・A87）。追加ボタンは外に置き、常に見える -->
+        <ScrollViewer x:Name="RowsScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      IsTabStop="False" Focusable="False">
+            <ScrollViewer.Resources>
+                <!-- 縦スクロールバーは幅 24 DIP で見やすく -->
+                <Style TargetType="ScrollBar">
+                    <Style.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter Property="Width" Value="24" />
+                            <Setter Property="MinWidth" Value="24" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ScrollViewer.Resources>
+        <ItemsControl x:Name="RowsHost" ItemsSource="{Binding Accounts}" IsTabStop="False" SizeChanged="OnRowsSizeChanged">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border BorderBrush="{DynamicResource PageText}" BorderThickness="1" Padding="12" Margin="0,0,0,8">
@@ -27,6 +41,7 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        </ScrollViewer>
         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
             <Button Content="{Binding AddLabel}" Command="{Binding AddCommand}" Style="{StaticResource AppButton}" Margin="0,0,16,0" />
             <TextBlock Text="{Binding AddNote}" VerticalAlignment="Center" />
