@@ -52,6 +52,15 @@ public static class AccountStripMath
     }
 
     /// <summary>
+    /// その側にまだ全部は見えていないボタンがあるか（矢印を押せるか。無ければ灰色にする）。
+    /// 末尾の間隔は数えないので、最後のボタンが見えていれば右は押せない。
+    /// </summary>
+    public static bool CanScroll(IReadOnlyList<StripButtonExtent> buttons, int direction, double offset, double viewport)
+        => direction < 0
+            ? buttons.Any(b => b.Left < offset - Epsilon)
+            : buttons.Any(b => b.Right > offset + viewport + Epsilon);
+
+    /// <summary>
     /// 矢印 1 回分のスクロール先。direction = -1 で左、+1 で右。
     /// その側で全部は見えていない最初のボタンが、全部見える位置まで動く。無ければ現在位置のまま。
     /// </summary>
