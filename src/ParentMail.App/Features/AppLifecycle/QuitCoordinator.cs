@@ -67,7 +67,7 @@ public sealed class QuitCoordinator
             // 1. 作成窓: どれか 1 つでも「戻る」なら取りやめ
             if (!await _compose.CloseAllAsync().ConfigureAwait(true)) return false;
 
-            // 2. 送信待ち（両アカウント）
+            // 2. 送信待ち（全アカウント、最大 5 件分の合計）
             if (_outbox.PendingCount() > 0)
             {
                 switch (_prompt.AskUnsentMail())
