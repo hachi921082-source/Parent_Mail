@@ -5,7 +5,7 @@
 Parent_Mail: Windows desktop Gmail client for the user's elderly parents (poor eyesight, unfamiliar with PCs/smartphones). Simple UI, large text, minimal operations.
 
 - Stack: C# + WPF, MailKit (IMAP/SMTP), WebView2 (HTML display), SQLite (local mail cache), Windows Credential Manager (app password).
-- Gmail only, app-password auth, max 2 renamable accounts, switched by a top-bar button.
+- Gmail only, app-password auth, max 5 renamable accounts (raised from 2, Issue #8), switched by side-by-side top-bar buttons that scroll horizontally on overflow.
 - Layout: top bar (account switch + folders) / narrow resizable mail list / very wide preview. Compose, reply, forward open in a separate window.
 - Plain-text display by default; top-bar checkbox switches to HTML. Remote images blocked by default.
 - Local cache mirrors Gmail state; delete = move to Gmail Trash only; works offline with cached mail.
