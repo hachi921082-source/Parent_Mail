@@ -118,4 +118,17 @@ public sealed class AccountStripMathTests
     {
         Assert.Equal(0, AccountStripMath.OffsetForArrow(Buttons(0, 0, 0), -1, 0, 500, 700));
     }
+
+    [Fact]
+    public void CanScroll_OnlyTowardSideWithPartlyOrFullyHiddenButtons()
+    {
+        var b = Buttons(0, 0, 0, 0, 0); // 最後のボタンの右端は 1164
+        Assert.False(AccountStripMath.CanScroll(b, -1, 0, 500));
+        Assert.True(AccountStripMath.CanScroll(b, +1, 0, 500));
+        Assert.True(AccountStripMath.CanScroll(b, -1, 300, 500));
+        Assert.True(AccountStripMath.CanScroll(b, +1, 300, 500));
+        // 最後のボタンが全部見えれば、右はこれ以上動かせない（末尾の間隔だけ残っていても）
+        Assert.False(AccountStripMath.CanScroll(b, +1, 1164 - 500, 500));
+        Assert.True(AccountStripMath.CanScroll(b, -1, 1164 - 500, 500));
+    }
 }
