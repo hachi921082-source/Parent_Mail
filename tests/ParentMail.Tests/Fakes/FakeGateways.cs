@@ -121,9 +121,20 @@ public sealed class FakeSmtpGateway : ISmtpGateway
     /// <summary>次回以降の送信結果。Ok 以外なら Sent には記録しない。</summary>
     public SendResult Result { get; set; } = SendResult.Ok;
 
-    public Task<SendResult> SendAsync(MimeKit.MimeMessage message, string accountId, CancellationToken ct = default)
+    /// <summary>1 通ごとの送信にかける時間。同時に走った最大数を見るテスト用（既定 0 = 即完了）。</summary>
+    public TimeSpan Delay { get; set; }
+    public int MaxConcurrent { get; private set; }
+    private int _running;
+
+    public async Task<SendResult> SendAsync(MimeKit.MimeMessage message, string accountId, CancellationToken ct = default)
     {
-        if (Result == SendResult.Ok) Sent.Add((message, accountId));
-        return Task.FromResult(Result);
+        MaxConcurrent = Math.Max(MaxConcurrent, Interlocked.Increment(ref _running));
+        try
+        {
+            if (Delay > TimeSpan.Zero) await Task.Delay(Delay, ct).ConfigureAwait(false);
+            if (Result == SendResult.Ok) lock (Sent) Sent.Add((message, accountId));
+            return Result;
+        }
+        finally { Interlocked.Decrement(ref _running); }
     }
 }
