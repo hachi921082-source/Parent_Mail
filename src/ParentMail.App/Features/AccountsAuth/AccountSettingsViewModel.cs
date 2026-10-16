@@ -78,7 +78,7 @@ public sealed partial class AccountSettingsViewModel : ObservableObject
 
     public IAsyncRelayCommand AddCommand { get; }
 
-    /// <summary>追加ボタンが灰色のとき、その横に出す「アカウントは2つまでです」。</summary>
+    /// <summary>追加ボタンが灰色のとき、その横に出す「アカウントは5つまでです」。</summary>
     [ObservableProperty] private string _addNote = string.Empty;
 
     /// <summary>一覧を取り直す（追加・名前変更・削除のあと）。</summary>
