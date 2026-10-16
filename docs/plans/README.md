@@ -108,7 +108,11 @@ DB schemas are defined in `sync-cache/PLAN-1.md` (cache.db) and `settings/PLAN.m
 | MaxEncodedMessageBytes | 25,000,000 |
 | HeaderOverheadBytes | 10,240 |
 | MinWindow | 1024 x 700 |
-| MaxAccounts | 2 |
+| MaxAccounts | 5 (Issue #8, Q92; was 2) |
+| AccountButtonMaxWidthDip | 300 (1-2 accounts, Q91) |
+| AccountButtonMaxWidthManyDip | 220 (3-5 accounts, A86) |
+| AccountButtonMinWidthDip | 120 (A86) |
+| AccountScrollArrowDip | 56 (arrow button width and height, A82) |
 | PointToDip | 96/72 |
 | ChromeTextMaxPt | 20 (top bar and list-pane bottom strip text cap) |
 | TransientNoticeSeconds | 4 |
