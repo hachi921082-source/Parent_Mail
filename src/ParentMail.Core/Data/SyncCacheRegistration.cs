@@ -6,7 +6,7 @@ namespace ParentMail.Core.Data;
 /// <summary>sync-cache の DI 登録（cache.db、リポジトリ、添付ファイルストア）。</summary>
 public static class SyncCacheRegistration
 {
-    /// <param name="dataRoot">データのルート。省略時は %LOCALAPPDATA%\Parent_Mail。</param>
+    /// <param name="dataRoot">データのルート。省略時は AppPaths が解決したデータルート。</param>
     public static IServiceCollection AddSyncCache(this IServiceCollection services, string? dataRoot = null)
     {
         services.TryAddSingleton(new CachePaths(dataRoot ?? CachePaths.DefaultRoot()));
