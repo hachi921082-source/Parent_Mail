@@ -21,6 +21,7 @@
 15. Modal OK for failures, transient notices for successes (spec.md section 5; 2026-10-08)
 16. Idle backfill included; mark-read only in Inbox and Spam (spec.md sections 5, 8; 2026-10-08)
 17. Address-book picker in compose: one button per recipient field, no search box (detailed-spec section 7; 2026-10-11)
+18. Data folder next to the exe in the Release build (spec.md section 8; 2026-10-17)
 
 ## Top-bar folder layout (spec.md section 4)
 
@@ -116,3 +117,12 @@
 - Why no search box: the parents' address books are small, a sorted list with big checkboxes is enough, and fewer controls is simpler. Revisit if books grow.
 - Why the compose window's account (not the displayed one): consistent with A21 (the compose window sends from the account displayed when it opened) and with the per-account address book (Q28).
 - Why a separate PLAN-3 after PLAN-2 in the same lane: both edit the compose window XAML and ViewModel, so parallel worktrees would conflict; folding it into PLAN-2 would mix drafts with recipient entry.
+
+## Data folder next to the exe in the Release build (spec.md section 8; 2026-10-17)
+
+- Decision (Q93, Issue #9): Release exe keeps all data in a `Data` folder next to the exe, created on first launch; Debug build keeps the old rule (`Data` next to the exe if present, else `%LOCALAPPDATA%\Parent_Mail`); `PARENTMAIL_DATA_ROOT` wins in both. `Data` holds everything except the app password, which stays in Windows Credential Manager.
+- Why: the parents' PC may have the exe on a non-OS drive. If Windows crashes or is reinstalled, `%LOCALAPPDATA%` is lost with it, but a `Data` folder on the other drive survives, so the mail cache, settings, address book and rules stay. No manual folder creation is needed on the parents' PC.
+- Why the password stays in Credential Manager (user decision): it is already implemented, and a password file in `Data` would be readable by anyone who can open the folder and would travel with every copy of it. After an OS reinstall the existing password re-entry flow is used per account; the mail data stays.
+- Why by build kind: on the developer PC, Debug runs and checks keep using the current data without any copying.
+- Assistant-decided details (A92-A98, user may veto): silent fallback to `%LOCALAPPDATA%\Parent_Mail` with a log line if `Data` is not writable (a dialog would only confuse the parents, and the app stays usable); no automatic migration (a silent copy of mail data is risky and the developer PC is the only place with old data; manual copy is documented); folder name exactly `Data`.
+- Rejected: putting data directly in the exe folder without a subfolder (mixes data with exe files); automatic migration from `%LOCALAPPDATA%`; a startup dialog on fallback.

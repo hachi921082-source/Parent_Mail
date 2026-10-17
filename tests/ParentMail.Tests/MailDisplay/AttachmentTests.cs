@@ -379,6 +379,22 @@ public sealed class AttachmentActionsTests : IDisposable
     }
 
     [Fact]
+    public void 起動時の掃除はHTML表示用の一時フォルダを消さない()
+    {
+        var temp = Path.Combine(_root, "temp");
+        var html = Path.Combine(temp, ParentMail.Core.Platform.AppPaths.HtmlTempDirName);
+        Directory.CreateDirectory(html);
+        File.WriteAllText(Path.Combine(html, "mail.html"), "x");
+        var sub = Path.Combine(temp, "abc");
+        Directory.CreateDirectory(sub);
+
+        _actions.CleanTemp();
+
+        Assert.True(File.Exists(Path.Combine(html, "mail.html")));
+        Assert.False(Directory.Exists(sub));
+    }
+
+    [Fact]
     public void 一時フォルダが無くても掃除は失敗しない()
         => _actions.CleanTemp();
 }

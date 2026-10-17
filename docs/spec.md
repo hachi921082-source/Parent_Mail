@@ -111,7 +111,8 @@ Out of scope:
 - Local storage: mail is also stored locally on the PC (local mail cache) in SQLite (Microsoft.Data.Sqlite; settings.db plus one cache.db per account; HtmlAgilityPack for HTML parsing), in addition to settings (account names, filter rules, address book, block list, window/splitter state).
 - Local data protection: no app-level encryption. Data is protected only by the Windows user account; BitLocker and any other encryption setup are not needed.
 - Privacy: mail content stays on the PC; no transmission to third parties.
-- Local log file `%LOCALAPPDATA%\Parent_Mail\logs\parentmail.log`: component names, timestamps, exception type/message/stack, counts and error categories only; never mail content, addresses, subjects, attachment names, passwords or URLs. Rotated at 1 MB, 3 files.
+- Local log file `<data root>\logs\parentmail.log`: component names, timestamps, exception type/message/stack, counts and error categories only; never mail content, addresses, subjects, attachment names, passwords or URLs. Rotated at 1 MB, 3 files.
+- Data location (Q93): everything (settings.db, per-account cache.db and attachments, logs, temp, WebView2 user data) lives under one data root, except the app password (Windows Credential Manager). Release (published) exe: a `Data` folder next to the exe, created on first launch, so data survives an OS reinstall when the exe is on a non-OS drive; if `Data` cannot be created or written, fall back to `%LOCALAPPDATA%\Parent_Mail` silently. Debug build: `Data` next to the exe if it exists, else `%LOCALAPPDATA%\Parent_Mail`. Env var `PARENTMAIL_DATA_ROOT` overrides both (test only). No automatic migration. Details: detailed-spec A92-A98.
 - Distribution: self-contained single-file exe named `Parent_Mail_YYYYMMDD-HHMMSS.exe`; no installer.
 - Outbox is a local-only concept (not a Gmail folder).
 - Delete: moves mail to Gmail Trash only (IMAP move). Permanent deletion and "Empty trash" are not provided in the app.

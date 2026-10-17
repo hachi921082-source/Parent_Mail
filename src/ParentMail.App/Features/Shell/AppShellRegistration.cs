@@ -11,8 +11,16 @@ public static class AppShellRegistration
     /// <summary>app-shell が提供するサービスと主窓の登録。</summary>
     public static IServiceCollection AddAppShell(this IServiceCollection services)
     {
-        services.AddSingleton<AppPaths>();
-        services.AddSingleton<IAppLog, AppLog>(sp => new AppLog(sp.GetRequiredService<AppPaths>()));
+        services.AddSingleton<AppPaths>(_ => AppPaths.Current);
+        services.AddSingleton<IAppLog, AppLog>(sp =>
+        {
+            var paths = sp.GetRequiredService<AppPaths>();
+            var log = new AppLog(paths);
+            // Data フォルダを使えず退避した場合は、静かに 1 行だけ警告を残す（ダイアログなし・記憶なし）
+            if (paths.FallbackReason is { } reason)
+                log.Warn("Paths", $"Data フォルダを使えないため既定の場所へ退避: {reason.GetType().FullName}: {reason.Message}");
+            return log;
+        });
         services.AddSingleton<NotifierService>();
         services.AddSingleton<INotifier>(sp => sp.GetRequiredService<NotifierService>());
         services.AddSingleton<IDialogService, DialogService>();

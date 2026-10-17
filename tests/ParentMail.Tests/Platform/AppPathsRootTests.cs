@@ -1,50 +1,128 @@
-using ParentMail.Core.Data;
 using ParentMail.Core.Platform;
 
 namespace ParentMail.Tests.Platform;
 
-// データルートの解決（環境変数 PARENTMAIL_DATA_ROOT による上書き）のテスト。環境変数を触るので並列実行しない。
-[Collection("EnvVar")]
-public sealed class AppPathsRootTests : IDisposable
+// データルート解決規則（AppPaths.Resolve）のテスト。実環境の %LOCALAPPDATA% や環境変数には触れず、偽のファイルシステムで検証する。
+public sealed class AppPathsRootTests
 {
-    private readonly string? _saved = Environment.GetEnvironmentVariable(AppPaths.DataRootEnvVar);
+    private const string Local = @"C:\Users\テスト\AppData\Local\Parent_Mail";
 
-    public void Dispose() => Environment.SetEnvironmentVariable(AppPaths.DataRootEnvVar, _saved);
-
-    private static string DefaultExpected()
-        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Parent_Mail");
-
-    [Fact]
-    public void Unset_UsesLocalAppDataDefault()
+    private sealed class FakeFs : IDataRootFileSystem
     {
-        Environment.SetEnvironmentVariable(AppPaths.DataRootEnvVar, null);
-        Assert.Equal(DefaultExpected(), AppPaths.ResolveDefaultRoot());
+        public HashSet<string> Existing { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public bool Writable { get; set; } = true;
+        public List<string> Ensured { get; } = new();
+
+        public bool DirectoryExists(string path) => Existing.Contains(path);
+
+        public void EnsureWritableDirectory(string path)
+        {
+            if (!Writable) throw new UnauthorizedAccessException("read-only");
+            Ensured.Add(path);
+            Existing.Add(path);
+        }
     }
 
-    [Fact]
-    public void AbsoluteJapanesePath_Overrides_ForAppPathsAndCachePaths()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void EnvVar_Wins_InBothModes(bool isRelease)
     {
-        var root = Path.Combine(Path.GetTempPath(), "テスト用データ置き場");
-        Environment.SetEnvironmentVariable(AppPaths.DataRootEnvVar, root);
-
-        Assert.Equal(root, AppPaths.ResolveDefaultRoot());
-        Assert.Equal(root, new AppPaths().DataRoot);
-        Assert.Equal(root, CachePaths.DefaultRoot());
+        var fs = new FakeFs();
+        var env = @"D:\別の場所\データ";
+        var r = AppPaths.Resolve(isRelease, @"C:\app", env, Local, fs);
+        Assert.Equal(env, r.Root);
+        Assert.Null(r.FallbackReason);
+        Assert.Empty(fs.Ensured);
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
+    [InlineData(null)]
     [InlineData(@"relative\dir")]
-    public void EmptyOrRelative_IsIgnored(string value)
+    public void EmptyOrRelativeEnvVar_IsIgnored(string? env)
     {
-        Environment.SetEnvironmentVariable(AppPaths.DataRootEnvVar, value);
-        Assert.Equal(DefaultExpected(), AppPaths.ResolveDefaultRoot());
+        var r = AppPaths.Resolve(false, @"C:\app", env, Local, new FakeFs());
+        Assert.Equal(Local, r.Root);
     }
-}
 
-// 環境変数を書き換えるテストを他のテストと同時に走らせない。
-[CollectionDefinition("EnvVar", DisableParallelization = true)]
-public sealed class EnvVarCollection
-{
+    [Fact]
+    public void Release_UsesExeDataFolder_AndCreatesIt()
+    {
+        var fs = new FakeFs();
+        var r = AppPaths.Resolve(true, @"C:\app", null, Local, fs);
+        Assert.Equal(@"C:\app\Data", r.Root);
+        Assert.Null(r.FallbackReason);
+        Assert.Contains(@"C:\app\Data", fs.Ensured);
+    }
+
+    [Fact]
+    public void Release_Unwritable_FallsBackToLocalAppData_WithReason()
+    {
+        var fs = new FakeFs { Writable = false };
+        var r = AppPaths.Resolve(true, @"C:\Program Files\app", null, Local, fs);
+        Assert.Equal(Local, r.Root);
+        Assert.IsType<UnauthorizedAccessException>(r.FallbackReason);
+    }
+
+    [Fact]
+    public void Debug_UsesExistingDataFolder()
+    {
+        var fs = new FakeFs();
+        fs.Existing.Add(@"C:\app\Data");
+        var r = AppPaths.Resolve(false, @"C:\app", null, Local, fs);
+        Assert.Equal(@"C:\app\Data", r.Root);
+        Assert.Empty(fs.Ensured);
+    }
+
+    [Fact]
+    public void Debug_WithoutDataFolder_UsesLocalAppData_AndDoesNotCreate()
+    {
+        var fs = new FakeFs();
+        var r = AppPaths.Resolve(false, @"C:\app", null, Local, fs);
+        Assert.Equal(Local, r.Root);
+        Assert.Empty(fs.Ensured);
+    }
+
+    [Fact]
+    public void JapaneseExeFolder_Works()
+    {
+        var fs = new FakeFs();
+        var r = AppPaths.Resolve(true, @"C:\ユーザー\母のメール", null, Local, fs);
+        Assert.Equal(@"C:\ユーザー\母のメール\Data", r.Root);
+    }
+
+    [Fact]
+    public void RealFileSystem_Release_CreatesDataFolderInJapaneseExeFolder_AndLeavesNoProbe()
+    {
+        var exe = Path.Combine(Path.GetTempPath(), "pm_テスト_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(exe);
+        try
+        {
+            var r = AppPaths.Resolve(true, exe, null, Local, new RealDataRootFileSystem());
+            Assert.Equal(Path.Combine(exe, "Data"), r.Root);
+            Assert.True(Directory.Exists(r.Root));
+            Assert.False(File.Exists(Path.Combine(r.Root, ".write-test")));
+        }
+        finally
+        {
+            Directory.Delete(exe, true);
+        }
+    }
+
+    [Fact]
+    public void Layout_FollowsDataRoot()
+    {
+        var p = new AppPaths(@"C:\d");
+        Assert.Equal(@"C:\d\settings.db", p.SettingsDbPath);
+        Assert.Equal(@"C:\d\accounts\a1", p.AccountDir("a1"));
+        Assert.Equal(@"C:\d\accounts\a1\cache.db", p.CacheDb("a1"));
+        Assert.Equal(@"C:\d\accounts\a1\attachments", p.AttachmentsDir("a1"));
+        Assert.Equal(@"C:\d\logs", p.LogsDir);
+        Assert.Equal(@"C:\d\logs\parentmail.log", p.LogFile);
+        Assert.Equal(@"C:\d\temp", p.TempDir);
+        Assert.Equal(@"C:\d\temp\html", p.HtmlTempDir);
+        Assert.Equal(@"C:\d\webview2", p.WebView2Dir);
+    }
 }
