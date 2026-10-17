@@ -122,6 +122,7 @@ public sealed class AppPathsRootTests
         Assert.Equal(@"C:\d\logs", p.LogsDir);
         Assert.Equal(@"C:\d\logs\parentmail.log", p.LogFile);
         Assert.Equal(@"C:\d\temp", p.TempDir);
+        Assert.Equal(@"C:\d\temp\html", p.HtmlTempDir);
         Assert.Equal(@"C:\d\webview2", p.WebView2Dir);
     }
 }
