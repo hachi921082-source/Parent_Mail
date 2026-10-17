@@ -103,6 +103,10 @@ public sealed class AppPaths
     public string LogsDir => Path.Combine(DataRoot, "logs");
     public string LogFile => Path.Combine(LogsDir, "parentmail.log");
     public string TempDir => Path.Combine(DataRoot, "temp");
+    /// <summary>HTML 表示用の一時フォルダ名（TempDir 直下）。添付の掃除はこのフォルダを消さない。</summary>
+    public const string HtmlTempDirName = "html";
+    /// <summary>大きな HTML メールを WebView2 に渡す一時ファイルの置き場（データルート配下）。</summary>
+    public string HtmlTempDir => Path.Combine(TempDir, HtmlTempDirName);
     public string WebView2Dir => Path.Combine(DataRoot, "webview2");
 
     public string AccountDir(string accountId) => Path.Combine(DataRoot, "accounts", accountId);
