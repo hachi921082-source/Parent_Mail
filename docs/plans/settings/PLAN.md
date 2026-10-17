@@ -12,7 +12,7 @@ Planning status: complete. Spec: detailed-spec 15, 1 (persistence), 21; A5, A9, 
 
 ## 1. Scope
 
-`settings.db` creation and migrations, `ISettingsStore` (app settings), text-size service (`ITextScale`), settings window (text size part; the accounts section is filled by accounts-auth PLAN-2).
+`settings.db` creation and migrations (file location = `AppPaths.SettingsDbPath` in the data root, plans/README section 3, Q93; the settings code does not build the path itself), `ISettingsStore` (app settings), text-size service (`ITextScale`), settings window (text size part; the accounts section is filled by accounts-auth PLAN-2).
 
 ## 2. settings.db schema (`PRAGMA user_version` migrations, WAL, foreign keys on)
 
