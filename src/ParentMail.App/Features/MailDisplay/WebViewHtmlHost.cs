@@ -124,10 +124,23 @@ public sealed class WebViewHtmlHost
         core.SetVirtualHostNameToFolderMapping(VirtualHost, TempFolder(), CoreWebView2HostResourceAccessKind.Allow);
     }
 
+    private static bool _htmlTempCleaned;
+
     private static string TempFolder()
     {
-        var dir = Path.Combine(Path.GetTempPath(), "Parent_Mail_html");
+        // 一時ファイルもデータルート配下に置く（AppPaths の規則に従う）
+        var dir = ParentMail.Core.Platform.AppPaths.Current.HtmlTempDir;
         Directory.CreateDirectory(dir);
+        // 前回までの mail.html はメール本文を含むので、プロセスで最初の 1 回だけ消す（開いている窓のファイルは消さない）
+        if (!_htmlTempCleaned)
+        {
+            _htmlTempCleaned = true;
+            foreach (var file in Directory.GetFiles(dir))
+            {
+                try { File.Delete(file); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            }
+        }
         return dir;
     }
 
