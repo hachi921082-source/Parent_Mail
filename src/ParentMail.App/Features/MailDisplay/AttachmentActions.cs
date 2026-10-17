@@ -86,6 +86,9 @@ public sealed class AttachmentActions
             if (!Directory.Exists(_tempRoot)) return;
             foreach (var dir in Directory.GetDirectories(_tempRoot))
             {
+                // HTML 表示用のフォルダは開いている窓が使うので、ここでは消さない（WebViewHtmlHost が起動後 1 回だけ掃除する）
+                if (string.Equals(Path.GetFileName(dir), ParentMail.Core.Platform.AppPaths.HtmlTempDirName, StringComparison.OrdinalIgnoreCase))
+                    continue;
                 try { Directory.Delete(dir, recursive: true); }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
             }
