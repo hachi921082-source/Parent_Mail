@@ -10,3 +10,4 @@ tests/local.secrets.json
 *.db-wal
 *.db-shm
 publish/
+*.exe
