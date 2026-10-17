@@ -20,7 +20,7 @@ public sealed class AttachmentActions
     private readonly IAppLog _log;
     private readonly string _tempRoot;
 
-    /// <param name="tempRoot">開く用の一時フォルダの親（%LOCALAPPDATA%\Parent_Mail\temp）。</param>
+    /// <param name="tempRoot">開く用の一時フォルダの親（AppPaths.TempDir）。</param>
     public AttachmentActions(IAttachmentService attachments, IDialogService dialogs, IAttachmentFileUi ui, IAppLog log, string tempRoot)
     {
         _attachments = attachments;
