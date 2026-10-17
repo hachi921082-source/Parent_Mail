@@ -14,8 +14,9 @@ public partial class MainWindow : Window
     private readonly MainViewModel _viewModel;
     private WindowState _lastNonMinimizedState = WindowState.Normal;
 
-    public MainWindow(MainViewModel viewModel, ISettingsStore settings)
+    public MainWindow(MainViewModel viewModel, ISettingsStore settings, IAppLog? log = null)
     {
+        _log = log;
         _viewModel = viewModel;
         _settings = settings;
         DataContext = viewModel;
@@ -41,6 +42,8 @@ public partial class MainWindow : Window
     public Func<Task<bool>>? QuitGuard { get; set; }
 
     private bool _quitApproved;
+    private QuitCloseRunner? _quitRunner;
+    private readonly IAppLog? _log;
 
     /// <summary>終了が承認済みであることを知らせる（Windows の終了の承認後など、再確認させないため）。</summary>
     public void ApproveQuit() => _quitApproved = true;
@@ -56,14 +59,11 @@ public partial class MainWindow : Window
         _ = ConfirmQuitAndCloseAsync();
     }
 
-    private async Task ConfirmQuitAndCloseAsync()
+    private Task ConfirmQuitAndCloseAsync()
     {
-        bool approved;
-        try { approved = await QuitGuard!().ConfigureAwait(true); }
-        catch { approved = true; } // 終了中の例外で閉じられなくならないようにする（記録は QuitCoordinator 側）
-        if (!approved) return;
-        _quitApproved = true;
-        Close();
+        // 確認・例外の記録・Closing の外での Close() は QuitCloseRunner が受け持つ
+        _quitRunner ??= new QuitCloseRunner(() => QuitGuard!(), ApproveQuit, Close, _log);
+        return _quitRunner.RunAsync();
     }
 
     /// <summary>2 回目の起動などから呼ばれ、窓を元の状態に戻して前面に出す。</summary>
