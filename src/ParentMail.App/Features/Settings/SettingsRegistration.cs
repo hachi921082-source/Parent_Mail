@@ -15,8 +15,7 @@ public static class SettingsRegistration
     {
         services.AddSingleton<SettingsDb>(_ =>
         {
-            var root = ParentMail.Core.Platform.AppPaths.ResolveDefaultRoot();
-            var db = new SettingsDb(Path.Combine(root, "settings.db"));
+            var db = new SettingsDb(ParentMail.Core.Platform.AppPaths.Current.SettingsDbPath);
             db.Migrate();
             return db;
         });

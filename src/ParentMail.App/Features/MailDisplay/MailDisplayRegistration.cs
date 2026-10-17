@@ -25,7 +25,7 @@ public static class MailDisplayRegistration
                 sp.GetRequiredService<ParentMail.Core.IDialogService>(),
                 sp.GetRequiredService<IAttachmentFileUi>(),
                 sp.GetRequiredService<ParentMail.Core.IAppLog>(),
-                System.IO.Path.Combine(new ParentMail.Core.Platform.AppPaths().DataRoot, "temp"));
+                ParentMail.Core.Platform.AppPaths.Current.TempDir);
             // アプリの起動時に、前回の「開く」で作った一時ファイルを消す
             actions.CleanTemp();
             return actions;

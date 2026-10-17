@@ -1,6 +1,6 @@
 namespace ParentMail.Core.Data;
 
-/// <summary>実行時データのパス規則（%LOCALAPPDATA%\Parent_Mail\accounts\&lt;accountId&gt;\...）。日本語を含むパスも前提。</summary>
+/// <summary>実行時データのパス規則（&lt;データルート&gt;\accounts\&lt;accountId&gt;\...）。日本語を含むパスも前提。</summary>
 public sealed class CachePaths
 {
     public string Root { get; }
@@ -11,9 +11,9 @@ public sealed class CachePaths
         Root = root;
     }
 
-    /// <summary>既定のデータルート（%LOCALAPPDATA%\Parent_Mail）。</summary>
+    /// <summary>既定のデータルート（AppPaths が起動時に 1 回解決したもの）。</summary>
     public static string DefaultRoot()
-        => ParentMail.Core.Platform.AppPaths.ResolveDefaultRoot();
+        => ParentMail.Core.Platform.AppPaths.Current.DataRoot;
 
     public string AccountDir(string accountId)
     {
