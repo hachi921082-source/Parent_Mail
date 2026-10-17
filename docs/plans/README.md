@@ -60,11 +60,15 @@ tests/ParentMail.Tests/        xUnit tests (net10.0-windows)
 docs/ ...
 ```
 
-Runtime data root: `%LOCALAPPDATA%\Parent_Mail\`
+Runtime data root (Q93, detailed-spec A92-A98), resolved once at start by `AppPaths`: (1) env `PARENTMAIL_DATA_ROOT`; (2) Release build (no `DEBUG` symbol): `<dir of Environment.ProcessPath>\Data`, created on first launch, fallback `%LOCALAPPDATA%\Parent_Mail` if it cannot be created or written (write probe, silent, one Warn log line); (3) Debug build: `<exe folder>\Data` if it exists, else `%LOCALAPPDATA%\Parent_Mail`. Layout under `<root>`:
 - `settings.db`
 - `accounts\<accountId>\cache.db`
 - `accounts\<accountId>\attachments\<attachmentId>.bin` (stored by numeric ID, never by original file name; original name kept in DB)
 - `logs\parentmail.log` (see section 9, Q29)
+- `temp\` (attachment "open" copies; cleaned at app start)
+- `webview2\` (WebView2 user data folder)
+
+The app password is not in the data root (Windows Credential Manager).
 
 All paths are built with `Path.Combine` and handled as UTF-16 strings; test with Japanese user/folder names.
 
