@@ -13,3 +13,4 @@
 - #1 アカウント切り替えを、トグル式から横並びのボタンにする — enhancement, needs-design — main に --no-ff で統合(PR なし、ブランチ `feature/account-switch-buttons`、QA.md Q91)
 - #7 下書き一覧の宛先が「=?UTF-8?B?…?=」のまま表示される — bug — main に --no-ff で統合(PR なし、ブランチ `fix/draft-recipient-display`)
 - #8 アカウントを最大5つに増やし、溢れた分を横スクロールにする — enhancement, needs-design — main に --no-ff で統合(PR なし、ブランチ `feature/accounts-max-5`、QA.md Q92)
+- #9 データの保存場所を exe の隣の Data フォルダにできるようにする — enhancement, needs-design — main に --no-ff で統合(PR なし、ブランチ `feature/portable-data-folder`、QA.md Q93)
