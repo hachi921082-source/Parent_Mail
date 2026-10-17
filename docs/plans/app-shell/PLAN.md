@@ -21,7 +21,7 @@ Solution bootstrap, DI composition root, main window skeleton (banner area, two-
 - `App/Features/Shell/MainWindow.xaml(.cs)`, `MainViewModel`: grid rows = banner area, top bar (2 rows), content. Content columns = list pane, `GridSplitter`, preview pane. MinWidth 1024, MinHeight 700. Window title [WD-01] 「Parent_Mail」.
 - `Resources/Strings.ja.cs`: static `Strings` generated from `ui-strings.md` (every ID; Japanese text must be identical; section 18 gives titles and buttons of every window and dialog). Folder labels [TB-01..TB-06] 受信トレイ, 送信トレイ, 送信済み, ごみ箱, 下書き, 迷惑メール.
 - `Resources/Palette.xaml`: brushes (below).
-- `Core/Platform/AppPaths.cs`, `AppLog.cs`.
+- `Core/Platform/AppPaths.cs`, `AppLog.cs`. `AppPaths` resolves the data root once at start per plans/README section 3 (Q93, A92-A98: env `PARENTMAIL_DATA_ROOT`, else Release `<exe folder>\Data` with silent fallback to `%LOCALAPPDATA%\Parent_Mail`, Debug `Data` if present else `%LOCALAPPDATA%`; Release = `DEBUG` not defined; exe folder from `Environment.ProcessPath`) and exposes `DataRoot`, `SettingsDbPath`, `AccountDir(id)`, `LogsDir`, `TempDir`, `WebView2Dir`. No other code reads `LocalApplicationData`. Unit tests: env var wins; Release rule with a writable and a read-only folder (fallback); Japanese folder names.
 - `App/Services/NotifierService` (`INotifier`), `DialogService` (`IDialogService`), `WindowRules` (attached behaviors for Enter/Esc/focus).
 
 ## 3. Behavior
@@ -80,7 +80,7 @@ Rules: the Inbox count badge on the active (blue) folder button is a white pill 
 ### 3.5 Errors and log
 
 - Global errors: `DispatcherUnhandledException`, `AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException` -> write to log (exception type, message, stack only) and show the modal notice [BN-04] (title 「問題が発生しました」, [WD-30]). Non-fatal exceptions keep the app running.
-- Local log (PQ29): `%LOCALAPPDATA%\Parent_Mail\logs\parentmail.log`, UTF-8, one line per entry `yyyy-MM-dd HH:mm:ss.fff [LEVEL] area: message`. Rolled at 1 MB, keeping 3 files (`parentmail.1.log`, `.2.log`). Allowed content: timestamps, component names, exception type/message/stack, counts, durations, IMAP/SMTP error categories. Forbidden: email addresses, subjects, bodies, attachment names, passwords, URLs from mail. Thread-safe, never throws.
+- Local log (PQ29): `<data root>\logs\parentmail.log`, UTF-8, one line per entry `yyyy-MM-dd HH:mm:ss.fff [LEVEL] area: message`. Rolled at 1 MB, keeping 3 files (`parentmail.1.log`, `.2.log`). Allowed content: timestamps, component names, exception type/message/stack, counts, durations, IMAP/SMTP error categories. Forbidden: email addresses, subjects, bodies, attachment names, passwords, URLs from mail. Thread-safe, never throws.
 
 ## 4. Functions
 
