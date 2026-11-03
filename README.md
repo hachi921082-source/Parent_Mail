@@ -10,6 +10,7 @@
 4. 開発者向け
 5. データと安全性
 6. ドキュメント
+7. ライセンス
 
 ## 1. 特徴
 
@@ -83,3 +84,7 @@ python tools/gen_strings.py       # docs/plans/ui-strings.md から Strings.ja.c
 - [docs/QA.md](docs/QA.md): 利用者の判断の記録
 - [docs/plans/README.md](docs/plans/README.md): 実装計画と進め方
 - [docs/HANDOFF.md](docs/HANDOFF.md): 作業の引き継ぎ
+
+## 7. ライセンス
+
+[MIT License](LICENSE) です。個人用のアプリとして作っています。使い方や不具合についての質問、要望には、返事ができないことがあります。
