@@ -87,4 +87,6 @@ python tools/gen_strings.py       # docs/plans/ui-strings.md から Strings.ja.c
 
 ## 7. ライセンス
 
-[MIT License](LICENSE) です。個人用のアプリとして作っています。使い方や不具合についての質問、要望には、返事ができないことがあります。
+[MIT License](LICENSE) です。
+
+個人用のアプリとして作っています。Issue と Pull Request は受け付けていません（Issue は無効にしています。届いた Pull Request は、確認せずに閉じることがあります）。コードは自由にコピー、改変して使えます。
